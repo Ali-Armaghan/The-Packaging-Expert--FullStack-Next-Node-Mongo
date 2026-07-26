@@ -58,12 +58,12 @@ export function Catalog() {
   return (
     <section className="bg-muted py-14 sm:py-16 lg:py-20">
       <Container>
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <h2 className="section-heading">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
+          <div className="min-w-0 flex-1">
+            <h2 className="section-heading lg:whitespace-nowrap lg:text-[clamp(1.35rem,2vw,2.25rem)]">
               One for all solution, for custom printed packaging
             </h2>
-            <p className="mt-3 text-base leading-relaxed text-muted-foreground sm:text-lg">
+            <p className="mt-3 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
               Get everything custom packaging your business needs all in one
               place.
             </p>
