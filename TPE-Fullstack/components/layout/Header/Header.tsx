@@ -17,8 +17,8 @@ export function Header() {
         <Container>
           <div className="flex items-center justify-between gap-4 py-4 lg:py-5">
             <Logo className="shrink-0" />
-            <div className="hidden flex-1 justify-center px-6 md:flex">
-              <SearchBar className="max-w-lg" />
+            <div className="hidden min-w-0 flex-1 justify-center px-6 md:flex">
+              <SearchBar className="w-full max-w-lg" />
             </div>
             <ContactBlock />
             <MobileMenu />

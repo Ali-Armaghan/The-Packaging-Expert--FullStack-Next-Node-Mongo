@@ -75,3 +75,113 @@ html {
     color: var(--foreground);
   }
 }
+
+/* Search loading — keep simple & stable */
+.search-field--loading {
+  box-shadow: 0 0 0 3px rgba(52, 173, 120, 0.15);
+}
+
+.search-field__shimmer {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.search-field__shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -40%;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(52, 173, 120, 0.18),
+    transparent
+  );
+  animation: search-shimmer 1.2s ease-in-out infinite;
+}
+
+.search-loader {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.search-loader__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+}
+
+.search-loader__ring--outer {
+  border-top-color: var(--primary);
+  border-right-color: rgba(52, 173, 120, 0.25);
+  animation: search-spin 0.85s linear infinite;
+}
+
+.search-loader__ring--inner {
+  inset: 3px;
+  border-bottom-color: var(--primary);
+  border-left-color: rgba(52, 173, 120, 0.2);
+  animation: search-spin-reverse 1.25s linear infinite;
+}
+
+.search-loader__dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 9999px;
+  background: var(--primary);
+  box-shadow: 0 0 8px rgba(52, 173, 120, 0.75);
+  animation: search-pulse 1s ease-in-out infinite;
+}
+
+@keyframes search-shimmer {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+@keyframes search-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes search-spin-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes search-pulse {
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-field__shimmer::after,
+  .search-loader__ring,
+  .search-loader__dot {
+    animation: none;
+  }
+}

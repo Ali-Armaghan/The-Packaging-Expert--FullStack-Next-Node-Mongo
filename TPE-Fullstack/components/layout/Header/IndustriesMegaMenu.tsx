@@ -7,6 +7,7 @@ import {
   type IndustryMegaMenuItem,
 } from "@/constants/industriesMegaMenu";
 import { cn } from "@/lib/utils";
+import { IndustryIcon } from "./IndustryIcons";
 
 type IndustriesMegaMenuProps = {
   open: boolean;
@@ -14,59 +15,16 @@ type IndustriesMegaMenuProps = {
   onMouseLeave: () => void;
 };
 
-function IndustryIcon({ icon }: Pick<IndustryMegaMenuItem, "icon">) {
-  const className = "h-5 w-5";
-
-  switch (icon) {
-    case "apparel":
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-          <path strokeLinecap="round" d="M8 6l4-3 4 3v3H8V6z" />
-          <path strokeLinecap="round" d="M6 9h12v10H6V9z" />
-        </svg>
-      );
-    case "bakery":
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-          <path strokeLinecap="round" d="M4 14h16M6 14V9a6 6 0 1112 0v5" />
-        </svg>
-      );
-    case "beer":
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-          <path strokeLinecap="round" d="M8 4h8v14a4 4 0 01-8 0V4z" />
-          <path strokeLinecap="round" d="M16 7h2a2 2 0 012 2v5h-4" />
-        </svg>
-      );
-    case "grid":
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-          <rect x="3" y="3" width="7" height="7" rx="1" />
-          <rect x="14" y="3" width="7" height="7" rx="1" />
-          <rect x="3" y="14" width="7" height="7" rx="1" />
-          <rect x="14" y="14" width="7" height="7" rx="1" />
-        </svg>
-      );
-    default:
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16V8z" />
-          <path strokeLinecap="round" d="M3.3 7.7L12 12l8.7-4.3M12 22V12" />
-        </svg>
-      );
-  }
-}
-
 function IndustryLink({ item }: { item: IndustryMegaMenuItem }) {
   return (
     <Link
       href={item.href}
-      className="group flex items-center gap-3 rounded-md px-2 py-2.5 transition-colors hover:bg-muted"
+      className="group flex items-center gap-3 rounded-md px-1.5 py-2.5 transition-colors hover:bg-muted"
     >
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center text-foreground/80 group-hover:text-primary">
-        <IndustryIcon icon={item.icon} />
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center text-foreground transition-colors group-hover:text-primary">
+        <IndustryIcon icon={item.icon} className="h-6 w-6" />
       </span>
-      <span className="text-sm font-medium text-foreground group-hover:text-primary">
+      <span className="text-[0.9375rem] font-medium text-foreground transition-colors group-hover:text-primary">
         {item.label}
       </span>
     </Link>
@@ -93,11 +51,11 @@ export function IndustriesMegaMenu({
       <Container className="py-8">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_280px] xl:grid-cols-[1fr_300px]">
           <div>
-            <h3 className="mb-6 text-base font-bold text-foreground">
+            <h3 className="mb-5 text-lg font-bold tracking-tight text-foreground">
               Shop by Industries
             </h3>
 
-            <div className="grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-x-10 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
               {industriesMegaMenuColumns.map((column, columnIndex) => (
                 <ul key={columnIndex} className="space-y-0.5">
                   {column.map((item) => (
