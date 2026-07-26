@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/site-button";
 import { Container } from "@/components/ui/Container";
 
 const brandLogos = [

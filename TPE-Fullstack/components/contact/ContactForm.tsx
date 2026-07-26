@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/site-button";
 import { contactPageContent, contactTopics } from "@/constants/contact";
 import { cn } from "@/lib/utils";
 
