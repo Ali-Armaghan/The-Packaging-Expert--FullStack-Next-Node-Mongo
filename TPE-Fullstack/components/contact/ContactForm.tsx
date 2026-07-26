@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { AgenticLoader } from "@/components/ui/AgenticLoader";
 import { Button } from "@/components/ui/site-button";
 import { contactPageContent, contactTopics } from "@/constants/contact";
 import { cn } from "@/lib/utils";
@@ -253,7 +254,14 @@ export function ContactForm() {
           className="w-full sm:w-auto"
           disabled={status === "submitting"}
         >
-          {status === "submitting" ? "Sending..." : "Send message"}
+          {status === "submitting" ? (
+            <span className="inline-flex items-center gap-2">
+              <AgenticLoader size="sm" tone="onPrimary" label="Sending message" />
+              Sending...
+            </span>
+          ) : (
+            "Send message"
+          )}
         </Button>
       </div>
     </form>

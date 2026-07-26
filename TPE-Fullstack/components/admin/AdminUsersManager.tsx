@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { useSession } from "next-auth/react";
-import { Loader2Icon, Trash2Icon, UserPlusIcon } from "lucide-react";
+import { Trash2Icon, UserPlusIcon } from "lucide-react";
 import { adminNavSections } from "@/constants/adminNav";
 import { isSuperAdmin } from "@/lib/auth/permissions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AgenticLoader } from "@/components/ui/AgenticLoader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -351,7 +352,7 @@ export function AdminUsersManager() {
             <Button type="submit" disabled={saving} className="h-10 px-5">
               {saving ? (
                 <>
-                  <Loader2Icon className="animate-spin" />
+                  <AgenticLoader size="sm" tone="onPrimary" label="Creating user" />
                   Creating...
                 </>
               ) : (
@@ -371,10 +372,10 @@ export function AdminUsersManager() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2Icon className="size-4 animate-spin" />
+            <div className="flex items-center gap-2.5 py-6 text-sm text-muted-foreground">
+              <AgenticLoader size="sm" label="Loading users" />
               Loading users...
-            </p>
+            </div>
           ) : users.length === 0 ? (
             <p className="text-sm text-muted-foreground">No users yet.</p>
           ) : (

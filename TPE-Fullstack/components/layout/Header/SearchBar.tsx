@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { AgenticLoader } from "@/components/ui/AgenticLoader";
 import { searchSiteContent, type SearchResultItem } from "@/lib/search";
 import { cn } from "@/lib/utils";
 
@@ -26,16 +27,6 @@ function SearchIcon() {
       <circle cx="11" cy="11" r="7" />
       <path d="M20 20l-3.5-3.5" />
     </svg>
-  );
-}
-
-function AgenticLoader() {
-  return (
-    <span className="search-loader" aria-hidden="true">
-      <span className="search-loader__ring search-loader__ring--outer" />
-      <span className="search-loader__ring search-loader__ring--inner" />
-      <span className="search-loader__dot" />
-    </span>
   );
 }
 
@@ -240,7 +231,11 @@ export function SearchBar({ className }: SearchBarProps) {
             aria-label={isSearching ? "Searching" : "Search"}
             aria-busy={isSearching}
           >
-            {isSearching ? <AgenticLoader /> : <SearchIcon />}
+            {isSearching ? (
+              <AgenticLoader size="sm" label="Searching" />
+            ) : (
+              <SearchIcon />
+            )}
           </button>
         </div>
       </form>
