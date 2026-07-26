@@ -10,20 +10,66 @@ const fieldClassName =
 
 const labelClassName = "mb-1.5 block text-sm font-medium text-foreground";
 
-export function ContactForm() {
-  const [status, setStatus] = useState<"idle" | "submitting" | "success">(
-    "idle",
-  );
+type FormStatus = "idle" | "submitting" | "success" | "error";
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+export function ContactForm() {
+  const [status, setStatus] = useState<FormStatus>("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (status === "submitting") return;
 
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    const payload = {
+      firstName: String(formData.get("firstName") ?? ""),
+      lastName: String(formData.get("lastName") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      phone: String(formData.get("phone") ?? ""),
+      topic: String(formData.get("topic") ?? ""),
+      company: String(formData.get("company") ?? ""),
+      message: String(formData.get("message") ?? ""),
+    };
+
     setStatus("submitting");
-    window.setTimeout(() => {
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = (await response.json()) as {
+        success?: boolean;
+        error?: string;
+        details?: { fieldErrors?: Record<string, string[]> };
+      };
+
+      if (!response.ok || !data.success) {
+        const fieldErrors = data.details?.fieldErrors;
+        const firstFieldError = fieldErrors
+          ? Object.values(fieldErrors).flat()[0]
+          : undefined;
+
+        throw new Error(
+          firstFieldError || data.error || "Unable to send message. Please try again.",
+        );
+      }
+
+      form.reset();
       setStatus("success");
-      (e.target as HTMLFormElement).reset();
-    }, 900);
+    } catch (error) {
+      setStatus("error");
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to send message. Please try again.",
+      );
+    }
   };
 
   if (status === "success") {
@@ -55,7 +101,10 @@ export function ContactForm() {
           type="button"
           variant="outline"
           className="mt-6"
-          onClick={() => setStatus("idle")}
+          onClick={() => {
+            setStatus("idle");
+            setErrorMessage(null);
+          }}
         >
           Send another message
         </Button>
@@ -77,6 +126,15 @@ export function ContactForm() {
           {contactPageContent.formDescription}
         </p>
       </div>
+
+      {errorMessage && (
+        <div
+          role="alert"
+          className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          {errorMessage}
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
@@ -123,7 +181,8 @@ export function ContactForm() {
         </div>
         <div>
           <label htmlFor="contact-phone" className={labelClassName}>
-            Phone <span className="font-normal text-muted-foreground">(optional)</span>
+            Phone{" "}
+            <span className="font-normal text-muted-foreground">(optional)</span>
           </label>
           <input
             id="contact-phone"
@@ -157,7 +216,8 @@ export function ContactForm() {
         </div>
         <div className="sm:col-span-2">
           <label htmlFor="contact-company" className={labelClassName}>
-            Company <span className="font-normal text-muted-foreground">(optional)</span>
+            Company{" "}
+            <span className="font-normal text-muted-foreground">(optional)</span>
           </label>
           <input
             id="contact-company"
