@@ -19,7 +19,7 @@ global.mongooseCache = cached;
 
 export async function connectToDatabase() {
   const MONGODB_URI = process.env.MONGODB_URI;
-  const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || "packing_expert";
+  const MONGODB_DB_NAME = process.env.MONGODB_DB_NAME || "packaging_expert";
 
   if (!MONGODB_URI) {
     throw new Error(

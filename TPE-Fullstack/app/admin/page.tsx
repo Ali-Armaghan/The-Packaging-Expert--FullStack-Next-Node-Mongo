@@ -52,7 +52,7 @@ export default function AdminDashboardPage() {
             Dashboard
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground sm:text-base">
-            Overview of your Packing Expert admin workspace.
+            Overview of your Packaging Expert admin workspace.
           </p>
         </div>
         <Link

@@ -34,7 +34,7 @@ async function main() {
   const { hashPassword } = await import("../lib/auth/password");
   const { AdminUser } = await import("../models/AdminUser");
 
-  const email = (process.env.ADMIN_SEED_EMAIL || "admin@packingexpert.com")
+  const email = (process.env.ADMIN_SEED_EMAIL || "admin@packagingexpert.com")
     .trim()
     .toLowerCase();
   const password = process.env.ADMIN_SEED_PASSWORD || "Admin@12345";

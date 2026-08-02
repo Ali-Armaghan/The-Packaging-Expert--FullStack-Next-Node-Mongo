@@ -44,7 +44,7 @@ export const features: Feature[] = [
   },
   {
     id: "promise",
-    title: "The Packing Expert Promise",
+    title: "The Packaging Expert Promise",
     description:
       "We guarantee the highest quality product and customer experience with every order!",
     icon: "promise",

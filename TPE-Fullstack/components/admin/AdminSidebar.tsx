@@ -115,7 +115,7 @@ export function AdminSidebar({ open, onClose, user }: AdminSidebarProps) {
               PE
             </span>
             <span className="text-sm">
-              Packing <span className="text-primary">Admin</span>
+              Packaging <span className="text-primary">Admin</span>
             </span>
           </Link>
 

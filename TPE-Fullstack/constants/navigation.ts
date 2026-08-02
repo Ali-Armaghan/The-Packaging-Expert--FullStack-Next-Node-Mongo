@@ -12,7 +12,7 @@ export const mainNavItems: NavItem[] = [
   { label: "Styles", href: "/products/style" },
   { label: "Products", href: "/products" },
   { label: "Services", href: "/services" },
-  { label: "Why Packing Expert", href: "/about" },
+  { label: "Why Packaging Expert", href: "/about" },
 ];
 
 export const ctaNavItem = {

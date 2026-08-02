@@ -12,7 +12,7 @@ export function InstagramFeed() {
             Follow us on Instagram
           </h2>
           <Link
-            href="https://instagram.com/packingexpert"
+            href="https://instagram.com/packagingexpert"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-2 inline-block text-base font-semibold text-primary hover:text-primary-dark sm:text-lg"

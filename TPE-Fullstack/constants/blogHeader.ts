@@ -36,7 +36,7 @@ export const blogHeaderNavItems: BlogHeaderNavItem[] = [
 export const blogHeaderSocialLinks = [
   {
     label: "Instagram",
-    href: "https://instagram.com/packingexpert",
+    href: "https://instagram.com/packagingexpert",
     icon: "instagram" as const,
   },
   {

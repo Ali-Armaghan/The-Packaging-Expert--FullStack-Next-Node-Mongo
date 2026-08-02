@@ -78,7 +78,7 @@ export function AdminShell({ children, title }: AdminShellProps) {
                 {pageTitle}
               </p>
               <p className="hidden text-xs text-muted-foreground sm:block">
-                Packing Expert admin panel
+                Packaging Expert admin panel
               </p>
             </div>
 

@@ -11,7 +11,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "sarah",
     quote:
-      "Packing Expert made our launch packaging effortless. The quality exceeded expectations and our customers love the unboxing experience.",
+      "Packaging Expert made our launch packaging effortless. The quality exceeded expectations and our customers love the unboxing experience.",
     name: "Sarah Mitchell",
     role: "Founder, Glow Cosmetics",
     avatar: "/images/catalog/gift-bags.png",

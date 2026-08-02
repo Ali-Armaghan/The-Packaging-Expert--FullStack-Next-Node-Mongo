@@ -87,16 +87,16 @@ export const catalogCategories: CatalogCategory[] = [
   {
     id: "tissue-paper",
     title: "Tissue Paper and Liners",
-    description: "Give your packaging a bit of flair by branding your packing paper.",
+    description: "Give your packaging a bit of flair by branding your packaging paper.",
     image: "/images/catalog/tissue-paper.png",
     href: "/catalog/tissue-paper",
   },
   {
-    id: "packing-tape",
-    title: "Packing Tape",
-    description: "Don't stop at the box, add your logo to your packing tape.",
-    image: "/images/catalog/packing-tape.png",
-    href: "/catalog/packing-tape",
+    id: "packaging-tape",
+    title: "Packaging Tape",
+    description: "Don't stop at the box, add your logo to your packaging tape.",
+    image: "/images/catalog/packaging-tape.png",
+    href: "/catalog/packaging-tape",
   },
   {
     id: "card-inserts",

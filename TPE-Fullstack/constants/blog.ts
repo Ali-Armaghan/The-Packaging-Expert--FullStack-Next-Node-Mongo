@@ -178,7 +178,7 @@ export const blogPosts: BlogPost[] = [
     title: "Understanding Minimum Order Quantities",
     excerpt:
       "Everything you need to know about MOQs and how to find the right balance for your business size.",
-    image: "/images/catalog/packing-tape.png",
+    image: "/images/catalog/packaging-tape.png",
     category: "business",
     categoryLabel: "Business",
     date: "Apr 5, 2024",
@@ -206,7 +206,7 @@ export const blogPosts: BlogPost[] = [
     category: "events",
     categoryLabel: "Events",
     date: "May 16, 2024",
-    author: "Packing Expert Team",
+    author: "Packaging Expert Team",
   },
   {
     id: "sustainable-packaging-summit",
@@ -242,7 +242,7 @@ export const blogPosts: BlogPost[] = [
     category: "customer-success",
     categoryLabel: "Customer Success",
     date: "May 14, 2024",
-    author: "Packing Expert Team",
+    author: "Packaging Expert Team",
   },
   {
     id: "food-brand-growth",

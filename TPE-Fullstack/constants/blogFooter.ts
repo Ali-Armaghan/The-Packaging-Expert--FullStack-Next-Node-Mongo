@@ -50,7 +50,7 @@ export const blogFooterLinkGroups: BlogFooterLinkGroup[] = [
 export const blogFooterSocialLinks = [
   {
     label: "Instagram",
-    href: "https://instagram.com/packingexpert",
+    href: "https://instagram.com/packagingexpert",
     icon: "instagram" as const,
   },
   {

@@ -125,13 +125,13 @@ export const optionLibraryImages = [
   "/images/catalog/tin-containers.png",
   "/images/catalog/stickers-labels.png",
   "/images/catalog/tissue-paper.png",
-  "/images/catalog/packing-tape.png",
+  "/images/catalog/packaging-tape.png",
 ] as const;
 
 export const optionLibraryFeature = {
   title: "Option Library",
   description:
-    "Want to make a statement with your custom packaging? Browse Packing Expert's ever-growing library of materials, options and packaging features to find how you can make your new custom packaging as impactful as ever.",
+    "Want to make a statement with your custom packaging? Browse Packaging Expert's ever-growing library of materials, options and packaging features to find how you can make your new custom packaging as impactful as ever.",
   href: "/options",
   linkLabel: "Browse all options",
 } as const;

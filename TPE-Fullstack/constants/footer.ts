@@ -53,7 +53,7 @@ export const footerLinkGroups: FooterLinkGroup[] = [
 export const socialLinks = [
   { label: "Facebook", href: "https://facebook.com", icon: "facebook" as const },
   { label: "Twitter", href: "https://twitter.com", icon: "twitter" as const },
-  { label: "Instagram", href: "https://instagram.com/packingexpert", icon: "instagram" as const },
+  { label: "Instagram", href: "https://instagram.com/packagingexpert", icon: "instagram" as const },
   { label: "LinkedIn", href: "https://linkedin.com", icon: "linkedin" as const },
 ] as const;
 

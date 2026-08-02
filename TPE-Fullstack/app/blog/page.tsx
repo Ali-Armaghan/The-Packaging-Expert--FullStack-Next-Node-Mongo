@@ -8,7 +8,7 @@ import {
 export const metadata: Metadata = {
   title: "Blog",
   description:
-    "Packaging insights, design tips, business strategies, and sustainability guides from the Packing Expert team.",
+    "Packaging insights, design tips, business strategies, and sustainability guides from the Packaging Expert team.",
 };
 
 export default function BlogPage() {
