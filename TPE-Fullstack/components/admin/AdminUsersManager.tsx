@@ -356,7 +356,7 @@ export function AdminUsersManager() {
             <Button type="submit" disabled={saving} className="h-10 px-5">
               {saving ? (
                 <>
-                  <AgenticLoader size="sm" tone="onPrimary" label="Creating user" />
+                  <AgenticLoader size="sm" label="Creating user" />
                   Creating...
                 </>
               ) : (

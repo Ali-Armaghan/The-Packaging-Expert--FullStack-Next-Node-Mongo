@@ -5,3 +5,7 @@ export { AdminPlaceholder } from "./AdminPlaceholder";
 export { AdminProviders } from "./AdminProviders";
 export { AdminLoginForm } from "./AdminLoginForm";
 export { AdminUsersManager } from "./AdminUsersManager";
+export { AdminIndustriesManager } from "./AdminIndustriesManager";
+export { RichTextEditor } from "./RichTextEditor";
+export { ImageUploadField } from "./ImageUploadField";
+export { MultiImageUpload } from "./MultiImageUpload";

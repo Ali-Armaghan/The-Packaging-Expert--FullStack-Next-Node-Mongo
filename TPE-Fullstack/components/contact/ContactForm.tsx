@@ -256,7 +256,7 @@ export function ContactForm() {
         >
           {status === "submitting" ? (
             <span className="inline-flex items-center gap-2">
-              <AgenticLoader size="sm" tone="onPrimary" label="Sending message" />
+              <AgenticLoader size="sm" label="Sending message" />
               Sending...
             </span>
           ) : (

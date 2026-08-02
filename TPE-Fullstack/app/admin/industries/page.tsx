@@ -1,10 +1,5 @@
-import { AdminPlaceholder } from "@/components/admin";
+import { AdminIndustriesManager } from "@/components/admin/AdminIndustriesManager";
 
 export default function AdminIndustriesPage() {
-  return (
-    <AdminPlaceholder
-      title="Industries"
-      description="Manage industry verticals linked to packaging solutions."
-    />
-  );
+  return <AdminIndustriesManager />;
 }

@@ -463,6 +463,30 @@ html {
   }
 }
 
+/* TipTap rich text editor */
+.tiptap p.is-editor-empty:first-child::before,
+.ProseMirror p.is-empty:first-child::before {
+  color: var(--muted-foreground);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+
+.ProseMirror ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
