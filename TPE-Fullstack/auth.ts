@@ -28,23 +28,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       authorize: async (credentials) => {
         const parsed = credentialsSchema.safeParse(credentials);
-        if (!parsed.success) return null;
+        if (!parsed.success) {
+          console.error("[auth] Invalid credentials payload");
+          return null;
+        }
+
+        const email = parsed.data.email.toLowerCase();
 
         try {
           await connectToDatabase();
 
           const user = await AdminUser.findOne({
-            email: parsed.data.email.toLowerCase(),
+            email,
             isActive: true,
           }).lean();
 
-          if (!user) return null;
+          if (!user) {
+            console.error(
+              `[auth] No active admin for ${email} in db=${process.env.MONGODB_DB_NAME || "packaging_expert"}`,
+            );
+            return null;
+          }
 
           const valid = await verifyPassword(
             parsed.data.password,
             user.passwordHash,
           );
-          if (!valid) return null;
+          if (!valid) {
+            console.error(`[auth] Bad password for ${email}`);
+            return null;
+          }
 
           // Must be plain JSON-serializable values for Auth.js JWT encryption.
           return {
@@ -55,10 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             permissions: toPlainPermissions(user.permissions),
           };
         } catch (error) {
-          console.error(
-            "[auth] Database connection failed during login:",
-            error,
-          );
+          console.error("[auth] Login authorize failed:", error);
           return null;
         }
       },
