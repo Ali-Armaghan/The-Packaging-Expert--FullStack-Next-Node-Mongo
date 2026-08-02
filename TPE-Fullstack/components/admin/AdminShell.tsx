@@ -1,12 +1,19 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { LogOutIcon, MenuIcon } from "lucide-react";
+import { LogOutIcon } from "lucide-react";
 import { AdminSidebar } from "./AdminSidebar";
+import { PageLoader } from "@/components/ui/AgenticLoader";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 type AdminShellProps = {
   children: ReactNode;
@@ -26,80 +33,60 @@ function getPageTitle(pathname: string) {
 
 export function AdminShell({ children, title }: AdminShellProps) {
   const pathname = usePathname();
-  const { data: session } = useSession();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { data: session, status } = useSession();
   const pageTitle = title ?? getPageTitle(pathname);
   const isLoginPage = pathname.startsWith("/admin/login");
-
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    document.body.style.overflow = sidebarOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [sidebarOpen]);
 
   if (isLoginPage) {
     return <>{children}</>;
   }
 
+  if (status === "loading") {
+    return <PageLoader overlay label="Loading admin" />;
+  }
+
   return (
-    <div className="flex min-h-screen bg-muted/40 text-foreground">
-      <AdminSidebar
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        user={{
-          name: session?.user?.name ?? "Admin",
-          role: session?.user?.role ?? "admin",
-          permissions: session?.user?.permissions ?? [],
-        }}
-      />
+    <TooltipProvider>
+      <SidebarProvider>
+        <AdminSidebar
+          user={{
+            name: session?.user?.name ?? "Admin",
+            role: session?.user?.role ?? "admin",
+            permissions: session?.user?.permissions ?? [],
+          }}
+        />
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 border-b border-border/80 bg-background/90 backdrop-blur-md">
-          <div className="flex h-14 items-center gap-3 px-4 lg:h-16 lg:px-6">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="lg:hidden"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Open sidebar"
-              aria-expanded={sidebarOpen}
-            >
-              <MenuIcon />
-            </Button>
-
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold tracking-tight sm:text-base">
-                {pageTitle}
-              </p>
-              <p className="hidden text-xs text-muted-foreground sm:block">
-                Packaging Expert admin panel
-              </p>
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium tracking-tight">
+                  {pageTitle}
+                </p>
+              </div>
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={() => signOut({ callbackUrl: "/admin/login" })}
-            >
-              <LogOutIcon className="size-3.5" />
-              <span className="hidden sm:inline">Sign out</span>
-            </Button>
-          </div>
-          <Separator />
-        </header>
+            <div className="ml-auto">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => signOut({ callbackUrl: "/admin/login" })}
+              >
+                <LogOutIcon className="size-3.5" />
+                <span className="hidden sm:inline">Sign out</span>
+              </Button>
+            </div>
+          </header>
 
-        <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
-          {children}
-        </main>
-      </div>
-    </div>
+          <main className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+            {children}
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }

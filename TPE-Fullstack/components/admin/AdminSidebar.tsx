@@ -1,23 +1,58 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import { XIcon } from "lucide-react";
-import { type AdminNavItem } from "@/constants/adminNav";
+import {
+  ChevronsUpDownIcon,
+  ChevronRightIcon,
+  GalleryVerticalEndIcon,
+  LogOutIcon,
+} from "lucide-react";
+import { signOut } from "next-auth/react";
 import {
   filterNavByPermissions,
   isSuperAdmin,
 } from "@/lib/auth/permissions";
+import {
+  getAdminNavSectionLabel,
+  type AdminNavItem,
+} from "@/constants/adminNav";
 import { cn } from "@/lib/utils";
 import { AdminIcon } from "./AdminIcon";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarRail,
+  useSidebar,
+} from "@/components/ui/sidebar";
 
 type AdminSidebarProps = {
-  open: boolean;
-  onClose: () => void;
   user: {
     name: string;
     role: string;
@@ -25,9 +60,18 @@ type AdminSidebarProps = {
   };
 };
 
-function isActivePath(pathname: string, href: string) {
+const menuButtonClass =
+  "transition-colors duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground";
+
+function isActivePath(pathname: string, href?: string) {
+  if (!href) return false;
   if (href === "/admin") return pathname === "/admin";
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function hasActiveChild(pathname: string, item: AdminNavItem): boolean {
+  if (isActivePath(pathname, item.href)) return true;
+  return item.items?.some((child) => hasActiveChild(pathname, child)) ?? false;
 }
 
 function getInitials(name: string) {
@@ -41,145 +85,307 @@ function getInitials(name: string) {
   );
 }
 
-function NavLink({
+function findActiveMenuId(pathname: string, items: AdminNavItem[]) {
+  for (const item of items) {
+    if (item.items?.length && hasActiveChild(pathname, item)) {
+      return item.id;
+    }
+  }
+  return null;
+}
+
+function NavLeaf({
   item,
-  pathname,
   onNavigate,
 }: {
   item: AdminNavItem;
-  pathname: string;
   onNavigate?: () => void;
 }) {
+  const pathname = usePathname();
   const active = isActivePath(pathname, item.href);
 
+  if (!item.href) return null;
+
   return (
-    <Link
-      href={item.href}
-      onClick={onNavigate}
-      className={cn(
-        "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-        active
-          ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm ring-1 ring-sidebar-border"
-          : "text-muted-foreground hover:bg-sidebar-accent/70 hover:text-foreground",
-      )}
-      aria-current={active ? "page" : undefined}
-    >
-      <AdminIcon
-        name={item.icon}
-        className={cn(
-          "h-[18px] w-[18px] shrink-0",
-          active
-            ? "text-primary"
-            : "text-muted-foreground group-hover:text-foreground",
-        )}
-      />
-      <span>{item.label}</span>
-    </Link>
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        render={<Link href={item.href} />}
+        isActive={active}
+        tooltip={item.label}
+        className={menuButtonClass}
+        onClick={onNavigate}
+      >
+        <AdminIcon name={item.icon} />
+        <span>{item.label}</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   );
 }
 
-export function AdminSidebar({ open, onClose, user }: AdminSidebarProps) {
+function NavCollapsible({
+  item,
+  open,
+  onOpenChange,
+  onNavigate,
+}: {
+  item: AdminNavItem;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
-  const sections = filterNavByPermissions({
-    role: user.role,
-    permissions: user.permissions,
-  });
+  const activeBranch = hasActiveChild(pathname, item);
+  const children = item.items ?? [];
 
   return (
-    <>
-      <div
-        className={cn(
-          "fixed inset-0 z-40 bg-navy/40 backdrop-blur-[2px] transition-opacity lg:hidden",
-          open
-            ? "pointer-events-auto opacity-100"
-            : "pointer-events-none opacity-0",
-        )}
-        onClick={onClose}
-        aria-hidden={!open}
-      />
+    <Collapsible
+      open={open}
+      onOpenChange={onOpenChange}
+      className="group/collapsible"
+    >
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          render={<CollapsibleTrigger />}
+          tooltip={item.label}
+          isActive={activeBranch}
+          className={menuButtonClass}
+        >
+          <AdminIcon name={item.icon} />
+          <span>{item.label}</span>
+          <ChevronRightIcon
+            className={cn(
+              "ml-auto size-4 shrink-0 transition-transform duration-200",
+              open && "rotate-90",
+            )}
+          />
+        </SidebarMenuButton>
 
-      <aside
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[17.5rem] flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-transform duration-300 ease-out lg:static lg:z-auto lg:translate-x-0",
-          open ? "translate-x-0" : "-translate-x-full",
-        )}
-        aria-label="Admin sidebar"
-      >
-        <div className="flex h-14 shrink-0 items-center justify-between px-4 lg:h-16">
-          <Link
-            href={sections[0]?.items[0]?.href ?? "/admin"}
-            onClick={onClose}
-            className="flex items-center gap-2.5 font-bold tracking-tight"
-          >
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-xs text-primary-foreground">
-              PE
-            </span>
-            <span className="text-sm">
-              Packaging <span className="text-primary">Admin</span>
-            </span>
-          </Link>
+        <CollapsibleContent className="overflow-hidden">
+          <SidebarMenuSub className="my-1 gap-0.5 py-0">
+            {children.map((child) => {
+              if (!child.href) return null;
+              const active = isActivePath(pathname, child.href);
+              return (
+                <SidebarMenuSubItem key={child.id}>
+                  <SidebarMenuSubButton
+                    render={<Link href={child.href} />}
+                    isActive={active}
+                    className="h-8 transition-colors duration-150"
+                    onClick={onNavigate}
+                  >
+                    <span>{child.label}</span>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              );
+            })}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </SidebarMenuItem>
+    </Collapsible>
+  );
+}
 
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            onClick={onClose}
-            className="lg:hidden"
-            aria-label="Close sidebar"
-          >
-            <XIcon />
-          </Button>
-        </div>
+export function AdminSidebar({ user }: AdminSidebarProps) {
+  const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
 
-        <Separator />
+  const sections = useMemo(
+    () =>
+      filterNavByPermissions({
+        role: user.role,
+        permissions: user.permissions,
+      }),
+    [user.permissions, user.role],
+  );
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          {sections.length === 0 ? (
-            <p className="px-3 text-sm text-muted-foreground">
-              No sidebar access assigned.
-            </p>
-          ) : (
-            sections.map((section, index) => (
-              <div key={section.id} className={cn(index > 0 && "mt-6")}>
-                {section.title && (
-                  <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/80">
-                    {section.title}
-                  </p>
-                )}
-                <ul className="space-y-0.5">
-                  {section.items.map((item) => (
-                    <li key={item.id}>
-                      <NavLink
+  const platformItems = sections[0]?.items ?? [];
+  const activeMenuId = useMemo(
+    () => findActiveMenuId(pathname, platformItems),
+    [pathname, platformItems],
+  );
+
+  const [openMenuId, setOpenMenuId] = useState<string | null>(activeMenuId);
+
+  useEffect(() => {
+    if (activeMenuId) setOpenMenuId(activeMenuId);
+  }, [activeMenuId]);
+
+  const roleLabel = isSuperAdmin(user.role) ? "Superadmin" : "Admin";
+
+  const closeMobile = () => {
+    if (isMobile) setOpenMobile(false);
+  };
+
+  return (
+    <Sidebar collapsible="icon" variant="inset">
+      <SidebarHeader className="pb-0">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <SidebarMenuButton
+                    size="lg"
+                    className={cn(
+                      menuButtonClass,
+                      "data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground",
+                    )}
+                  />
+                }
+              >
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  <GalleryVerticalEndIcon className="size-4" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">Packaging Expert</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    Enterprise
+                  </span>
+                </div>
+                <ChevronsUpDownIcon className="ml-auto size-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-(--anchor-width) min-w-56 rounded-lg"
+                align="start"
+                side="bottom"
+                sideOffset={4}
+              >
+                <DropdownMenuLabel className="text-muted-foreground">
+                  Workspace
+                </DropdownMenuLabel>
+                <DropdownMenuItem className="gap-2 p-2">
+                  <div className="flex size-6 items-center justify-center rounded-md border bg-background">
+                    <GalleryVerticalEndIcon className="size-3.5" />
+                  </div>
+                  Packaging Expert
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="gap-2 p-2"
+                  onClick={() => signOut({ callbackUrl: "/admin/login" })}
+                >
+                  <LogOutIcon className="size-4" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+
+      <SidebarContent className="gap-0">
+        {sections.length === 0 ? (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <p className="px-2 py-2 text-sm text-muted-foreground">
+                No sidebar access assigned.
+              </p>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : (
+          sections.map((section) => (
+            <SidebarGroup key={section.id} className="py-2">
+              <SidebarGroupLabel>
+                {getAdminNavSectionLabel(section.id, section.title)}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu className="gap-1">
+                  {section.items.map((item) => {
+                    if (item.items?.length) {
+                      return (
+                        <NavCollapsible
+                          key={item.id}
+                          item={item}
+                          open={openMenuId === item.id}
+                          onOpenChange={(nextOpen) => {
+                            setOpenMenuId(nextOpen ? item.id : null);
+                          }}
+                          onNavigate={closeMobile}
+                        />
+                      );
+                    }
+
+                    return (
+                      <NavLeaf
+                        key={item.id}
                         item={item}
-                        pathname={pathname}
-                        onNavigate={onClose}
+                        onNavigate={() => {
+                          setOpenMenuId(null);
+                          closeMobile();
+                        }}
                       />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))
-          )}
-        </nav>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))
+        )}
+      </SidebarContent>
 
-        <Separator />
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <SidebarMenuButton
+                    size="lg"
+                    className={cn(
+                      menuButtonClass,
+                      "data-popup-open:bg-sidebar-accent data-popup-open:text-sidebar-accent-foreground",
+                    )}
+                  />
+                }
+              >
+                <Avatar size="default">
+                  <AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                    {getInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">{user.name}</span>
+                  <span className="truncate text-xs capitalize text-muted-foreground">
+                    {roleLabel}
+                  </span>
+                </div>
+                <ChevronsUpDownIcon className="ml-auto size-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-(--anchor-width) min-w-56 rounded-lg"
+                side="bottom"
+                align="end"
+                sideOffset={4}
+              >
+                <DropdownMenuLabel className="p-0 font-normal">
+                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                    <Avatar size="default">
+                      <AvatarFallback className="rounded-lg">
+                        {getInitials(user.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-medium">{user.name}</span>
+                      <span className="truncate text-xs capitalize text-muted-foreground">
+                        {roleLabel}
+                      </span>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => signOut({ callbackUrl: "/admin/login" })}
+                >
+                  <LogOutIcon />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
 
-        <div className="shrink-0 p-3">
-          <div className="flex items-center gap-3 rounded-xl bg-secondary/80 px-3 py-2.5">
-            <Avatar size="default">
-              <AvatarFallback className="bg-background font-semibold text-foreground">
-                {getInitials(user.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">{user.name}</p>
-              <Badge variant="secondary" className="mt-1 capitalize">
-                {isSuperAdmin(user.role) ? "Superadmin" : user.role}
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </aside>
-    </>
+      <SidebarRail />
+    </Sidebar>
   );
 }

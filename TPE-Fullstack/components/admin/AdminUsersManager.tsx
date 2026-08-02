@@ -3,7 +3,11 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { useSession } from "next-auth/react";
 import { Trash2Icon, UserPlusIcon } from "lucide-react";
-import { adminNavSections } from "@/constants/adminNav";
+import {
+  adminNavSections,
+  flattenAdminNavItems,
+  getAdminNavSectionLabel,
+} from "@/constants/adminNav";
 import { isSuperAdmin } from "@/lib/auth/permissions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AgenticLoader } from "@/components/ui/AgenticLoader";
@@ -52,7 +56,11 @@ export function AdminUsersManager() {
   const actorIsSuper = isSuperAdmin(session?.user?.role);
   const grantablePermissions = useMemo(() => {
     if (actorIsSuper) {
-      return new Set(adminNavSections.flatMap((s) => s.items.map((i) => i.id)));
+      return new Set(
+        adminNavSections.flatMap((s) =>
+          flattenAdminNavItems(s.items).map((i) => i.id),
+        ),
+      );
     }
     return new Set(session?.user?.permissions ?? []);
   }, [actorIsSuper, session?.user?.permissions]);
@@ -275,7 +283,8 @@ export function AdminUsersManager() {
                 </div>
 
                 {adminNavSections.map((section) => {
-                  const itemIds = section.items.map((item) => item.id);
+                  const leaves = flattenAdminNavItems(section.items);
+                  const itemIds = leaves.map((item) => item.id);
                   const grantableIds = itemIds.filter((id) =>
                     grantablePermissions.has(id),
                   );
@@ -292,12 +301,7 @@ export function AdminUsersManager() {
                     >
                       <div className="mb-3 flex items-center justify-between gap-3">
                         <p className="text-sm font-semibold">
-                          {section.title ??
-                            (section.id === "main"
-                              ? "Main"
-                              : section.id === "admin"
-                                ? "Admin"
-                                : section.id)}
+                          {getAdminNavSectionLabel(section.id, section.title)}
                         </p>
                         <Button
                           type="button"
@@ -309,7 +313,7 @@ export function AdminUsersManager() {
                         </Button>
                       </div>
                       <div className="grid gap-2 sm:grid-cols-2">
-                        {section.items.map((item) => {
+                        {leaves.map((item) => {
                           const canGrant = grantablePermissions.has(item.id);
                           const checked = permissions.includes(item.id);
                           return (
