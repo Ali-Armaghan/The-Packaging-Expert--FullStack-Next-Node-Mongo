@@ -1,7 +1,22 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "packaging-expert-media.s3.us-east-1.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "packaging-expert-media.s3.amazonaws.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

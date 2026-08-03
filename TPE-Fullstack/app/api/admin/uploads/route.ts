@@ -1,5 +1,5 @@
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
-import { requirePermission } from "@/lib/auth/session";
+import { requireAnyAdminPermission } from "@/lib/auth/session";
 import {
   ALLOWED_IMAGE_TYPES,
   MAX_UPLOAD_BYTES,
@@ -8,7 +8,7 @@ import {
 
 export async function POST(request: Request) {
   try {
-    const { error, session } = await requirePermission("industries");
+    const { error, session } = await requireAnyAdminPermission();
     if (error || !session) return error!;
 
     const formData = await request.formData();
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     const folder =
       typeof folderRaw === "string" && folderRaw.trim()
         ? folderRaw.trim()
-        : "industries";
+        : "uploads";
 
     if (!(file instanceof File)) {
       return apiError("No file provided", 400);

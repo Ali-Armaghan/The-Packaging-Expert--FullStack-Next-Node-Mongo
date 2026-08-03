@@ -2,18 +2,24 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import {
   getCategorySectionTitle,
-  getPostsByCategory,
   type BlogCategory,
+  type BlogPost,
 } from "@/constants/blog";
 import { BlogPostCard } from "./BlogPostCard";
 
 type BlogCategorySectionProps = {
   category: BlogCategory;
+  posts: BlogPost[];
 };
 
-export function BlogCategorySection({ category }: BlogCategorySectionProps) {
-  const posts = getPostsByCategory(category).slice(0, 3);
+export function BlogCategorySection({
+  category,
+  posts,
+}: BlogCategorySectionProps) {
   const title = getCategorySectionTitle(category);
+  const visible = posts.slice(0, 3);
+
+  if (visible.length === 0) return null;
 
   return (
     <section
@@ -34,7 +40,7 @@ export function BlogCategorySection({ category }: BlogCategorySectionProps) {
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
+          {visible.map((post) => (
             <BlogPostCard key={post.id} post={post} />
           ))}
         </div>

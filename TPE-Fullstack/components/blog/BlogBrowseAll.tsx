@@ -1,10 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
-import { getBrowseAllPosts } from "@/constants/blog";
+import type { BlogPost } from "@/constants/blog";
 
-export function BlogBrowseAll() {
-  const posts = getBrowseAllPosts();
+type BlogBrowseAllProps = {
+  posts: BlogPost[];
+};
+
+export function BlogBrowseAll({ posts }: BlogBrowseAllProps) {
+  if (posts.length === 0) return null;
 
   return (
     <section className="bg-white py-10 sm:py-12">

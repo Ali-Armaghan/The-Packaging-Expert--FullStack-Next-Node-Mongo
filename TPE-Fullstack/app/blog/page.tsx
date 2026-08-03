@@ -4,6 +4,15 @@ import {
   BlogCategorySection,
   BlogFeatured,
 } from "@/components/blog";
+import {
+  getBrowseAllPublicPosts,
+  getFeaturedPublicPost,
+  getFeaturedSidebarPublicPosts,
+  getPublicPostsByCategory,
+} from "@/lib/blog/queries";
+import type { BlogCategory } from "@/constants/blog";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -11,16 +20,34 @@ export const metadata: Metadata = {
     "Packaging insights, design tips, business strategies, and sustainability guides from the Packaging Expert team.",
 };
 
-export default function BlogPage() {
+const categories: BlogCategory[] = [
+  "marketing",
+  "business",
+  "events",
+  "customer-success",
+  "sustainability",
+];
+
+export default async function BlogPage() {
+  const [featured, sidebarPosts, browseAll, ...categoryPosts] =
+    await Promise.all([
+      getFeaturedPublicPost(),
+      getFeaturedSidebarPublicPosts(),
+      getBrowseAllPublicPosts(),
+      ...categories.map((category) => getPublicPostsByCategory(category)),
+    ]);
+
   return (
     <>
-      <BlogFeatured />
-      <BlogCategorySection category="marketing" />
-      <BlogCategorySection category="business" />
-      <BlogCategorySection category="events" />
-      <BlogCategorySection category="customer-success" />
-      <BlogCategorySection category="sustainability" />
-      <BlogBrowseAll />
+      <BlogFeatured featured={featured} sidebarPosts={sidebarPosts} />
+      {categories.map((category, index) => (
+        <BlogCategorySection
+          key={category}
+          category={category}
+          posts={categoryPosts[index] ?? []}
+        />
+      ))}
+      <BlogBrowseAll posts={browseAll} />
     </>
   );
 }

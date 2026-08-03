@@ -1,10 +1,5 @@
-import { AdminPlaceholder } from "@/components/admin";
+import { AdminBlogManager } from "@/components/admin/AdminBlogManager";
 
 export default function AdminBlogPage() {
-  return (
-    <AdminPlaceholder
-      title="Blog"
-      description="Create and manage blog posts for the marketing site."
-    />
-  );
+  return <AdminBlogManager />;
 }
