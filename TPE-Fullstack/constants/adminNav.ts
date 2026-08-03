@@ -4,6 +4,7 @@ export type AdminNavIcon =
   | "categories"
   | "industries"
   | "blog"
+  | "menu"
   | "tags"
   | "authors"
   | "media"
@@ -99,6 +100,12 @@ export const adminNavSections: AdminNavSection[] = [
         icon: "blog",
         items: [
           { id: "blog", label: "Posts", href: "/admin/blog", icon: "blog" },
+          {
+            id: "blog-menu",
+            label: "Blog Menu",
+            href: "/admin/blog/menu",
+            icon: "menu",
+          },
           { id: "tags", label: "Tags", href: "/admin/tags", icon: "tags" },
           {
             id: "authors",

@@ -67,6 +67,12 @@ export function AdminIcon({ name, className }: AdminIconProps) {
           <path d="M14 2v6h6M8 13h8M8 17h6" />
         </IconShell>
       );
+    case "menu":
+      return (
+        <IconShell className={className}>
+          <path d="M4 6h16M4 12h16M4 18h10" />
+        </IconShell>
+      );
     case "tags":
       return (
         <IconShell className={className}>

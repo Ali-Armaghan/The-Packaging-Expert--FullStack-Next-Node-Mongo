@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
 import {
-  blogHeaderNavItems,
+  blogHeaderNavItems as fallbackNavItems,
   blogHeaderSocialLinks,
   type BlogHeaderNavItem,
 } from "@/constants/blogHeader";
@@ -107,7 +107,7 @@ function BlogNavDropdown({ item }: { item: BlogHeaderNavItem }) {
       >
         {item.children.map((child) => (
           <Link
-            key={child.href}
+            key={`${child.label}-${child.href}`}
             href={child.href}
             className="block px-4 py-2 text-sm text-foreground transition-colors hover:bg-muted hover:text-[#1b4332]"
           >
@@ -159,7 +159,14 @@ function BlogSearchBar() {
   );
 }
 
-export function BlogHeader() {
+type BlogHeaderProps = {
+  navItems?: BlogHeaderNavItem[];
+};
+
+export function BlogHeader({ navItems }: BlogHeaderProps) {
+  const items =
+    navItems && navItems.length > 0 ? navItems : fallbackNavItems;
+
   return (
     <header id="site-header" className="relative z-40 w-full bg-white">
       <Container>
@@ -202,8 +209,8 @@ export function BlogHeader() {
             aria-label="Blog navigation"
             className="hidden flex-wrap items-center gap-x-6 gap-y-2 lg:flex lg:flex-1 lg:justify-center"
           >
-            {blogHeaderNavItems.map((item) => (
-              <BlogNavDropdown key={item.label} item={item} />
+            {items.map((item) => (
+              <BlogNavDropdown key={`${item.label}-${item.href}`} item={item} />
             ))}
           </nav>
 
