@@ -33,6 +33,7 @@ import {
 import { ImageUploadField } from "./ImageUploadField";
 import { MultiImageUpload } from "./MultiImageUpload";
 import { RichTextEditor } from "./RichTextEditor";
+import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog";
 import { slugify } from "@/lib/slug";
 
 type FaqItem = { question: string; answer: string };
@@ -82,6 +83,11 @@ export function AdminIndustriesManager() {
   const [form, setForm] = useState(emptyForm());
   const [typeInput, setTypeInput] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -183,12 +189,13 @@ export function AdminIndustriesManager() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this industry?")) return;
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`/api/admin/industries/${id}`, {
+      const res = await fetch(`/api/admin/industries/${deleteTarget.id}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -196,10 +203,13 @@ export function AdminIndustriesManager() {
         throw new Error(data.error || "Failed to delete industry");
       }
       setSuccess("Industry deleted.");
-      if (editingId === id) resetForm();
+      if (editingId === deleteTarget.id) resetForm();
+      setDeleteTarget(null);
       await loadItems();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete industry");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -728,7 +738,10 @@ export function AdminIndustriesManager() {
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => void handleDelete(item.id)}
+                          onClick={() =>
+                            setDeleteTarget({ id: item.id, name: item.name })
+                          }
+                          aria-label={`Delete ${item.name}`}
                         >
                           <Trash2Icon />
                         </Button>
@@ -741,6 +754,17 @@ export function AdminIndustriesManager() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDeleteDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open && !deleting) setDeleteTarget(null);
+        }}
+        title="Delete industry?"
+        itemLabel={deleteTarget?.name}
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

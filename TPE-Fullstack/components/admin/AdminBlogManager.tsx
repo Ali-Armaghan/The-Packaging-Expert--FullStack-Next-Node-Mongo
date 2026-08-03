@@ -38,6 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog";
 
 type ListResponse = {
   items: SerializedBlogPost[];
@@ -59,6 +60,11 @@ export function AdminBlogManager() {
   const [category, setCategory] = useState("all");
   const [searchInput, setSearchInput] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -89,23 +95,28 @@ export function AdminBlogManager() {
     void load();
   }, [load]);
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this blog post permanently?")) return;
-    setBusyId(id);
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setBusyId(deleteTarget.id);
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`/api/admin/blog/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/blog/${deleteTarget.id}`, {
+        method: "DELETE",
+      });
       const json = await res.json();
       if (!res.ok || !json.success) {
         throw new Error(json.error || "Failed to delete");
       }
       setSuccess("Post deleted.");
+      setDeleteTarget(null);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete");
     } finally {
       setBusyId(null);
+      setDeleting(false);
     }
   };
 
@@ -462,7 +473,12 @@ export function AdminBlogManager() {
                             variant="ghost"
                             size="icon-sm"
                             disabled={busyId === post.id}
-                            onClick={() => void handleDelete(post.id)}
+                            onClick={() =>
+                              setDeleteTarget({
+                                id: post.id,
+                                title: post.title,
+                              })
+                            }
                             aria-label="Delete"
                           >
                             <Trash2Icon />
@@ -506,6 +522,17 @@ export function AdminBlogManager() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDeleteDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open && !deleting) setDeleteTarget(null);
+        }}
+        title="Delete blog post?"
+        itemLabel={deleteTarget?.title}
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

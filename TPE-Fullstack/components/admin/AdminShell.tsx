@@ -56,13 +56,16 @@ export function AdminShell({ children, title }: AdminShellProps) {
           }}
         />
 
-        <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+        <SidebarInset className="bg-[#fbfcfb]">
+          <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/50 bg-background/80 px-4 backdrop-blur-sm transition-[width,height] duration-200 ease-out group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 h-4 bg-border/60"
+              />
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium tracking-tight">
+                <p className="truncate text-sm font-medium tracking-tight text-foreground/90">
                   {pageTitle}
                 </p>
               </div>
@@ -71,9 +74,9 @@ export function AdminShell({ children, title }: AdminShellProps) {
             <div className="ml-auto">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="gap-1.5"
+                className="gap-1.5 text-muted-foreground hover:text-foreground"
                 onClick={() => signOut({ callbackUrl: "/admin/login" })}
               >
                 <LogOutIcon className="size-3.5" />
@@ -82,7 +85,7 @@ export function AdminShell({ children, title }: AdminShellProps) {
             </div>
           </header>
 
-          <main className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+          <main className="flex flex-1 flex-col gap-4 p-4 md:gap-5 md:p-6">
             {children}
           </main>
         </SidebarInset>

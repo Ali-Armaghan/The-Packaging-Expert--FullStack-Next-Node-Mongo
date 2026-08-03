@@ -2,6 +2,11 @@ import { connectToDatabase } from "@/lib/db/mongoose";
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
 import { requirePermission } from "@/lib/auth/session";
 import { serializeBlogPost, getCategoryLabel } from "@/lib/blog/serialize";
+import {
+  collectBlogMediaUrls,
+  deleteAllMedia,
+  deleteRemovedMedia,
+} from "@/lib/media/cleanup";
 import { slugify } from "@/lib/slug";
 import { updateBlogPostSchema } from "@/lib/validations/blogPost";
 import { BlogPost } from "@/models/BlogPost";
@@ -47,6 +52,8 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     const post = await BlogPost.findById(id);
     if (!post) return apiError("Post not found", 404);
+
+    const previousUrls = collectBlogMediaUrls(post.toObject());
 
     if (payload.title !== undefined) post.title = payload.title;
     if (payload.excerpt !== undefined) post.excerpt = payload.excerpt;
@@ -128,6 +135,10 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     await post.save();
+
+    const nextUrls = collectBlogMediaUrls(post.toObject());
+    await deleteRemovedMedia(previousUrls, nextUrls);
+
     return apiSuccess(serializeBlogPost(post.toObject()));
   } catch (error) {
     if (error instanceof SyntaxError) {
@@ -145,8 +156,12 @@ export async function DELETE(_request: Request, context: RouteContext) {
     const { id } = await context.params;
     await connectToDatabase();
 
-    const post = await BlogPost.findByIdAndDelete(id);
+    const post = await BlogPost.findById(id);
     if (!post) return apiError("Post not found", 404);
+
+    const mediaUrls = collectBlogMediaUrls(post.toObject());
+    await BlogPost.findByIdAndDelete(id);
+    await deleteAllMedia(mediaUrls);
 
     return apiSuccess({ id });
   } catch (error) {

@@ -3,8 +3,10 @@ import { requireAnyAdminPermission } from "@/lib/auth/session";
 import {
   ALLOWED_IMAGE_TYPES,
   MAX_UPLOAD_BYTES,
+  deleteS3Urls,
   uploadToS3,
 } from "@/lib/s3";
+import { z } from "zod";
 
 export async function POST(request: Request) {
   try {
@@ -43,6 +45,29 @@ export async function POST(request: Request) {
 
     return apiSuccess(uploaded, 201);
   } catch (error) {
+    return apiFromUnknownError(error);
+  }
+}
+
+const deleteBodySchema = z.object({
+  urls: z.array(z.string().trim().min(1)).min(1).max(50),
+});
+
+/** Delete one or more uploaded media objects from S3. */
+export async function DELETE(request: Request) {
+  try {
+    const { error, session } = await requireAnyAdminPermission();
+    if (error || !session) return error!;
+
+    const body = await request.json();
+    const payload = deleteBodySchema.parse(body);
+    const result = await deleteS3Urls(payload.urls);
+
+    return apiSuccess(result);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      return apiError("Invalid JSON body", 400);
+    }
     return apiFromUnknownError(error);
   }
 }

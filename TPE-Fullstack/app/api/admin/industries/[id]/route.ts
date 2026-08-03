@@ -1,6 +1,11 @@
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
 import { requirePermission } from "@/lib/auth/session";
+import {
+  collectIndustryMediaUrls,
+  deleteAllMedia,
+  deleteRemovedMedia,
+} from "@/lib/media/cleanup";
 import { slugify } from "@/lib/slug";
 import { updateIndustrySchema } from "@/lib/validations/industry";
 import { Industry } from "@/models/Industry";
@@ -82,6 +87,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     const industry = await Industry.findById(id);
     if (!industry) return apiError("Industry not found", 404);
 
+    const previousUrls = collectIndustryMediaUrls(industry.toObject());
+
     if (payload.name !== undefined) industry.name = payload.name;
     if (payload.icon !== undefined) industry.icon = payload.icon;
     if (payload.pageTitle !== undefined) industry.pageTitle = payload.pageTitle;
@@ -119,6 +126,10 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     await industry.save();
+
+    const nextUrls = collectIndustryMediaUrls(industry.toObject());
+    await deleteRemovedMedia(previousUrls, nextUrls);
+
     return apiSuccess(serializeIndustry(industry.toObject()));
   } catch (error) {
     if (error instanceof SyntaxError) {
@@ -136,8 +147,12 @@ export async function DELETE(_request: Request, context: RouteContext) {
     const { id } = await context.params;
     await connectToDatabase();
 
-    const industry = await Industry.findByIdAndDelete(id);
+    const industry = await Industry.findById(id);
     if (!industry) return apiError("Industry not found", 404);
+
+    const mediaUrls = collectIndustryMediaUrls(industry.toObject());
+    await Industry.findByIdAndDelete(id);
+    await deleteAllMedia(mediaUrls);
 
     return apiSuccess({ id });
   } catch (error) {

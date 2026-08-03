@@ -33,6 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog";
 
 type ChildForm = {
   label: string;
@@ -67,6 +68,11 @@ export function AdminBlogMenuManager() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm());
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    label: string;
+  } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -173,15 +179,14 @@ export function AdminBlogMenuManager() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this menu item and its dropdown links?")) {
-      return;
-    }
-    setBusyId(id);
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setBusyId(deleteTarget.id);
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`/api/admin/blog-menu/${id}`, {
+      const res = await fetch(`/api/admin/blog-menu/${deleteTarget.id}`, {
         method: "DELETE",
       });
       const json = await res.json();
@@ -189,12 +194,14 @@ export function AdminBlogMenuManager() {
         throw new Error(json.error || "Failed to delete");
       }
       setSuccess("Menu item deleted.");
-      if (editingId === id) resetForm();
+      if (editingId === deleteTarget.id) resetForm();
+      setDeleteTarget(null);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete");
     } finally {
       setBusyId(null);
+      setDeleting(false);
     }
   };
 
@@ -610,7 +617,12 @@ export function AdminBlogMenuManager() {
                           variant="ghost"
                           size="icon-sm"
                           disabled={busyId === item.id}
-                          onClick={() => void handleDelete(item.id)}
+                          onClick={() =>
+                            setDeleteTarget({
+                              id: item.id,
+                              label: item.label,
+                            })
+                          }
                           aria-label="Delete"
                         >
                           <Trash2Icon />
@@ -624,6 +636,21 @@ export function AdminBlogMenuManager() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDeleteDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open && !deleting) setDeleteTarget(null);
+        }}
+        title="Delete menu item?"
+        description={
+          deleteTarget
+            ? `“${deleteTarget.label}” and its dropdown links will be permanently deleted. This cannot be undone.`
+            : undefined
+        }
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

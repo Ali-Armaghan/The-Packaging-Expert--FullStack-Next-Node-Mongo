@@ -40,6 +40,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog";
 
 type AdminUserRow = {
   id: string;
@@ -76,6 +77,12 @@ export function AdminUsersManager() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"admin" | "superadmin">("admin");
   const [permissions, setPermissions] = useState<string[]>([]);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    name: string;
+    email: string;
+  } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -161,20 +168,26 @@ export function AdminUsersManager() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this user?")) return;
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/users/${deleteTarget.id}`, {
+        method: "DELETE",
+      });
       const data = await res.json();
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Failed to delete user");
       }
       setSuccess("User deleted");
+      setDeleteTarget(null);
       await loadUsers();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete user");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -416,7 +429,13 @@ export function AdminUsersManager() {
                         variant="ghost"
                         size="sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => void handleDelete(user.id)}
+                        onClick={() =>
+                          setDeleteTarget({
+                            id: user.id,
+                            name: user.name,
+                            email: user.email,
+                          })
+                        }
                       >
                         <Trash2Icon className="size-3.5" />
                         Delete
@@ -429,6 +448,21 @@ export function AdminUsersManager() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDeleteDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open && !deleting) setDeleteTarget(null);
+        }}
+        title="Delete user?"
+        description={
+          deleteTarget
+            ? `“${deleteTarget.name}” (${deleteTarget.email}) will lose admin access permanently. This cannot be undone.`
+            : undefined
+        }
+        loading={deleting}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

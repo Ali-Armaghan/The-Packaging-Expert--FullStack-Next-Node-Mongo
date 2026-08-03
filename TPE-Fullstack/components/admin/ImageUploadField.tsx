@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { ImagePlusIcon, Loader2Icon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { deleteUploadedMedia } from "@/lib/media/clientDelete";
 import { cn } from "@/lib/utils";
 
 type ImageUploadFieldProps = {
@@ -29,6 +30,7 @@ export function ImageUploadField({
   const handleUpload = async (file: File) => {
     setUploading(true);
     setError(null);
+    const previousUrl = value?.trim() || "";
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -49,11 +51,20 @@ export function ImageUploadField({
       }
 
       onChange(data.data.url);
+      if (previousUrl && previousUrl !== data.data.url) {
+        void deleteUploadedMedia(previousUrl);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleRemove = () => {
+    const previousUrl = value?.trim() || "";
+    onChange("");
+    if (previousUrl) void deleteUploadedMedia(previousUrl);
   };
 
   return (
@@ -84,7 +95,7 @@ export function ImageUploadField({
             size="icon-xs"
             variant="secondary"
             className="absolute top-1.5 right-1.5"
-            onClick={() => onChange("")}
+            onClick={handleRemove}
             aria-label="Remove image"
           >
             <XIcon />

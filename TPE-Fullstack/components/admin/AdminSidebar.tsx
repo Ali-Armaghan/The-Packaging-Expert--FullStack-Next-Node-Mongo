@@ -61,7 +61,7 @@ type AdminSidebarProps = {
 };
 
 const menuButtonClass =
-  "transition-colors duration-150 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground";
+  "rounded-lg transition-[color,background-color] duration-200 ease-out hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground";
 
 function isActivePath(pathname: string, href?: string) {
   if (!href) return false;
@@ -154,14 +154,14 @@ function NavCollapsible({
           <span>{item.label}</span>
           <ChevronRightIcon
             className={cn(
-              "ml-auto size-4 shrink-0 transition-transform duration-200",
+              "ml-auto size-4 shrink-0 transition-transform duration-200 ease-out",
               open && "rotate-90",
             )}
           />
         </SidebarMenuButton>
 
-        <CollapsibleContent className="overflow-hidden">
-          <SidebarMenuSub className="my-1 gap-0.5 py-0">
+        <CollapsibleContent>
+          <SidebarMenuSub className="my-1 gap-0.5 border-sidebar-border/50 py-0.5">
             {children.map((child) => {
               if (!child.href) return null;
               const active = isActivePath(pathname, child.href);
@@ -170,7 +170,7 @@ function NavCollapsible({
                   <SidebarMenuSubButton
                     render={<Link href={child.href} />}
                     isActive={active}
-                    className="h-8 transition-colors duration-150"
+                    className="h-8 rounded-lg transition-[color,background-color] duration-200 ease-out"
                     onClick={onNavigate}
                   >
                     <span>{child.label}</span>

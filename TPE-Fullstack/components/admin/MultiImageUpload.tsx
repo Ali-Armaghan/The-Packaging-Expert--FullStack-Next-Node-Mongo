@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { ImagePlusIcon, Loader2Icon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { deleteUploadedMedia } from "@/lib/media/clientDelete";
 import { cn } from "@/lib/utils";
 
 type MultiImageUploadProps = {
@@ -60,6 +61,11 @@ export function MultiImageUpload({
     }
   };
 
+  const handleRemove = (url: string) => {
+    onChange(values.filter((item) => item !== url));
+    void deleteUploadedMedia(url);
+  };
+
   return (
     <div className={cn("space-y-3", className)}>
       <input
@@ -89,7 +95,7 @@ export function MultiImageUpload({
               size="icon-xs"
               variant="secondary"
               className="absolute top-1.5 right-1.5"
-              onClick={() => onChange(values.filter((item) => item !== url))}
+              onClick={() => handleRemove(url)}
               aria-label="Remove image"
             >
               <XIcon />
