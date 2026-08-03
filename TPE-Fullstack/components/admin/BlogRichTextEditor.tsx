@@ -19,12 +19,14 @@ import {
   CodeIcon,
   Heading2Icon,
   Heading3Icon,
+  Heading4Icon,
   HighlighterIcon,
   ImagePlusIcon,
   ItalicIcon,
   LinkIcon,
   ListIcon,
   ListOrderedIcon,
+  MinusIcon,
   QuoteIcon,
   Redo2Icon,
   StrikethroughIcon,
@@ -57,50 +59,7 @@ export function BlogRichTextEditor({
   const [altText, setAltText] = useState("");
   const [showHtml, setShowHtml] = useState(false);
   const [htmlSource, setHtmlSource] = useState(value || "");
-
-  const editor = useEditor({
-    immediatelyRender: false,
-    extensions: [
-      StarterKit.configure({
-        heading: { levels: [2, 3, 4] },
-      }),
-      Placeholder.configure({ placeholder }),
-      Underline,
-      TextStyle,
-      Color,
-      Highlight.configure({ multicolor: true }),
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: { rel: "noopener noreferrer" },
-      }),
-      Image.configure({
-        HTMLAttributes: { class: "rounded-lg max-w-full h-auto" },
-      }),
-      CharacterCount,
-    ],
-    content: value || "",
-    onUpdate: ({ editor: current }) => {
-      const html = current.getHTML();
-      onChange(html);
-      setHtmlSource(html);
-    },
-    editorProps: {
-      attributes: {
-        class:
-          "prose prose-sm sm:prose-base max-w-none min-h-[320px] px-4 py-3 focus:outline-none",
-      },
-    },
-  });
-
-  useEffect(() => {
-    if (!editor || showHtml) return;
-    const current = editor.getHTML();
-    if (value !== current) {
-      editor.commands.setContent(value || "", { emitUpdate: false });
-      setHtmlSource(value || "");
-    }
-  }, [editor, value, showHtml]);
+  const uploadImageRef = useRef<(file: File) => Promise<void>>(async () => {});
 
   const uploadImage = async (file: File) => {
     setUploading(true);
@@ -130,6 +89,75 @@ export function BlogRichTextEditor({
     }
   };
 
+  uploadImageRef.current = uploadImage;
+
+  const editor = useEditor({
+    immediatelyRender: false,
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [2, 3, 4] },
+        // Use explicit Link/Underline below (custom attrs / config).
+        link: false,
+        underline: false,
+      }),
+      Placeholder.configure({ placeholder }),
+      Underline,
+      TextStyle,
+      Color,
+      Highlight.configure({ multicolor: true }),
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+        HTMLAttributes: {
+          rel: "noopener noreferrer nofollow",
+          class: "text-primary underline underline-offset-2",
+        },
+      }),
+      Image.configure({
+        allowBase64: false,
+        HTMLAttributes: { class: "rounded-lg max-w-full h-auto my-4" },
+      }),
+      CharacterCount,
+    ],
+    content: value || "",
+    onUpdate: ({ editor: current }) => {
+      const html = current.getHTML();
+      onChange(html);
+      setHtmlSource(html);
+    },
+    editorProps: {
+      attributes: {
+        class:
+          "prose prose-sm sm:prose-base max-w-none min-h-[360px] px-4 py-3 focus:outline-none",
+      },
+      handleDrop: (_view, event, _slice, moved) => {
+        if (moved || !event.dataTransfer?.files?.length) return false;
+        const file = event.dataTransfer.files[0];
+        if (!file?.type.startsWith("image/")) return false;
+        event.preventDefault();
+        void uploadImageRef.current(file);
+        return true;
+      },
+      handlePaste: (_view, event) => {
+        const file = event.clipboardData?.files?.[0];
+        if (!file?.type.startsWith("image/")) return false;
+        event.preventDefault();
+        void uploadImageRef.current(file);
+        return true;
+      },
+    },
+  });
+
+  useEffect(() => {
+    if (!editor || showHtml) return;
+    const current = editor.getHTML();
+    if (value !== current) {
+      editor.commands.setContent(value || "", { emitUpdate: false });
+      setHtmlSource(value || "");
+    }
+  }, [editor, value, showHtml]);
+
   const insertImageWithAlt = () => {
     if (!editor || !pendingImageUrl) return;
     const alt = altText.trim();
@@ -137,11 +165,7 @@ export function BlogRichTextEditor({
       window.alert("Alt text is required for SEO-friendly images.");
       return;
     }
-    editor
-      .chain()
-      .focus()
-      .setImage({ src: pendingImageUrl, alt })
-      .run();
+    editor.chain().focus().setImage({ src: pendingImageUrl, alt }).run();
     setShowAltPrompt(false);
     setPendingImageUrl("");
     setAltText("");
@@ -161,7 +185,7 @@ export function BlogRichTextEditor({
 
   if (!editor) {
     return (
-      <div className="min-h-[380px] rounded-md border border-border bg-muted/30" />
+      <div className="min-h-[400px] animate-pulse rounded-xl border border-border bg-muted/30" />
     );
   }
 
@@ -169,7 +193,12 @@ export function BlogRichTextEditor({
   const chars = editor.storage.characterCount?.characters?.() ?? 0;
 
   return (
-    <div className={cn("overflow-hidden rounded-md border border-border", className)}>
+    <div
+      className={cn(
+        "overflow-hidden rounded-xl border border-border bg-background shadow-sm",
+        className,
+      )}
+    >
       <input
         ref={fileInputRef}
         type="file"
@@ -182,7 +211,7 @@ export function BlogRichTextEditor({
         }}
       />
 
-      <div className="flex flex-wrap gap-1 border-b border-border bg-muted/40 p-1.5">
+      <div className="sticky top-0 z-10 flex flex-wrap gap-1 border-b border-border bg-muted/50 p-2 backdrop-blur">
         <ToolBtn
           active={editor.isActive("bold")}
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -221,17 +250,30 @@ export function BlogRichTextEditor({
         <Sep />
         <ToolBtn
           active={editor.isActive("heading", { level: 2 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
           label="Heading 2"
         >
           <Heading2Icon />
         </ToolBtn>
         <ToolBtn
           active={editor.isActive("heading", { level: 3 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
           label="Heading 3"
         >
           <Heading3Icon />
+        </ToolBtn>
+        <ToolBtn
+          active={editor.isActive("heading", { level: 4 })}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 4 }).run()
+          }
+          label="Heading 4"
+        >
+          <Heading4Icon />
         </ToolBtn>
         <ToolBtn
           active={editor.isActive("blockquote")}
@@ -246,6 +288,12 @@ export function BlogRichTextEditor({
           label="Code block"
         >
           <CodeIcon />
+        </ToolBtn>
+        <ToolBtn
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          label="Horizontal rule"
+        >
+          <MinusIcon />
         </ToolBtn>
         <Sep />
         <ToolBtn
@@ -285,11 +333,7 @@ export function BlogRichTextEditor({
           <AlignRightIcon />
         </ToolBtn>
         <Sep />
-        <ToolBtn
-          active={editor.isActive("link")}
-          onClick={setLink}
-          label="Link"
-        >
+        <ToolBtn active={editor.isActive("link")} onClick={setLink} label="Link">
           <LinkIcon />
         </ToolBtn>
         <ToolBtn
@@ -313,7 +357,9 @@ export function BlogRichTextEditor({
           className="ml-auto h-7 text-xs"
           onClick={() => {
             if (showHtml) {
-              editor.commands.setContent(htmlSource || "", { emitUpdate: true });
+              editor.commands.setContent(htmlSource || "", {
+                emitUpdate: true,
+              });
               onChange(htmlSource);
             } else {
               setHtmlSource(editor.getHTML());
@@ -327,7 +373,9 @@ export function BlogRichTextEditor({
 
       {showAltPrompt && (
         <div className="space-y-3 border-b border-border bg-primary/5 p-4">
-          <p className="text-sm font-medium">Image alt text (required for SEO)</p>
+          <p className="text-sm font-medium">
+            Image alt text required (accessibility + SEO)
+          </p>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
             <div className="flex-1 space-y-1.5">
               <Label htmlFor="image-alt">Describe the image</Label>
@@ -337,6 +385,12 @@ export function BlogRichTextEditor({
                 onChange={(e) => setAltText(e.target.value)}
                 placeholder="e.g. Custom corrugated box with green logo"
                 autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    insertImageWithAlt();
+                  }
+                }}
               />
             </div>
             <div className="flex gap-2">
@@ -362,17 +416,22 @@ export function BlogRichTextEditor({
         <textarea
           value={htmlSource}
           onChange={(e) => setHtmlSource(e.target.value)}
-          className="min-h-[320px] w-full resize-y bg-muted/20 px-4 py-3 font-mono text-xs outline-none"
+          className="min-h-[360px] w-full resize-y bg-muted/20 px-4 py-3 font-mono text-xs outline-none"
           spellCheck={false}
         />
       ) : (
         <EditorContent editor={editor} />
       )}
 
-      <div className="flex justify-between border-t border-border bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground">
-        <span>{uploading ? "Uploading image..." : "Ultra rich text · SEO image alt supported"}</span>
+      <div className="flex flex-wrap justify-between gap-2 border-t border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
         <span>
-          {words} words · {chars} characters
+          {uploading
+            ? "Uploading image..."
+            : "Drag & drop or paste images · alt text required"}
+        </span>
+        <span>
+          {words} words · {chars} characters · ~{Math.max(1, Math.ceil(words / 200))}{" "}
+          min read
         </span>
       </div>
     </div>

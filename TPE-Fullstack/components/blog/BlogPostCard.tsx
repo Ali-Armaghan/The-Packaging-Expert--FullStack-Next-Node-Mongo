@@ -8,14 +8,14 @@ type BlogPostCardProps = {
 
 export function BlogPostCard({ post }: BlogPostCardProps) {
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-white">
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-border/80 bg-white shadow-sm transition-shadow hover:shadow-md">
       <Link href={`/blog/${post.slug}`} className="block">
         <div className="relative aspect-[16/10] overflow-hidden bg-[#dce8ef]">
           <Image
             src={post.image}
             alt={post.title}
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         </div>

@@ -3,10 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
+  CopyIcon,
+  ExternalLinkIcon,
   PencilIcon,
   PlusIcon,
   Trash2Icon,
 } from "lucide-react";
+import { blogCategories } from "@/constants/blog";
 import type { SerializedBlogPost } from "@/lib/blog/serialize";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AgenticLoader } from "@/components/ui/AgenticLoader";
@@ -53,7 +56,9 @@ export function AdminBlogManager() {
   const [limit, setLimit] = useState(10);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("all");
+  const [category, setCategory] = useState("all");
   const [searchInput, setSearchInput] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -65,6 +70,7 @@ export function AdminBlogManager() {
       });
       if (q) params.set("q", q);
       if (status !== "all") params.set("status", status);
+      if (category !== "all") params.set("category", category);
 
       const res = await fetch(`/api/admin/blog?${params.toString()}`);
       const json = await res.json();
@@ -77,14 +83,15 @@ export function AdminBlogManager() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, q, status]);
+  }, [page, limit, q, status, category]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this blog post?")) return;
+    if (!window.confirm("Delete this blog post permanently?")) return;
+    setBusyId(id);
     setError(null);
     setSuccess(null);
     try {
@@ -97,10 +104,13 @@ export function AdminBlogManager() {
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete");
+    } finally {
+      setBusyId(null);
     }
   };
 
   const togglePublish = async (post: SerializedBlogPost) => {
+    setBusyId(post.id);
     setError(null);
     setSuccess(null);
     try {
@@ -121,13 +131,65 @@ export function AdminBlogManager() {
         throw new Error(json.error || "Failed to update status");
       }
       setSuccess(
-        nextStatus === "published" ? "Post published." : "Post unpublished.",
+        nextStatus === "published" ? "Post published." : "Moved to draft.",
       );
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update status");
+    } finally {
+      setBusyId(null);
     }
   };
+
+  const duplicatePost = async (post: SerializedBlogPost) => {
+    setBusyId(post.id);
+    setError(null);
+    setSuccess(null);
+    try {
+      const res = await fetch("/api/admin/blog", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: `${post.title} (Copy)`,
+          slug: `${post.slug}-copy-${Date.now().toString(36)}`,
+          excerpt: post.excerpt,
+          content: post.content,
+          featuredImage: post.featuredImage,
+          category: post.category,
+          categoryLabel: post.categoryLabel,
+          tags: post.tags,
+          authorName: post.authorName,
+          status: "draft",
+          featured: false,
+          featuredSidebar: false,
+          publishedAt: null,
+          seoTitle: post.seoTitle,
+          seoDescription: post.seoDescription,
+          seoKeywords: post.seoKeywords,
+          canonicalUrl: "",
+          ogImage: post.ogImage,
+          ogTitle: post.ogTitle,
+          ogDescription: post.ogDescription,
+          robotsIndex: post.robotsIndex,
+          robotsFollow: post.robotsFollow,
+          focusKeyword: post.focusKeyword,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to duplicate");
+      }
+      setSuccess("Draft copy created.");
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to duplicate");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const publishedCount =
+    data?.items.filter((p) => p.status === "published").length ?? 0;
 
   return (
     <div className="space-y-6">
@@ -144,28 +206,55 @@ export function AdminBlogManager() {
         </Alert>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Blog posts</h1>
-          <p className="text-sm text-muted-foreground">
-            Create SEO-ready articles with rich HTML content.
+          <h1 className="text-2xl font-semibold tracking-tight">Blog</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage articles, SEO, and publishing.
           </p>
         </div>
-        <Button render={<Link href="/admin/blog/new" />} className="gap-1.5">
+        <Button
+          nativeButton={false}
+          render={<Link href="/admin/blog/new" />}
+          className="gap-1.5"
+        >
           <PlusIcon className="size-4" />
           Add post
         </Button>
       </div>
 
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Card>
+          <CardHeader className="py-4">
+            <CardDescription>Total posts</CardDescription>
+            <CardTitle className="text-2xl">{data?.total ?? "—"}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="py-4">
+            <CardDescription>On this page published</CardDescription>
+            <CardTitle className="text-2xl">{publishedCount}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="py-4">
+            <CardDescription>Page</CardDescription>
+            <CardTitle className="text-2xl">
+              {data ? `${data.page}/${data.totalPages}` : "—"}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+
       <Card>
-        <CardHeader className="gap-4">
+        <CardHeader className="gap-4 space-y-0">
           <div>
             <CardTitle>All posts</CardTitle>
             <CardDescription>
-              {data ? `${data.total} total` : "Loading..."}
+              Search, filter, publish, duplicate, or edit.
             </CardDescription>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
             <form
               className="flex flex-1 gap-2"
               onSubmit={(e) => {
@@ -191,13 +280,33 @@ export function AdminBlogManager() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-full sm:w-40">
+              <SelectTrigger className="w-full lg:w-36">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="published">Published</SelectItem>
                 <SelectItem value="draft">Draft</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={category}
+              onValueChange={(value) => {
+                if (value == null) return;
+                setCategory(value);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full lg:w-44">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All categories</SelectItem>
+                {blogCategories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select
@@ -208,7 +317,7 @@ export function AdminBlogManager() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="w-full sm:w-28">
+              <SelectTrigger className="w-full lg:w-28">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -220,22 +329,31 @@ export function AdminBlogManager() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="flex items-center gap-2.5 py-8 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2.5 py-10 text-sm text-muted-foreground">
               <AgenticLoader size="sm" label="Loading posts" />
               Loading posts...
             </div>
           ) : !data || data.items.length === 0 ? (
-            <p className="py-6 text-sm text-muted-foreground">
-              No posts yet. Click Add post to create your first article.
-            </p>
+            <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-muted/20 px-6 py-10">
+              <p className="text-sm text-muted-foreground">
+                No posts match your filters. Create a new SEO-ready article.
+              </p>
+              <Button
+                nativeButton={false}
+                render={<Link href="/admin/blog/new" />}
+                className="gap-1.5"
+              >
+                <PlusIcon className="size-4" />
+                Create first post
+              </Button>
+            </div>
           ) : (
             <>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Title</TableHead>
+                    <TableHead>Post</TableHead>
                     <TableHead>Category</TableHead>
-                    <TableHead>Author</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Published</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -245,24 +363,40 @@ export function AdminBlogManager() {
                   {data.items.map((post) => (
                     <TableRow key={post.id}>
                       <TableCell>
-                        <div className="max-w-xs">
-                          <p className="truncate font-medium">{post.title}</p>
-                          <div className="mt-1 flex flex-wrap gap-1">
-                            {post.featured && (
-                              <Badge variant="secondary">Featured</Badge>
-                            )}
-                            {post.featuredSidebar && (
-                              <Badge variant="outline">Sidebar</Badge>
-                            )}
+                        <div className="flex items-center gap-3">
+                          <div className="relative size-12 shrink-0 overflow-hidden rounded-md border bg-muted">
+                            {post.featuredImage.url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={post.featuredImage.url}
+                                alt={post.featuredImage.alt || post.title}
+                                className="size-full object-cover"
+                              />
+                            ) : null}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">{post.title}</p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {post.authorName || "No author"} · /{post.slug}
+                            </p>
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {post.featured && (
+                                <Badge variant="secondary">Featured</Badge>
+                              )}
+                              {post.featuredSidebar && (
+                                <Badge variant="outline">Sidebar</Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>{post.categoryLabel}</TableCell>
-                      <TableCell>{post.authorName || "—"}</TableCell>
                       <TableCell>
                         <Badge
                           variant={
-                            post.status === "published" ? "secondary" : "outline"
+                            post.status === "published"
+                              ? "secondary"
+                              : "outline"
                           }
                         >
                           {post.status}
@@ -274,11 +408,28 @@ export function AdminBlogManager() {
                           : "—"}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
+                        <div className="flex justify-end gap-0.5">
+                          {post.status === "published" && (
+                            <Button
+                              nativeButton={false}
+                              render={
+                                <Link
+                                  href={`/blog/${post.slug}`}
+                                  target="_blank"
+                                />
+                              }
+                              variant="ghost"
+                              size="icon-sm"
+                              aria-label="View live"
+                            >
+                              <ExternalLinkIcon />
+                            </Button>
+                          )}
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
+                            disabled={busyId === post.id}
                             onClick={() => void togglePublish(post)}
                           >
                             {post.status === "published"
@@ -286,11 +437,23 @@ export function AdminBlogManager() {
                               : "Publish"}
                           </Button>
                           <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            disabled={busyId === post.id}
+                            onClick={() => void duplicatePost(post)}
+                            aria-label="Duplicate"
+                          >
+                            <CopyIcon />
+                          </Button>
+                          <Button
+                            nativeButton={false}
                             render={
                               <Link href={`/admin/blog/${post.id}/edit`} />
                             }
                             variant="ghost"
                             size="icon-sm"
+                            aria-label="Edit"
                           >
                             <PencilIcon />
                           </Button>
@@ -298,7 +461,9 @@ export function AdminBlogManager() {
                             type="button"
                             variant="ghost"
                             size="icon-sm"
+                            disabled={busyId === post.id}
                             onClick={() => void handleDelete(post.id)}
+                            aria-label="Delete"
                           >
                             <Trash2Icon />
                           </Button>
@@ -311,7 +476,8 @@ export function AdminBlogManager() {
 
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-muted-foreground">
-                  Page {data.page} of {data.totalPages}
+                  Showing {(data.page - 1) * data.limit + 1}–
+                  {Math.min(data.page * data.limit, data.total)} of {data.total}
                 </p>
                 <div className="flex gap-2">
                   <Button

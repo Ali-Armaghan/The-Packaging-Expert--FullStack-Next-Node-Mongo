@@ -11,10 +11,17 @@ type BlogFeaturedProps = {
 export function BlogFeatured({ featured, sidebarPosts }: BlogFeaturedProps) {
   if (!featured) {
     return (
-      <section className="bg-white py-12">
+      <section className="bg-gradient-to-b from-[#f4faf7] to-white py-16">
         <Container>
-          <p className="text-sm text-muted-foreground">
-            No published posts yet. Check back soon.
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-primary">
+            Blog
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">
+            Packaging insights
+          </h1>
+          <p className="mt-3 max-w-lg text-sm text-muted-foreground">
+            No published posts yet. Check back soon for design tips, business
+            strategies, and sustainability guides.
           </p>
         </Container>
       </section>
@@ -22,17 +29,28 @@ export function BlogFeatured({ featured, sidebarPosts }: BlogFeaturedProps) {
   }
 
   return (
-    <section className="bg-white py-8 sm:py-10 lg:py-12">
+    <section className="bg-gradient-to-b from-[#f4faf7] to-white py-8 sm:py-10 lg:py-12">
       <Container>
+        <div className="mb-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-primary">
+            Blog
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Packaging insights
+          </h1>
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+            Ideas and guides from the Packaging Expert team.
+          </p>
+        </div>
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] lg:gap-12">
-          <article className="group overflow-hidden rounded-2xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
+          <article className="group overflow-hidden rounded-2xl bg-white shadow-[0_2px_16px_rgba(0,0,0,0.06)] ring-1 ring-black/5">
             <Link href={`/blog/${featured.slug}`} className="block">
               <div className="relative aspect-[16/10] overflow-hidden bg-[#dce8ef]">
                 <Image
                   src={featured.image}
                   alt={featured.title}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   sizes="(max-width: 1024px) 100vw, 60vw"
                   priority
                 />

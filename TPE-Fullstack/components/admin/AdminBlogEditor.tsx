@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon, CheckIcon, ExternalLinkIcon, XIcon } from "lucide-react";
 import { blogCategories } from "@/constants/blog";
+import { buildSeoChecks, estimateReadingMinutes } from "@/lib/blog/seoScore";
 import { slugify } from "@/lib/slug";
 import type { SerializedBlogPost } from "@/lib/blog/serialize";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -29,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { BlogRichTextEditor } from "./BlogRichTextEditor";
 import { ImageUploadField } from "./ImageUploadField";
 
@@ -161,6 +163,24 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
   const seoTitleLen = (form.seoTitle || form.title).length;
   const seoDescLen = (form.seoDescription || form.excerpt).length;
 
+  const seo = useMemo(
+    () =>
+      buildSeoChecks({
+        title: form.title,
+        slug: form.slug,
+        excerpt: form.excerpt,
+        content: form.content,
+        featuredImageAlt: form.featuredImage.alt,
+        featuredImageUrl: form.featuredImage.url,
+        seoTitle: form.seoTitle,
+        seoDescription: form.seoDescription,
+        focusKeyword: form.focusKeyword,
+      }),
+    [form],
+  );
+
+  const readingMins = estimateReadingMinutes(form.content);
+
   const addChip = (
     value: string,
     key: "tags" | "seoKeywords",
@@ -239,9 +259,15 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
       onSubmit={(e) => void handleSubmit(e)}
       className="space-y-6"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="sticky top-0 z-20 -mx-1 flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-background/95 px-1 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="space-y-1">
-          <Button render={<Link href="/admin/blog" />} variant="ghost" size="sm" className="-ml-2 gap-1.5">
+          <Button
+            nativeButton={false}
+            render={<Link href="/admin/blog" />}
+            variant="ghost"
+            size="sm"
+            className="-ml-2 gap-1.5"
+          >
             <ArrowLeftIcon className="size-3.5" />
             All posts
           </Button>
@@ -249,10 +275,21 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
             {postId ? "Edit post" : "Create post"}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Comprehensive SEO-ready editor with ultra rich HTML body.
+            SEO score {seo.score}% · ~{readingMins} min read
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {form.status === "published" && form.slug ? (
+            <Button
+              nativeButton={false}
+              render={<Link href={`/blog/${form.slug}`} target="_blank" />}
+              variant="outline"
+              className="gap-1.5"
+            >
+              <ExternalLinkIcon className="size-3.5" />
+              View live
+            </Button>
+          ) : null}
           <Button
             type="button"
             variant="outline"
@@ -389,7 +426,64 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-6 xl:sticky xl:top-24 xl:self-start">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle>SEO checklist</CardTitle>
+                <Badge
+                  variant={seo.score >= 80 ? "secondary" : "outline"}
+                  className={cn(
+                    seo.score >= 80 && "bg-emerald-100 text-emerald-800",
+                    seo.score < 50 && "border-amber-300 text-amber-800",
+                  )}
+                >
+                  {seo.score}/100
+                </Badge>
+              </div>
+              <CardDescription>
+                Live checks before you publish.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="h-2 overflow-hidden rounded-full bg-muted">
+                <div
+                  className={cn(
+                    "h-full rounded-full transition-all",
+                    seo.score >= 80
+                      ? "bg-emerald-500"
+                      : seo.score >= 50
+                        ? "bg-amber-500"
+                        : "bg-rose-500",
+                  )}
+                  style={{ width: `${seo.score}%` }}
+                />
+              </div>
+              <ul className="max-h-56 space-y-1.5 overflow-y-auto text-sm">
+                {seo.checks.map((check) => (
+                  <li
+                    key={check.id}
+                    className="flex items-start gap-2 text-muted-foreground"
+                  >
+                    {check.ok ? (
+                      <CheckIcon className="mt-0.5 size-3.5 shrink-0 text-emerald-600" />
+                    ) : (
+                      <XIcon className="mt-0.5 size-3.5 shrink-0 text-rose-500" />
+                    )}
+                    <span className={cn(check.ok && "text-foreground")}>
+                      {check.label}
+                      {check.hint ? (
+                        <span className="ml-1 text-xs text-muted-foreground">
+                          ({check.hint})
+                        </span>
+                      ) : null}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Publish</CardTitle>

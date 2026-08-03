@@ -106,3 +106,35 @@ export async function getBrowseAllPublicPosts(): Promise<PublicBlogPost[]> {
     .lean();
   return docs.map((d) => toPublicCardPost(serializeBlogPost(d)));
 }
+
+export async function getRelatedPublicPosts(
+  category: BlogCategoryId,
+  excludeSlug: string,
+  limit = 3,
+): Promise<PublicBlogPost[]> {
+  await connectToDatabase();
+  const docs = await BlogPost.find({
+    ...publishedFilter(),
+    category,
+    slug: { $ne: excludeSlug },
+  })
+    .sort({ publishedAt: -1 })
+    .limit(limit)
+    .lean();
+
+  if (docs.length >= limit) {
+    return docs.map((d) => toPublicCardPost(serializeBlogPost(d)));
+  }
+
+  const extra = await BlogPost.find({
+    ...publishedFilter(),
+    slug: {
+      $nin: [excludeSlug, ...docs.map((d) => d.slug)],
+    },
+  })
+    .sort({ publishedAt: -1 })
+    .limit(limit - docs.length)
+    .lean();
+
+  return [...docs, ...extra].map((d) => toPublicCardPost(serializeBlogPost(d)));
+}
