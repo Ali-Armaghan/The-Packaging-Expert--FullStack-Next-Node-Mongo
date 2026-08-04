@@ -10,6 +10,7 @@ export type AdminNavIcon =
   | "media"
   | "pages"
   | "landing"
+  | "home"
   | "testimonials"
   | "content"
   | "quotes"
@@ -121,6 +122,12 @@ export const adminNavSections: AdminNavSection[] = [
         label: "Site Content",
         icon: "content",
         items: [
+          {
+            id: "home",
+            label: "Home Page",
+            href: "/admin/home",
+            icon: "home",
+          },
           { id: "pages", label: "Pages", href: "/admin/pages", icon: "pages" },
           {
             id: "landing",
@@ -133,12 +140,6 @@ export const adminNavSections: AdminNavSection[] = [
             label: "Testimonials",
             href: "/admin/testimonials",
             icon: "testimonials",
-          },
-          {
-            id: "content",
-            label: "Site Content",
-            href: "/admin/site-content",
-            icon: "content",
           },
         ],
       },

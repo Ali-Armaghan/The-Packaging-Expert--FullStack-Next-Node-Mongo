@@ -2,30 +2,33 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CarouselButton,
   carouselTrackClassName,
 } from "@/components/ui/CarouselButton";
 import { Container } from "@/components/ui/Container";
-import { industries, type Industry } from "@/constants/industries";
+import { getActiveSectionItems } from "@/lib/home/items";
 import { cn } from "@/lib/utils";
+import type { HomeCardItem, HomeIndustriesContent } from "@/types/homePage";
 
-function IndustryCard({ industry }: { industry: Industry }) {
+function IndustryCard({ industry }: { industry: HomeCardItem }) {
   return (
     <Link
-      href={industry.href}
+      href={industry.href || "#"}
       data-industry-card
       className="group flex h-auto w-[85vw] max-w-[320px] shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-border/60 bg-white shadow-sm transition-shadow hover:shadow-md sm:w-[300px] lg:w-[calc((100%-3rem)/3.15)] lg:max-w-none"
     >
       <div className="relative aspect-[4/3] bg-muted">
-        <Image
-          src={industry.image}
-          alt={industry.title}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-          sizes="(max-width: 640px) 85vw, (max-width: 1024px) 45vw, 30vw"
-        />
+        {industry.image ? (
+          <Image
+            src={industry.image}
+            alt={industry.title}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            sizes="(max-width: 640px) 85vw, (max-width: 1024px) 45vw, 30vw"
+          />
+        ) : null}
       </div>
       <div className="flex flex-1 flex-col p-5">
         <h3 className="min-h-[3.25rem] text-base font-bold leading-snug text-foreground sm:min-h-[3.5rem] sm:text-lg">
@@ -39,7 +42,15 @@ function IndustryCard({ industry }: { industry: Industry }) {
   );
 }
 
-export function Industries() {
+type IndustriesProps = {
+  content: HomeIndustriesContent;
+};
+
+export function Industries({ content }: IndustriesProps) {
+  const items = useMemo(
+    () => getActiveSectionItems(content.cards),
+    [content.cards],
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -84,7 +95,7 @@ export function Industries() {
       container.removeEventListener("scroll", updateScrollState);
       window.removeEventListener("resize", updateScrollState);
     };
-  }, [updateScrollState]);
+  }, [updateScrollState, items.length]);
 
   const scroll = (direction: "prev" | "next") => {
     const container = scrollRef.current;
@@ -118,12 +129,9 @@ export function Industries() {
       <Container>
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 max-w-2xl flex-1">
-            <h2 className="section-heading">
-              Shop packaging solutions by industry needs
-            </h2>
+            <h2 className="section-heading">{content.title}</h2>
             <p className="mt-3 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Find the perfect packaging solutions tailored to your industry
-              niche.
+              {content.subtitle}
             </p>
           </div>
 
@@ -147,13 +155,13 @@ export function Industries() {
           ref={scrollRef}
           className={carouselTrackClassName("mt-10 items-stretch")}
         >
-          {industries.map((industry) => (
+          {items.map((industry) => (
             <IndustryCard key={industry.id} industry={industry} />
           ))}
         </div>
 
         <div className="mt-8 flex max-w-full flex-wrap items-center justify-center gap-2 px-2">
-          {industries.map((industry, index) => (
+          {items.map((industry, index) => (
             <button
               key={industry.id}
               type="button"

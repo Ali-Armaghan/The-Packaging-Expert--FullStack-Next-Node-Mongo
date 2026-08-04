@@ -1,10 +1,5 @@
-import { AdminPlaceholder } from "@/components/admin";
+import { redirect } from "next/navigation";
 
 export default function AdminSiteContentPage() {
-  return (
-    <AdminPlaceholder
-      title="Site Content"
-      description="Manage reusable site content blocks and announcements."
-    />
-  );
+  redirect("/admin/home");
 }

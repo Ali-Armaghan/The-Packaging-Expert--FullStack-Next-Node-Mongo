@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { Container } from "@/components/ui/Container";
-import { testimonials } from "@/constants/testimonials";
+import { getActiveSectionItems } from "@/lib/home/items";
 import { cn } from "@/lib/utils";
+import type { HomeTestimonialsContent } from "@/types/homePage";
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -20,20 +21,25 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
-export function Testimonials() {
+type TestimonialsProps = {
+  content: HomeTestimonialsContent;
+};
+
+export function Testimonials({ content }: TestimonialsProps) {
+  const items = getActiveSectionItems(content.items);
+
   return (
     <section className="bg-white py-14 sm:py-16 lg:py-20">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="section-heading">See what our customers say</h2>
+          <h2 className="section-heading">{content.title}</h2>
           <p className="mt-3 text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Trusted by thousands of brands for quality packaging and reliable
-            service.
+            {content.subtitle}
           </p>
         </div>
 
         <div className="mt-10 grid auto-rows-fr grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-          {testimonials.map((testimonial) => (
+          {items.map((testimonial) => (
             <article
               key={testimonial.id}
               className="flex h-full flex-col rounded-2xl border border-border/60 bg-white p-6 shadow-sm"
@@ -45,13 +51,15 @@ export function Testimonials() {
 
               <footer className="mt-6 flex items-center gap-3 border-t border-border/60 pt-5">
                 <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted">
-                  <Image
-                    src={testimonial.avatar}
-                    alt={testimonial.name}
-                    fill
-                    className="object-cover"
-                    sizes="40px"
-                  />
+                  {testimonial.avatar ? (
+                    <Image
+                      src={testimonial.avatar}
+                      alt={testimonial.name}
+                      fill
+                      className="object-cover"
+                      sizes="40px"
+                    />
+                  ) : null}
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-bold text-foreground">

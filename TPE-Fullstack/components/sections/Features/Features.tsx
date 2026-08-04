@@ -1,15 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CarouselButton,
   carouselTrackClassName,
 } from "@/components/ui/CarouselButton";
 import { Container } from "@/components/ui/Container";
-import { features, featuresContent, type Feature } from "@/constants/features";
+import { getActiveSectionItems } from "@/lib/home/items";
 import { cn } from "@/lib/utils";
+import type { HomeFeatureItem, HomeFeaturesContent } from "@/types/homePage";
 
-function FeatureIcon({ icon }: Pick<Feature, "icon">) {
+function FeatureIcon({ icon }: Pick<HomeFeatureItem, "icon">) {
   const className = "h-8 w-8";
 
   switch (icon) {
@@ -21,29 +22,17 @@ function FeatureIcon({ icon }: Pick<Feature, "icon">) {
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
           aria-hidden="true"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 14v-2a4 4 0 118 0v2"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M18 14v1a3 3 0 01-3 3h-1"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6 14v1a3 3 0 003 3h1"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9 18h6"
-          />
-          <circle cx="12" cy="7" r="3" />
+          <path d="M4 13a8 8 0 0116 0" />
+          <path d="M4 13v3a2 2 0 002 2h1" />
+          <path d="M20 13v3a2 2 0 01-2 2h-1" />
+          <rect x="2.5" y="12" width="3.5" height="6" rx="1.5" />
+          <rect x="18" y="12" width="3.5" height="6" rx="1.5" />
+          <path d="M15 19h2a2 2 0 002-2v-1" />
+          <circle cx="19" cy="19.5" r="1" fill="currentColor" stroke="none" />
         </svg>
       );
     case "journey":
@@ -54,28 +43,14 @@ function FeatureIcon({ icon }: Pick<Feature, "icon">) {
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
           aria-hidden="true"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M4 18c2.5-4.5 5-6.5 8-8s3.5-2 5-4"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M16 6h2.5v2.5"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6 16v2.5h2.5"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M17 5l1.5 1.5M17 5l-1 1.5"
-          />
+          <circle cx="5" cy="18" r="2" />
+          <circle cx="19" cy="6" r="2" />
+          <path d="M7 17c2.5-1.5 4-4.5 6-6.5S16.5 7 17.5 7" />
+          <path d="M15.5 4.5L19 6l-1.5 3.5" />
         </svg>
       );
     case "ruler":
@@ -86,18 +61,12 @@ function FeatureIcon({ icon }: Pick<Feature, "icon">) {
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
           aria-hidden="true"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M4 20L20 4"
-          />
-          <path strokeLinecap="round" d="M7.5 16.5l1 1" />
-          <path strokeLinecap="round" d="M10 14l1 1" />
-          <path strokeLinecap="round" d="M12.5 11.5l1 1" />
-          <path strokeLinecap="round" d="M15 9l1 1" />
-          <path strokeLinecap="round" d="M17.5 6.5l1 1" />
+          <path d="M4.8 15.2 15.2 4.8a2 2 0 012.8 2.8L7.6 18a2 2 0 01-2.8-2.8z" />
+          <path d="M7.5 12.5l1.5 1.5M10 10l1.5 1.5M12.5 7.5l1.5 1.5M15 5l1.5 1.5" />
         </svg>
       );
     case "promise":
@@ -108,19 +77,13 @@ function FeatureIcon({ icon }: Pick<Feature, "icon">) {
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
           aria-hidden="true"
         >
           <circle cx="12" cy="9" r="5" />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M8.5 13.5L7 21l5-2.5L17 21l-1.5-7.5"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9.5 9l1.5 1.5L14.5 7"
-          />
+          <path d="M8.5 13.5 7 21l5-2.5L17 21l-1.5-7.5" />
+          <path d="M9.5 9l1.5 1.5L14.5 7" />
         </svg>
       );
   }
@@ -138,6 +101,8 @@ function RotatingHighlight({ items }: { items: string[] }) {
 
     return () => window.clearInterval(intervalId);
   }, [items]);
+
+  if (items.length === 0) return null;
 
   return (
     <span className="relative inline-grid whitespace-nowrap align-bottom text-primary">
@@ -158,7 +123,15 @@ function RotatingHighlight({ items }: { items: string[] }) {
   );
 }
 
-export function Features() {
+type FeaturesProps = {
+  content: HomeFeaturesContent;
+};
+
+export function Features({ content }: FeaturesProps) {
+  const items = useMemo(
+    () => getActiveSectionItems(content.items),
+    [content.items],
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(true);
@@ -186,7 +159,7 @@ export function Features() {
       container.removeEventListener("scroll", updateScrollState);
       window.removeEventListener("resize", updateScrollState);
     };
-  }, [updateScrollState]);
+  }, [updateScrollState, items.length]);
 
   const scroll = (direction: "prev" | "next") => {
     const container = scrollRef.current;
@@ -208,11 +181,11 @@ export function Features() {
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <h2 className="section-heading text-[1.5rem] sm:text-[1.75rem] lg:whitespace-nowrap lg:text-[2rem]">
-              {featuresContent.title}{" "}
-              <RotatingHighlight items={featuresContent.highlights} />
+              {content.title}{" "}
+              <RotatingHighlight items={content.highlights} />
             </h2>
             <p className="mt-3 text-base leading-relaxed text-muted-foreground sm:text-lg">
-              {featuresContent.subtitle}
+              {content.subtitle}
             </p>
           </div>
 
@@ -239,7 +212,7 @@ export function Features() {
             "lg:mx-0 lg:grid lg:grid-cols-4 lg:gap-6 lg:overflow-visible lg:px-0 lg:snap-none lg:pb-0",
           )}
         >
-          {features.map((feature) => (
+          {items.map((feature) => (
             <article
               key={feature.id}
               data-feature-card

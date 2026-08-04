@@ -108,6 +108,14 @@ export function AdminIcon({ name, className }: AdminIconProps) {
           <path d="M3 11l19-9-9 19-2-8-8-2z" />
         </IconShell>
       );
+    case "home":
+      return (
+        <IconShell className={className}>
+          <path d="M3 10.5L12 3l9 7.5" />
+          <path d="M5 9.5V20h14V9.5" />
+          <path d="M9 20v-6h6v6" />
+        </IconShell>
+      );
     case "testimonials":
       return (
         <IconShell className={className}>

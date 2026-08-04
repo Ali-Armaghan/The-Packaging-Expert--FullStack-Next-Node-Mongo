@@ -9,7 +9,19 @@ export type ProcessStep = {
   id: string;
   title: string;
   description: string;
-  icon: "choose" | "design" | "order" | "delivery";
+  icon:
+    | "choose"
+    | "design"
+    | "order"
+    | "delivery"
+    | "check"
+    | "upload"
+    | "eye"
+    | "refresh"
+    | "package"
+    | "headset"
+    | "sliders"
+    | "clipboard";
 };
 
 export type ProcessBenefit = {
@@ -35,19 +47,19 @@ export const processTabs: ProcessTab[] = [
         id: "compare",
         title: "Compare options",
         description: "Find the right material, size, and finish for your brand.",
-        icon: "design",
+        icon: "sliders",
       },
       {
         id: "select",
         title: "Select your style",
         description: "Pick the packaging that fits your product and budget.",
-        icon: "order",
+        icon: "check",
       },
       {
         id: "confirm",
         title: "Confirm details",
         description: "Review specs before moving to design and production.",
-        icon: "delivery",
+        icon: "clipboard",
       },
     ],
   },
@@ -60,25 +72,25 @@ export const processTabs: ProcessTab[] = [
         id: "upload",
         title: "Upload artwork",
         description: "Share your logo and brand assets with our design team.",
-        icon: "design",
+        icon: "upload",
       },
       {
         id: "proof",
         title: "Review proofs",
         description: "Approve digital mockups before anything goes to print.",
-        icon: "choose",
+        icon: "eye",
       },
       {
         id: "revise",
         title: "Request revisions",
         description: "Work with experts until every detail looks perfect.",
-        icon: "order",
+        icon: "refresh",
       },
       {
         id: "finalize",
         title: "Finalize design",
         description: "Lock in your approved artwork for production.",
-        icon: "delivery",
+        icon: "check",
       },
     ],
   },
@@ -91,25 +103,25 @@ export const processTabs: ProcessTab[] = [
         id: "quote",
         title: "Get a quote",
         description: "Receive transparent pricing with no hidden fees.",
-        icon: "order",
+        icon: "clipboard",
       },
       {
         id: "approve",
         title: "Approve order",
         description: "Confirm quantity, timeline, and shipping details.",
-        icon: "choose",
+        icon: "check",
       },
       {
         id: "produce",
         title: "Production begins",
         description: "Your packaging is printed and assembled with care.",
-        icon: "design",
+        icon: "package",
       },
       {
         id: "quality",
         title: "Quality check",
         description: "Every order is inspected before it leaves our facility.",
-        icon: "delivery",
+        icon: "eye",
       },
     ],
   },
@@ -128,19 +140,19 @@ export const processTabs: ProcessTab[] = [
         id: "track",
         title: "Track progress",
         description: "Stay updated with real-time shipping notifications.",
-        icon: "order",
+        icon: "package",
       },
       {
         id: "receive",
         title: "Receive packaging",
         description: "Unbox premium packaging ready for your products.",
-        icon: "choose",
+        icon: "order",
       },
       {
         id: "support",
         title: "Ongoing support",
         description: "Reorder easily with saved specs and dedicated help.",
-        icon: "design",
+        icon: "headset",
       },
     ],
   },

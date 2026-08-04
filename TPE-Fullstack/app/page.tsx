@@ -1,27 +1,17 @@
-import { Catalog } from "@/components/sections/Catalog";
-import { Expertise } from "@/components/sections/Expertise";
-import { FAQ } from "@/components/sections/FAQ";
-import { Features } from "@/components/sections/Features";
+import { HomeBelowFold } from "@/components/home/HomeBelowFold";
 import { Hero } from "@/components/sections/Hero";
-import { HowItWorks } from "@/components/sections/HowItWorks";
-import { Industries } from "@/components/sections/Industries";
-import { InstagramFeed } from "@/components/sections/InstagramFeed";
-import { Sustainability } from "@/components/sections/Sustainability";
-import { Testimonials } from "@/components/sections/Testimonials";
+import { getHomeSection } from "@/lib/home/queries";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  // Banner first — only hero blocks the initial paint.
+  const hero = await getHomeSection("hero");
+
   return (
     <>
-      <Hero />
-      <Features />
-      <Expertise />
-      <Catalog />
-      <Industries />
-      <Sustainability />
-      <HowItWorks />
-      <Testimonials />
-      <FAQ />
-      <InstagramFeed />
+      <Hero content={hero} />
+      <HomeBelowFold />
     </>
   );
 }

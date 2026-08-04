@@ -2,22 +2,26 @@
 
 import { useState } from "react";
 import { Container } from "@/components/ui/Container";
-import { faqItems } from "@/constants/faq";
+import { getActiveSectionItems } from "@/lib/home/items";
+import type { HomeFaqContent } from "@/types/homePage";
 import { cn } from "@/lib/utils";
 
-export function FAQ() {
-  const [openId, setOpenId] = useState(faqItems[0].id);
+type FAQProps = {
+  content: HomeFaqContent;
+};
+
+export function FAQ({ content }: FAQProps) {
+  const items = getActiveSectionItems(content.items);
+  const [openId, setOpenId] = useState(items[0]?.id ?? "");
 
   return (
     <section id="faq" className="bg-muted py-14 sm:py-16 lg:py-20">
       <Container>
         <div className="mx-auto max-w-3xl">
-          <h2 className="section-heading text-center">
-            Frequently asked questions
-          </h2>
+          <h2 className="section-heading text-center">{content.title}</h2>
 
           <div className="mt-10 divide-y divide-border overflow-hidden rounded-2xl border border-border/60 bg-white">
-            {faqItems.map((item) => {
+            {items.map((item) => {
               const isOpen = openId === item.id;
 
               return (
@@ -38,30 +42,14 @@ export function FAQ() {
                       )}
                       aria-hidden="true"
                     >
-                      <svg
-                        className="h-4 w-4"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path strokeLinecap="round" d="M12 5v14M5 12h14" />
-                      </svg>
+                      +
                     </span>
                   </button>
-
-                  <div
-                    className={cn(
-                      "grid transition-all duration-300",
-                      isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
-                    )}
-                  >
-                    <div className="overflow-hidden">
-                      <p className="px-4 pb-4 text-sm leading-relaxed text-muted-foreground sm:px-6 sm:pb-5 sm:text-base">
-                        {item.answer}
-                      </p>
+                  {isOpen && (
+                    <div className="px-4 pb-5 text-sm leading-relaxed text-muted-foreground sm:px-6">
+                      {item.answer}
                     </div>
-                  </div>
+                  )}
                 </div>
               );
             })}

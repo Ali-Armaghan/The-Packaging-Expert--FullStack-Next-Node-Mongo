@@ -40,10 +40,10 @@ export default function RootLayout({
       <head>
         <GoogleTagManagerScript />
       </head>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="flex min-h-dvh flex-col bg-background text-foreground">
         <GoogleTagManagerNoScript />
         <ConditionalHeader />
-        <main className="flex-1">{children}</main>
+        <main className="flex min-h-0 flex-1 flex-col">{children}</main>
         <ConditionalFooter />
       </body>
     </html>

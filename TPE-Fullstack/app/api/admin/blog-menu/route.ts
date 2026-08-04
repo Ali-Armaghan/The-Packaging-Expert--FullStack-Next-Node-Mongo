@@ -87,10 +87,7 @@ export async function PATCH(request: Request) {
 
     await Promise.all(
       payload.orderedIds.map((id, index) =>
-        NavMenuItem.updateOne(
-          { _id: new Types.ObjectId(id) },
-          { $set: { sortOrder: index } },
-        ),
+        NavMenuItem.findByIdAndUpdate(id, { $set: { sortOrder: index } }),
       ),
     );
 

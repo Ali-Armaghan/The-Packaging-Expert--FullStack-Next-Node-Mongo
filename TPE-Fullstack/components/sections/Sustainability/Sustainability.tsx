@@ -1,27 +1,32 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
-import { sustainabilityCards } from "@/constants/sustainability";
+import { getActiveSectionItems } from "@/lib/home/items";
+import type { HomeCardItem, HomeSustainabilityContent } from "@/types/homePage";
 
 function SustainabilityCard({
   title,
   description,
   image,
   href,
-}: (typeof sustainabilityCards)[number]) {
+}: HomeCardItem) {
   return (
     <Link
-      href={href}
+      href={href || "#"}
       className="group relative block overflow-hidden rounded-2xl"
     >
       <div className="relative aspect-[16/10] sm:aspect-[16/9]">
-        <Image
-          src={image}
-          alt={title}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-          sizes="(max-width: 1024px) 100vw, 50vw"
-        />
+        {image ? (
+          <Image
+            src={image}
+            alt={title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-muted" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
       </div>
 
@@ -48,12 +53,18 @@ function SustainabilityCard({
   );
 }
 
-export function Sustainability() {
+type SustainabilityProps = {
+  content: HomeSustainabilityContent;
+};
+
+export function Sustainability({ content }: SustainabilityProps) {
+  const cards = getActiveSectionItems(content.cards);
+
   return (
     <section className="bg-muted py-14 sm:py-16 lg:py-20">
       <Container>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {sustainabilityCards.map((card) => (
+          {cards.map((card) => (
             <SustainabilityCard key={card.id} {...card} />
           ))}
         </div>

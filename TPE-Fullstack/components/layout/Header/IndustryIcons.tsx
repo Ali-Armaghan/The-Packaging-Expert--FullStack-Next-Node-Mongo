@@ -21,7 +21,7 @@ function IconShell({
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.4"
+      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -36,22 +36,18 @@ export function IndustryIcon({ icon, className }: IndustryIconProps) {
     case "apparel":
       return (
         <IconShell className={className}>
-          {/* T-shirt */}
-          <path d="M4.5 7.5L8 5.5h2l2 2 2-2h2l3.5 2-1.5 3H16v8H8v-8H6L4.5 7.5z" />
-          {/* Pants */}
-          <path d="M17.5 14.5h2.5l.5 6.5h-2l-.3-3.5-.7 3.5h-2l.5-6.5h2z" />
+          <path d="M8 5.5 4.5 8l1.5 2.5H8v9h8v-9h2l1.5-2.5L16 5.5l-2 2h-4l-2-2z" />
+          <path d="M10 5.5c0 1.2.9 2 2 2s2-.8 2-2" />
         </IconShell>
       );
 
     case "bakery":
       return (
         <IconShell className={className}>
-          {/* Loaf */}
-          <path d="M3.5 14.5c0-2.2 1.8-4 4-4h2c1.5 0 2.8.8 3.5 2 .7-1.2 2-2 3.5-2h.5c2 0 3.5 1.6 3.5 3.5 0 .8-.3 1.5-.8 2H4.3c-.5-.5-.8-1.2-.8-2z" />
-          <path d="M5 16.5h14v1.5H5z" />
-          {/* Cake slice */}
-          <path d="M14.5 7.5 18 6l2.5 4.5-3.5 1.5z" />
-          <path d="M16.2 8.2l1.2-.4" />
+          <path d="M6 14c0-2.5 2-4.5 4.5-4.5h3C16 9.5 18 11.5 18 14c0 1-.4 1.8-1 2.4H7c-.6-.6-1-1.4-1-2.4z" />
+          <path d="M7 16.5h10V18H7z" />
+          <path d="M9 9.5c.3-1.5 1.2-2.5 2.5-2.5S14 8 14.2 9.5" />
+          <path d="M10.5 7l.5-1.5M12.5 7l.3-1.2M13.8 7.5l.7-1" />
         </IconShell>
       );
 
@@ -80,10 +76,10 @@ export function IndustryIcon({ icon, className }: IndustryIconProps) {
     case "candle":
       return (
         <IconShell className={className}>
-          <path d="M12 3.5c.8 1.2.8 2.2 0 3.2-.8-1-.8-2 0-3.2z" />
-          <path d="M10 7.5h4v9.5a2 2 0 01-2 2h0a2 2 0 01-2-2V7.5z" />
-          <path d="M8 20.5h8" />
-          <path d="M9.5 20.5v1h5v-1" />
+          <path d="M12 2.5c1.2 1.6 1.2 3.2 0 4.5-1.2-1.3-1.2-2.9 0-4.5z" />
+          <path d="M12 7v1" />
+          <path d="M9.5 8h5v9.5a2.5 2.5 0 01-2.5 2.5h0a2.5 2.5 0 01-2.5-2.5V8z" />
+          <path d="M7.5 21h9" />
         </IconShell>
       );
 
@@ -99,21 +95,20 @@ export function IndustryIcon({ icon, className }: IndustryIconProps) {
     case "cannabis":
       return (
         <IconShell className={className}>
-          <path d="M12 4c1.2 2.2 1.2 4.5 0 6.5-1.2-2-1.2-4.3 0-6.5z" />
-          <path d="M12 10.5c2.5-1.2 4.8-.5 6.2 1.5-2.2 1-4.5.8-6.2-1.5z" />
-          <path d="M12 10.5c-2.5-1.2-4.8-.5-6.2 1.5 2.2 1 4.5.8 6.2-1.5z" />
-          <path d="M12 11c2.2 1.5 3.2 3.8 2.8 6.2-2.2-.8-4-.5-5.3 1.2" />
-          <path d="M12 11c-2.2 1.5-3.2 3.8-2.8 6.2 2.2-.8 4-.5 5.3 1.2" />
-          <path d="M12 11v9" />
+          <path d="M12 3c1.5 2.5 1.5 5 0 7.5C10.5 8 10.5 5.5 12 3z" />
+          <path d="M12 10.5c3-1.2 5.5-.2 7 2-2.8 1.2-5.2.8-7-2z" />
+          <path d="M12 10.5c-3-1.2-5.5-.2-7 2 2.8 1.2 5.2.8 7-2z" />
+          <path d="M12 11.5c2.5 1.8 3.5 4.2 3 7-2.5-1-4.5-.6-6 1.5" />
+          <path d="M12 11.5c-2.5 1.8-3.5 4.2-3 7 2.5-1 4.5-.6 6 1.5" />
+          <path d="M12 11v10" />
         </IconShell>
       );
 
     case "chocolate":
       return (
         <IconShell className={className}>
-          <rect x="5" y="7" width="14" height="10" rx="1" />
-          <path d="M5 12h14M12 7v10M8.5 7v10M15.5 7v10" />
-          <path d="M15 4.5 18.5 7l-2 2.5" />
+          <rect x="5" y="6" width="14" height="12" rx="1.2" />
+          <path d="M5 12h14M12 6v12M8.5 6v12M15.5 6v12" />
         </IconShell>
       );
 
@@ -129,11 +124,9 @@ export function IndustryIcon({ icon, className }: IndustryIconProps) {
     case "cosmetics":
       return (
         <IconShell className={className}>
-          <path d="M8 7.5c1.5-2 4-3 6.5-2.5 2 .4 3.5 1.8 4 3.5" />
-          <path d="M9 10.5c.8.4 1.8.5 2.8.2" />
-          <path d="M8.5 14c1.2 2.5 3.5 4 6 4.2" />
-          <path d="M16.5 8.5c1.5 1.2 2.5 3 2.8 5" />
-          <circle cx="11" cy="11.5" r="0.8" fill="currentColor" stroke="none" />
+          <path d="M10 3h4v3l-1 1.5v2H11V7.5L10 6V3z" />
+          <path d="M10.5 9.5h3V20a1.5 1.5 0 01-1.5 1.5h0A1.5 1.5 0 0110.5 20V9.5z" />
+          <path d="M10.5 13h3" />
         </IconShell>
       );
 
@@ -186,9 +179,9 @@ export function IndustryIcon({ icon, className }: IndustryIconProps) {
     case "jewelry":
       return (
         <IconShell className={className}>
-          <path d="M12 4.5c2.5 2.8 4 5.5 4 8.2A4 4 0 0112 16.8a4 4 0 01-4-4.1c0-2.7 1.5-5.4 4-8.2z" />
-          <circle cx="12" cy="12.5" r="1.8" />
-          <path d="M10.5 20h3" />
+          <path d="M12 4.5 14.5 9H9.5L12 4.5z" />
+          <path d="M9.5 9h5l2 3.5-4.5 7.5L7.5 12.5 9.5 9z" />
+          <path d="M9.5 9 12 21M14.5 9 12 21" />
         </IconShell>
       );
 
@@ -217,12 +210,10 @@ export function IndustryIcon({ icon, className }: IndustryIconProps) {
     case "presentation":
       return (
         <IconShell className={className}>
-          <path d="M8.5 8.5 12 4.5l3.5 4H8.5z" />
-          <path d="M9.5 8.5v4.5h5V8.5" />
-          <path d="M8 13h8v1.5H8z" />
-          <path d="M10.5 14.5 9 20.5M13.5 14.5 15 20.5" />
-          <path d="M8 20.5h8" />
-          <path d="M12 4.5V3" />
+          <rect x="4" y="5" width="16" height="12" rx="1.5" />
+          <path d="M8 9h8M8 12h5" />
+          <path d="M9 21l3-4 3 4" />
+          <path d="M8 21h8" />
         </IconShell>
       );
 
