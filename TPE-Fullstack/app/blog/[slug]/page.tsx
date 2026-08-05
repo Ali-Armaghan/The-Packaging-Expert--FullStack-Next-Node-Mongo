@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import DOMPurify from "isomorphic-dompurify";
 import { BlogPostCard } from "@/components/blog/BlogPostCard";
 import { Container } from "@/components/ui/Container";
 import { siteConfig } from "@/config/site";
+import { sanitizeBlogHtml } from "@/lib/blog/sanitizeHtml";
 import {
   getPublishedPostBySlug,
-  getPublishedSlugs,
   getRelatedPublicPosts,
 } from "@/lib/blog/queries";
 import { estimateReadingMinutes } from "@/lib/blog/seoScore";
+import { isHttpUrl, safeAbsoluteUrl } from "@/lib/url";
 
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
@@ -19,78 +19,85 @@ type BlogPostPageProps = {
 
 export const dynamic = "force-dynamic";
 
-export async function generateStaticParams() {
-  try {
-    const slugs = await getPublishedSlugs();
-    return slugs.map((slug) => ({ slug }));
-  } catch {
-    return [];
-  }
-}
-
 export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const post = await getPublishedPostBySlug(slug);
+  try {
+    const { slug } = await params;
+    const post = await getPublishedPostBySlug(slug);
 
-  if (!post) {
-    return { title: "Post Not Found" };
+    if (!post) {
+      return { title: "Post Not Found" };
+    }
+
+    const title = post.seoTitle || post.title;
+    const description = post.seoDescription || post.excerpt;
+    const pageUrl = `${siteConfig.url}/blog/${post.slug}`;
+    const canonical = safeAbsoluteUrl(post.canonicalUrl, pageUrl);
+    const ogImage = safeAbsoluteUrl(
+      post.ogImage || post.featuredImage.url,
+      "",
+    );
+
+    return {
+      title,
+      description,
+      keywords: post.seoKeywords.length ? post.seoKeywords : undefined,
+      alternates: {
+        canonical,
+      },
+      robots: {
+        index: post.robotsIndex,
+        follow: post.robotsFollow,
+      },
+      openGraph: {
+        type: "article",
+        title: post.ogTitle || title,
+        description: post.ogDescription || description,
+        url: pageUrl,
+        images: ogImage
+          ? [
+              {
+                url: ogImage,
+                alt: post.featuredImage.alt || post.title,
+              },
+            ]
+          : undefined,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: post.ogTitle || title,
+        description: post.ogDescription || description,
+        images: ogImage ? [ogImage] : undefined,
+      },
+    };
+  } catch {
+    return { title: "Blog" };
   }
-
-  const title = post.seoTitle || post.title;
-  const description = post.seoDescription || post.excerpt;
-  const ogImage = post.ogImage || post.featuredImage.url;
-  const url = `${siteConfig.url}/blog/${post.slug}`;
-
-  return {
-    title,
-    description,
-    keywords: post.seoKeywords.length ? post.seoKeywords : undefined,
-    alternates: {
-      canonical: post.canonicalUrl || url,
-    },
-    robots: {
-      index: post.robotsIndex,
-      follow: post.robotsFollow,
-    },
-    openGraph: {
-      type: "article",
-      title: post.ogTitle || title,
-      description: post.ogDescription || description,
-      url,
-      images: ogImage
-        ? [
-            {
-              url: ogImage,
-              alt: post.featuredImage.alt || post.title,
-            },
-          ]
-        : undefined,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: post.ogTitle || title,
-      description: post.ogDescription || description,
-      images: ogImage ? [ogImage] : undefined,
-    },
-  };
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
-  const post = await getPublishedPostBySlug(slug);
+
+  let post;
+  try {
+    post = await getPublishedPostBySlug(slug);
+  } catch {
+    throw new Error("Unable to load this blog post right now.");
+  }
 
   if (!post) {
     notFound();
   }
 
-  const related = await getRelatedPublicPosts(post.category, post.slug, 3);
+  let related: Awaited<ReturnType<typeof getRelatedPublicPosts>> = [];
+  try {
+    related = await getRelatedPublicPosts(post.category, post.slug, 3);
+  } catch {
+    related = [];
+  }
 
-  const safeHtml = DOMPurify.sanitize(post.content || "", {
-    USE_PROFILES: { html: true },
-    ADD_ATTR: ["target", "rel"],
-  });
+  const safeHtml = await sanitizeBlogHtml(post.content || "");
 
   const dateLabel = post.publishedAt
     ? new Date(post.publishedAt).toLocaleDateString("en-US", {
@@ -102,6 +109,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const readingMins = estimateReadingMinutes(post.content);
   const shareUrl = `${siteConfig.url}/blog/${post.slug}`;
+  const featuredUrl = post.featuredImage.url;
+  const canShowImage = isHttpUrl(featuredUrl);
 
   return (
     <article className="bg-gradient-to-b from-[#f4faf7] via-white to-white py-10 sm:py-14">
@@ -133,10 +142,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </div>
         </header>
 
-        {post.featuredImage.url && (
+        {canShowImage ? (
           <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-2xl bg-muted shadow-sm ring-1 ring-black/5">
             <Image
-              src={post.featuredImage.url}
+              src={featuredUrl}
               alt={post.featuredImage.alt || post.title}
               fill
               className="object-cover"
@@ -144,7 +153,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               priority
             />
           </div>
-        )}
+        ) : null}
 
         {post.excerpt && (
           <p className="mt-8 border-l-4 border-primary/40 pl-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
