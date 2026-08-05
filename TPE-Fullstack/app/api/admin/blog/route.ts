@@ -50,9 +50,15 @@ function buildPayload(
     ogImage: payload.ogImage ?? "",
     ogTitle: payload.ogTitle ?? "",
     ogDescription: payload.ogDescription ?? "",
+    twitterTitle: payload.twitterTitle ?? "",
+    twitterDescription: payload.twitterDescription ?? "",
+    twitterImage: payload.twitterImage ?? "",
+    twitterCard: payload.twitterCard ?? "summary_large_image",
     robotsIndex: payload.robotsIndex ?? true,
     robotsFollow: payload.robotsFollow ?? true,
+    robotsNoArchive: payload.robotsNoArchive ?? false,
     focusKeyword: payload.focusKeyword ?? "",
+    secondaryKeywords: payload.secondaryKeywords ?? [],
   };
 }
 

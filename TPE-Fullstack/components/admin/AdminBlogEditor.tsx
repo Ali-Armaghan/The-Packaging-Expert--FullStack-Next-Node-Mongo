@@ -41,6 +41,22 @@ import { cn } from "@/lib/utils";
 import { BlogRichTextEditor } from "./BlogRichTextEditor";
 import { ImageUploadField } from "./ImageUploadField";
 
+const SEO_FIELD_KEYS = [
+  "seoTitle",
+  "seoDescription",
+  "seoKeywords",
+  "canonicalUrl",
+  "focusKeyword",
+  "secondaryKeywords",
+  "ogTitle",
+  "ogDescription",
+  "ogImage",
+  "twitterTitle",
+  "twitterDescription",
+  "twitterImage",
+  "twitterCard",
+] as const;
+
 type FormState = {
   title: string;
   slug: string;
@@ -62,9 +78,15 @@ type FormState = {
   ogImage: string;
   ogTitle: string;
   ogDescription: string;
+  twitterTitle: string;
+  twitterDescription: string;
+  twitterImage: string;
+  twitterCard: "summary_large_image" | "summary";
   robotsIndex: boolean;
   robotsFollow: boolean;
+  robotsNoArchive: boolean;
   focusKeyword: string;
+  secondaryKeywords: string[];
 };
 
 function emptyForm(): FormState {
@@ -89,9 +111,15 @@ function emptyForm(): FormState {
     ogImage: "",
     ogTitle: "",
     ogDescription: "",
+    twitterTitle: "",
+    twitterDescription: "",
+    twitterImage: "",
+    twitterCard: "summary_large_image",
     robotsIndex: true,
     robotsFollow: true,
+    robotsNoArchive: false,
     focusKeyword: "",
+    secondaryKeywords: [],
   };
 }
 
@@ -119,9 +147,16 @@ function fromPost(post: SerializedBlogPost): FormState {
     ogImage: post.ogImage,
     ogTitle: post.ogTitle,
     ogDescription: post.ogDescription,
+    twitterTitle: post.twitterTitle,
+    twitterDescription: post.twitterDescription,
+    twitterImage: post.twitterImage,
+    twitterCard:
+      post.twitterCard === "summary" ? "summary" : "summary_large_image",
     robotsIndex: post.robotsIndex,
     robotsFollow: post.robotsFollow,
+    robotsNoArchive: post.robotsNoArchive,
     focusKeyword: post.focusKeyword,
+    secondaryKeywords: post.secondaryKeywords,
   };
 }
 
@@ -151,6 +186,7 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
   const [slugTouched, setSlugTouched] = useState(Boolean(postId));
   const [tagInput, setTagInput] = useState("");
   const [keywordInput, setKeywordInput] = useState("");
+  const [secondaryKeywordInput, setSecondaryKeywordInput] = useState("");
 
   const clearFieldError = (key: string) => {
     setFieldErrors((prev) => {
@@ -204,6 +240,7 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
         seoTitle: form.seoTitle,
         seoDescription: form.seoDescription,
         focusKeyword: form.focusKeyword,
+        secondaryKeywords: form.secondaryKeywords,
       }),
     [form],
   );
@@ -212,7 +249,7 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
 
   const addChip = (
     value: string,
-    key: "tags" | "seoKeywords",
+    key: "tags" | "seoKeywords" | "secondaryKeywords",
     clear: () => void,
   ) => {
     const next = value.trim();
@@ -222,8 +259,17 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
         ...prev,
         [key]:
           key === "seoKeywords"
-            ? "Each SEO keyword must be 60 characters or fewer"
-            : "Each tag must be 60 characters or fewer",
+            ? "Each meta keyword must be 60 characters or fewer"
+            : key === "secondaryKeywords"
+              ? "Each secondary keyword must be 60 characters or fewer"
+              : "Each tag must be 60 characters or fewer",
+      }));
+      return;
+    }
+    if (key === "secondaryKeywords" && form.secondaryKeywords.length >= 15) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        secondaryKeywords: "Add up to 15 secondary keywords",
       }));
       return;
     }
@@ -270,6 +316,15 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
         ogTitle: form.ogTitle || form.seoTitle || form.title,
         ogDescription:
           form.ogDescription || form.seoDescription || form.excerpt,
+        twitterImage:
+          form.twitterImage || form.ogImage || form.featuredImage.url,
+        twitterTitle:
+          form.twitterTitle || form.ogTitle || form.seoTitle || form.title,
+        twitterDescription:
+          form.twitterDescription ||
+          form.ogDescription ||
+          form.seoDescription ||
+          form.excerpt,
       };
 
       const schema = postId ? updateBlogPostSchema : createBlogPostSchema;
@@ -279,18 +334,8 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
         setFieldErrors(nextErrors);
         setError(summarizeBlogFieldErrors(nextErrors));
         const firstKey = Object.keys(nextErrors)[0];
-        const seoKeys = [
-          "seoTitle",
-          "seoDescription",
-          "seoKeywords",
-          "canonicalUrl",
-          "focusKeyword",
-          "ogTitle",
-          "ogDescription",
-          "ogImage",
-        ];
         const targetId = firstKey
-          ? seoKeys.includes(firstKey)
+          ? (SEO_FIELD_KEYS as readonly string[]).includes(firstKey)
             ? "seo-section"
             : firstKey === "featuredImage.alt"
               ? "featured-alt"
@@ -324,10 +369,10 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
           const firstKey = Object.keys(nextErrors)[0];
           document
             .getElementById(
-              firstKey?.startsWith("seo") ||
-                firstKey === "canonicalUrl" ||
-                firstKey === "focusKeyword" ||
-                firstKey?.startsWith("og")
+              firstKey &&
+                ((SEO_FIELD_KEYS as readonly string[]).includes(firstKey) ||
+                  firstKey.startsWith("twitter") ||
+                  firstKey === "secondaryKeywords")
                 ? "seo-section"
                 : firstKey === "featuredImage.alt"
                   ? "featured-alt"
@@ -785,16 +830,7 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
             id="seo-section"
             className={cn(
               Object.keys(fieldErrors).some((k) =>
-                [
-                  "seoTitle",
-                  "seoDescription",
-                  "seoKeywords",
-                  "canonicalUrl",
-                  "focusKeyword",
-                  "ogTitle",
-                  "ogDescription",
-                  "ogImage",
-                ].includes(k),
+                (SEO_FIELD_KEYS as readonly string[]).includes(k),
               ) && "ring-1 ring-destructive/40",
             )}
           >
@@ -805,6 +841,9 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                Basics
+              </p>
               <div className="rounded-lg border border-border bg-muted/30 p-3">
                 <p className="truncate text-sm text-primary">
                   {(form.seoTitle || form.title || "Page title").slice(0, 60)}
@@ -891,25 +930,7 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="focusKeyword">Focus keyword</Label>
-                <Input
-                  id="focusKeyword"
-                  value={form.focusKeyword}
-                  aria-invalid={Boolean(fieldErrors.focusKeyword)}
-                  className={fieldClass(Boolean(fieldErrors.focusKeyword))}
-                  onChange={(e) => {
-                    clearFieldError("focusKeyword");
-                    setForm((prev) => ({
-                      ...prev,
-                      focusKeyword: e.target.value,
-                    }));
-                  }}
-                />
-                <FieldError message={fieldErrors.focusKeyword} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>SEO keywords</Label>
+                <Label>Meta keywords</Label>
                 <div className="flex flex-wrap gap-1.5">
                   {form.seoKeywords.map((keyword) => (
                     <Badge
@@ -994,6 +1015,94 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
 
               <Separator />
               <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                Keywords
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="focusKeyword">Primary keyword</Label>
+                <Input
+                  id="focusKeyword"
+                  value={form.focusKeyword}
+                  aria-invalid={Boolean(fieldErrors.focusKeyword)}
+                  className={fieldClass(Boolean(fieldErrors.focusKeyword))}
+                  onChange={(e) => {
+                    clearFieldError("focusKeyword");
+                    setForm((prev) => ({
+                      ...prev,
+                      focusKeyword: e.target.value,
+                    }));
+                  }}
+                  placeholder="Main phrase this post should rank for"
+                />
+                <FieldError message={fieldErrors.focusKeyword} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Secondary keywords</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {form.secondaryKeywords.map((keyword) => (
+                    <Badge
+                      key={keyword}
+                      variant="outline"
+                      className="gap-1 pr-1"
+                    >
+                      {keyword}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          clearFieldError("secondaryKeywords");
+                          setForm((prev) => ({
+                            ...prev,
+                            secondaryKeywords: prev.secondaryKeywords.filter(
+                              (k) => k !== keyword,
+                            ),
+                          }));
+                        }}
+                      >
+                        ×
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={secondaryKeywordInput}
+                    aria-invalid={Boolean(fieldErrors.secondaryKeywords)}
+                    className={fieldClass(
+                      Boolean(fieldErrors.secondaryKeywords),
+                    )}
+                    onChange={(e) => {
+                      clearFieldError("secondaryKeywords");
+                      setSecondaryKeywordInput(e.target.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addChip(
+                          secondaryKeywordInput,
+                          "secondaryKeywords",
+                          () => setSecondaryKeywordInput(""),
+                        );
+                      }
+                    }}
+                    placeholder="Related phrases (max 15)"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      addChip(secondaryKeywordInput, "secondaryKeywords", () =>
+                        setSecondaryKeywordInput(""),
+                      )
+                    }
+                  >
+                    Add
+                  </Button>
+                </div>
+                <FieldError message={fieldErrors.secondaryKeywords} />
+              </div>
+
+              <Separator />
+              <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                 Open Graph
               </p>
               <div className="space-y-2">
@@ -1044,6 +1153,87 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
               </div>
 
               <Separator />
+              <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                Twitter / X
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="twitterCard">Card type</Label>
+                <Select
+                  value={form.twitterCard}
+                  onValueChange={(value) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      twitterCard: value as "summary_large_image" | "summary",
+                    }))
+                  }
+                >
+                  <SelectTrigger id="twitterCard">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="summary_large_image">
+                      Summary large image
+                    </SelectItem>
+                    <SelectItem value="summary">Summary</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="twitterTitle">Twitter title</Label>
+                <Input
+                  id="twitterTitle"
+                  value={form.twitterTitle}
+                  aria-invalid={Boolean(fieldErrors.twitterTitle)}
+                  className={fieldClass(Boolean(fieldErrors.twitterTitle))}
+                  onChange={(e) => {
+                    clearFieldError("twitterTitle");
+                    setForm((prev) => ({
+                      ...prev,
+                      twitterTitle: e.target.value,
+                    }));
+                  }}
+                  placeholder="Defaults to OG / SEO title"
+                />
+                <FieldError message={fieldErrors.twitterTitle} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="twitterDescription">Twitter description</Label>
+                <textarea
+                  id="twitterDescription"
+                  rows={2}
+                  value={form.twitterDescription}
+                  aria-invalid={Boolean(fieldErrors.twitterDescription)}
+                  onChange={(e) => {
+                    clearFieldError("twitterDescription");
+                    setForm((prev) => ({
+                      ...prev,
+                      twitterDescription: e.target.value,
+                    }));
+                  }}
+                  className={fieldClass(
+                    Boolean(fieldErrors.twitterDescription),
+                    "w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+                  )}
+                  placeholder="Defaults to OG / SEO description"
+                />
+                <FieldError message={fieldErrors.twitterDescription} />
+              </div>
+              <div className="space-y-2">
+                <Label>Twitter image</Label>
+                <ImageUploadField
+                  value={form.twitterImage}
+                  onChange={(twitterImage) =>
+                    setForm((prev) => ({ ...prev, twitterImage }))
+                  }
+                  folder="blog/twitter"
+                  label="Upload Twitter image"
+                />
+              </div>
+
+              <Separator />
+              <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                Robots
+              </p>
               <label className="flex items-center gap-2 text-sm">
                 <Checkbox
                   checked={form.robotsIndex}
@@ -1061,6 +1251,18 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                   }
                 />
                 Allow following links
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={form.robotsNoArchive}
+                  onCheckedChange={(v) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      robotsNoArchive: v === true,
+                    }))
+                  }
+                />
+                No archive (discourage cached copies)
               </label>
             </CardContent>
           </Card>

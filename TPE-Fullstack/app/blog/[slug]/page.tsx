@@ -38,6 +38,14 @@ export async function generateMetadata({
       post.ogImage || post.featuredImage.url,
       "",
     );
+    const twitterImage = safeAbsoluteUrl(
+      post.twitterImage || post.ogImage || post.featuredImage.url,
+      "",
+    );
+    const twitterTitle =
+      post.twitterTitle || post.ogTitle || title;
+    const twitterDescription =
+      post.twitterDescription || post.ogDescription || description;
 
     return {
       title,
@@ -49,6 +57,7 @@ export async function generateMetadata({
       robots: {
         index: post.robotsIndex,
         follow: post.robotsFollow,
+        noarchive: post.robotsNoArchive || undefined,
       },
       openGraph: {
         type: "article",
@@ -65,10 +74,13 @@ export async function generateMetadata({
           : undefined,
       },
       twitter: {
-        card: "summary_large_image",
-        title: post.ogTitle || title,
-        description: post.ogDescription || description,
-        images: ogImage ? [ogImage] : undefined,
+        card:
+          post.twitterCard === "summary"
+            ? "summary"
+            : "summary_large_image",
+        title: twitterTitle,
+        description: twitterDescription,
+        images: twitterImage ? [twitterImage] : undefined,
       },
     };
   } catch {
@@ -111,9 +123,47 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const shareUrl = `${siteConfig.url}/blog/${post.slug}`;
   const featuredUrl = post.featuredImage.url;
   const canShowImage = isHttpUrl(featuredUrl);
+  const jsonLdImage = safeAbsoluteUrl(
+    post.ogImage || post.featuredImage.url,
+    "",
+  );
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.seoTitle || post.title,
+    description: post.seoDescription || post.excerpt,
+    image: jsonLdImage || undefined,
+    datePublished: post.publishedAt || undefined,
+    dateModified: post.updatedAt || post.publishedAt || undefined,
+    author: {
+      "@type": "Person",
+      name: post.authorName || "Packaging Expert Team",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": shareUrl,
+    },
+    keywords: [
+      post.focusKeyword,
+      ...post.secondaryKeywords,
+      ...post.seoKeywords,
+    ]
+      .map((k) => k.trim())
+      .filter(Boolean)
+      .join(", "),
+  };
 
   return (
     <article className="bg-gradient-to-b from-[#f4faf7] via-white to-white py-10 sm:py-14">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Container className="max-w-3xl">
         <Link
           href="/blog"

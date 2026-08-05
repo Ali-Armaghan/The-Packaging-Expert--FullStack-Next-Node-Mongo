@@ -110,14 +110,43 @@ export const blogPostBodySchema = z.object({
     .max(200, "OG description must be 200 characters or fewer")
     .optional()
     .default(""),
+  twitterTitle: z
+    .string()
+    .trim()
+    .max(100, "Twitter title must be 100 characters or fewer")
+    .optional()
+    .default(""),
+  twitterDescription: z
+    .string()
+    .trim()
+    .max(200, "Twitter description must be 200 characters or fewer")
+    .optional()
+    .default(""),
+  twitterImage: z.string().trim().optional().default(""),
+  twitterCard: z
+    .enum(["summary_large_image", "summary"])
+    .optional()
+    .default("summary_large_image"),
   robotsIndex: z.boolean().optional().default(true),
   robotsFollow: z.boolean().optional().default(true),
+  robotsNoArchive: z.boolean().optional().default(false),
   focusKeyword: z
     .string()
     .trim()
-    .max(100, "Focus keyword must be 100 characters or fewer")
+    .max(100, "Primary keyword must be 100 characters or fewer")
     .optional()
     .default(""),
+  secondaryKeywords: z
+    .array(
+      z
+        .string()
+        .trim()
+        .min(1, "Secondary keyword cannot be empty")
+        .max(60, "Each secondary keyword must be 60 characters or fewer"),
+    )
+    .max(15, "Add up to 15 secondary keywords")
+    .optional()
+    .default([]),
 });
 
 export const createBlogPostSchema = blogPostBodySchema;
@@ -149,14 +178,20 @@ export const BLOG_FIELD_LABELS: Record<string, string> = {
   status: "Status",
   seoTitle: "SEO title",
   seoDescription: "SEO description",
-  seoKeywords: "SEO keywords",
+  seoKeywords: "Meta keywords",
   canonicalUrl: "Canonical URL",
   ogImage: "OG image",
   ogTitle: "OG title",
   ogDescription: "OG description",
-  focusKeyword: "Focus keyword",
+  twitterTitle: "Twitter title",
+  twitterDescription: "Twitter description",
+  twitterImage: "Twitter image",
+  twitterCard: "Twitter card",
+  focusKeyword: "Primary keyword",
+  secondaryKeywords: "Secondary keywords",
   robotsIndex: "Search indexing",
   robotsFollow: "Follow links",
+  robotsNoArchive: "No archive",
 };
 
 type ZodFlatten = {

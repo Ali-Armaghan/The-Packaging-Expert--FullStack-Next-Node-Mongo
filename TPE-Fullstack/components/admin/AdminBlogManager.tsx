@@ -181,9 +181,15 @@ export function AdminBlogManager() {
           ogImage: post.ogImage,
           ogTitle: post.ogTitle,
           ogDescription: post.ogDescription,
+          twitterTitle: post.twitterTitle,
+          twitterDescription: post.twitterDescription,
+          twitterImage: post.twitterImage,
+          twitterCard: post.twitterCard,
           robotsIndex: post.robotsIndex,
           robotsFollow: post.robotsFollow,
+          robotsNoArchive: post.robotsNoArchive,
           focusKeyword: post.focusKeyword,
+          secondaryKeywords: post.secondaryKeywords,
         }),
       });
       const json = await res.json();

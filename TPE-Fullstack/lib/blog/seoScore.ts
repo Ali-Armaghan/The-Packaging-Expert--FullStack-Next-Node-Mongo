@@ -19,11 +19,15 @@ export function buildSeoChecks(input: {
   seoTitle: string;
   seoDescription: string;
   focusKeyword: string;
+  secondaryKeywords?: string[];
 }): { score: number; checks: SeoCheck[] } {
   const title = input.seoTitle || input.title;
   const description = input.seoDescription || input.excerpt;
   const body = stripHtml(input.content).toLowerCase();
   const keyword = input.focusKeyword.trim().toLowerCase();
+  const secondary = (input.secondaryKeywords ?? [])
+    .map((k) => k.trim().toLowerCase())
+    .filter(Boolean);
 
   const checks: SeoCheck[] = [
     {
@@ -60,24 +64,34 @@ export function buildSeoChecks(input: {
       hint: `${stripHtml(input.content).split(/\s+/).filter(Boolean).length} words`,
     },
     {
-      id: "focus-set",
-      label: "Focus keyword set",
+      id: "primary-set",
+      label: "Primary keyword set",
       ok: Boolean(keyword),
     },
     {
-      id: "focus-title",
-      label: "Focus keyword in title",
+      id: "primary-title",
+      label: "Primary keyword in title",
       ok: keyword ? title.toLowerCase().includes(keyword) : false,
     },
     {
-      id: "focus-body",
-      label: "Focus keyword in body",
+      id: "primary-body",
+      label: "Primary keyword in body",
       ok: keyword ? body.includes(keyword) : false,
     },
     {
-      id: "focus-meta",
-      label: "Focus keyword in meta description",
+      id: "primary-meta",
+      label: "Primary keyword in meta description",
       ok: keyword ? description.toLowerCase().includes(keyword) : false,
+    },
+    {
+      id: "secondary-set",
+      label: "At least one secondary keyword set",
+      ok: secondary.length > 0,
+    },
+    {
+      id: "secondary-body",
+      label: "A secondary keyword appears in body",
+      ok: secondary.length > 0 ? secondary.some((k) => body.includes(k)) : false,
     },
   ];
 

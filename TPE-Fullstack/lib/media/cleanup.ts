@@ -12,6 +12,7 @@ type IndustryMedia = {
 type BlogMedia = {
   featuredImage?: { url?: string | null } | null;
   ogImage?: string | null;
+  twitterImage?: string | null;
   content?: string | null;
 };
 
@@ -31,6 +32,7 @@ export function collectBlogMediaUrls(doc: BlogMedia) {
   const urls: string[] = [];
   if (doc.featuredImage?.url) urls.push(doc.featuredImage.url);
   if (doc.ogImage) urls.push(doc.ogImage);
+  if (doc.twitterImage) urls.push(doc.twitterImage);
   urls.push(...extractImageUrlsFromHtml(doc.content));
   return urls;
 }

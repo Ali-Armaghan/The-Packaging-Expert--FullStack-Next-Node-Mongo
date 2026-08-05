@@ -95,14 +95,32 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (payload.ogDescription !== undefined) {
       post.ogDescription = payload.ogDescription;
     }
+    if (payload.twitterTitle !== undefined) {
+      post.twitterTitle = payload.twitterTitle;
+    }
+    if (payload.twitterDescription !== undefined) {
+      post.twitterDescription = payload.twitterDescription;
+    }
+    if (payload.twitterImage !== undefined) {
+      post.twitterImage = payload.twitterImage;
+    }
+    if (payload.twitterCard !== undefined) {
+      post.twitterCard = payload.twitterCard;
+    }
     if (payload.robotsIndex !== undefined) {
       post.robotsIndex = payload.robotsIndex;
     }
     if (payload.robotsFollow !== undefined) {
       post.robotsFollow = payload.robotsFollow;
     }
+    if (payload.robotsNoArchive !== undefined) {
+      post.robotsNoArchive = payload.robotsNoArchive;
+    }
     if (payload.focusKeyword !== undefined) {
       post.focusKeyword = payload.focusKeyword;
+    }
+    if (payload.secondaryKeywords !== undefined) {
+      post.set("secondaryKeywords", payload.secondaryKeywords);
     }
 
     if (payload.status !== undefined) {

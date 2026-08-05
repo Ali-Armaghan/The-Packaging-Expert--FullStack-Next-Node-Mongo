@@ -33,9 +33,15 @@ export function serializeBlogPost(doc: {
   ogImage?: string | null;
   ogTitle?: string | null;
   ogDescription?: string | null;
+  twitterTitle?: string | null;
+  twitterDescription?: string | null;
+  twitterImage?: string | null;
+  twitterCard?: string | null;
   robotsIndex?: boolean | null;
   robotsFollow?: boolean | null;
+  robotsNoArchive?: boolean | null;
   focusKeyword?: string | null;
+  secondaryKeywords?: string[] | null;
   createdAt?: Date;
   updatedAt?: Date;
 }) {
@@ -65,9 +71,17 @@ export function serializeBlogPost(doc: {
     ogImage: doc.ogImage ?? "",
     ogTitle: doc.ogTitle ?? "",
     ogDescription: doc.ogDescription ?? "",
+    twitterTitle: doc.twitterTitle ?? "",
+    twitterDescription: doc.twitterDescription ?? "",
+    twitterImage: doc.twitterImage ?? "",
+    twitterCard: (doc.twitterCard === "summary"
+      ? "summary"
+      : "summary_large_image") as "summary" | "summary_large_image",
     robotsIndex: doc.robotsIndex ?? true,
     robotsFollow: doc.robotsFollow ?? true,
+    robotsNoArchive: Boolean(doc.robotsNoArchive),
     focusKeyword: doc.focusKeyword ?? "",
+    secondaryKeywords: doc.secondaryKeywords ?? [],
     createdAt: doc.createdAt?.toISOString?.() ?? undefined,
     updatedAt: doc.updatedAt?.toISOString?.() ?? undefined,
   };
