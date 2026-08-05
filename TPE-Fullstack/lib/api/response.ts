@@ -22,9 +22,12 @@ export function apiError(
 
 function summarizeZodFlatten(error: ZodError) {
   const flat = error.flatten();
-  const parts = Object.entries(flat.fieldErrors).flatMap(([key, messages]) =>
-    (messages ?? []).slice(0, 1).map((message) => `${key}: ${message}`),
-  );
+  const parts = Object.entries(flat.fieldErrors).flatMap(([key, messages]) => {
+    const list = Array.isArray(messages)
+      ? messages.filter((m): m is string => typeof m === "string")
+      : [];
+    return list.slice(0, 1).map((message) => `${key}: ${message}`);
+  });
   if (parts.length === 0 && flat.formErrors.length > 0) {
     return flat.formErrors[0] ?? "Validation failed";
   }

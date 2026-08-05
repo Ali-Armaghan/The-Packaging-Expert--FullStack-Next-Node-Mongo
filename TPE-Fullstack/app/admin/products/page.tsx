@@ -1,10 +1,5 @@
-import { AdminPlaceholder } from "@/components/admin";
+import { AdminProductsManager } from "@/components/admin/AdminProductsManager";
 
 export default function AdminProductsPage() {
-  return (
-    <AdminPlaceholder
-      title="Products"
-      description="Manage custom packaging products, images, and flexible specs."
-    />
-  );
+  return <AdminProductsManager />;
 }

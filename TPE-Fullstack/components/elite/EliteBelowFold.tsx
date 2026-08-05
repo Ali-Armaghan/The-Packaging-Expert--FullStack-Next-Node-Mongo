@@ -88,18 +88,32 @@ type SectionMap = Partial<
 
 async function loadSection<K extends EliteBelowFoldKey>(
   section: K,
+  slug?: string,
 ): Promise<ElitePageContent[K]> {
-  // When CMS is ready, replace with:
-  // const res = await fetch(`/api/elite/${section}`, { cache: "no-store" });
-  // ...
-  return ELITE_PAGE_DEFAULTS[section];
+  if (!slug) {
+    return ELITE_PAGE_DEFAULTS[section];
+  }
+
+  const res = await fetch(`/api/group/${encodeURIComponent(slug)}/${section}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to load ${section}`);
+  }
+  const json = (await res.json()) as {
+    success: boolean;
+    data?: { section: K; data: ElitePageContent[K] };
+  };
+  if (!json.success || !json.data) {
+    throw new Error(`Invalid response for ${section}`);
+  }
+  return json.data.data;
 }
 
 /**
- * Code-splits below-fold sections so the hero paints with a small JS payload.
- * Loads section data in parallel (defaults today, `/api/elite/:section` later).
+ * Code-splits below-fold sections. With `slug`, loads Group By CMS + products.
  */
-export function EliteBelowFold() {
+export function EliteBelowFold({ slug }: { slug?: string } = {}) {
   const [sections, setSections] = useState<SectionMap>({});
   const [failed, setFailed] = useState<Partial<Record<EliteBelowFoldKey, true>>>(
     {},
@@ -107,9 +121,11 @@ export function EliteBelowFold() {
 
   useEffect(() => {
     let cancelled = false;
+    setSections({});
+    setFailed({});
 
     BELOW_FOLD_ORDER.forEach((section) => {
-      loadSection(section)
+      loadSection(section, slug)
         .then((data) => {
           if (cancelled) return;
           setSections((prev) => ({ ...prev, [section]: data }));
@@ -123,7 +139,7 @@ export function EliteBelowFold() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [slug]);
 
   return (
     <>

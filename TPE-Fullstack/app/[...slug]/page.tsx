@@ -1,21 +1,36 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { EliteLanding } from "@/components/elite/EliteLanding";
 import { Button } from "@/components/ui/site-button";
 import { Container } from "@/components/ui/Container";
+import { getActiveGroupByBySlug } from "@/lib/groupBy/queries";
+import { isReservedGroupSlug } from "@/lib/groupBy/reservedSlugs";
 
-export const metadata: Metadata = {
-  title: "Coming soon",
-  description: "This page is coming soon.",
-};
-
-type ComingSoonPageProps = {
+type PageProps = {
   params: Promise<{ slug: string[] }>;
 };
 
-export default async function ComingSoonPage({ params }: ComingSoonPageProps) {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const path = `/${slug.join("/")}`;
+  if (slug.length === 1 && !isReservedGroupSlug(slug[0]!)) {
+    const group = await getActiveGroupByBySlug(slug[0]!);
+    if (group) {
+      return {
+        title: group.content.hero.brand || group.name,
+        description: group.content.hero.description || group.name,
+      };
+    }
+  }
 
+  return {
+    title: "Coming soon",
+    description: "This page is coming soon.",
+  };
+}
+
+function ComingSoon({ path }: { path: string }) {
   return (
     <section className="flex min-h-[calc(100dvh-8.5rem)] items-center bg-muted/40 py-16">
       <Container className="max-w-xl text-center">
@@ -51,4 +66,21 @@ export default async function ComingSoonPage({ params }: ComingSoonPageProps) {
       </Container>
     </section>
   );
+}
+
+export default async function CatchAllPage({ params }: PageProps) {
+  const { slug } = await params;
+  const path = `/${slug.join("/")}`;
+
+  if (slug.length === 1) {
+    const segment = slug[0]!;
+    if (!isReservedGroupSlug(segment)) {
+      const group = await getActiveGroupByBySlug(segment);
+      if (group) {
+        return <EliteLanding hero={group.content.hero} slug={group.slug} />;
+      }
+    }
+  }
+
+  return <ComingSoon path={path} />;
 }

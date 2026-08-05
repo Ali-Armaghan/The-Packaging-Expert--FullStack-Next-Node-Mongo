@@ -12,7 +12,16 @@ const productSchema = new Schema(
       maxlength: 180,
     },
     description: { type: String, trim: true, maxlength: 5000 },
+    price: { type: String, trim: true, maxlength: 40, default: "" },
+    image: { type: String, trim: true, default: "" },
     category: { type: Schema.Types.ObjectId, ref: "Category", index: true },
+    groupByIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "GroupBy",
+        index: true,
+      },
+    ],
     images: [{ type: String, trim: true }],
     industryTags: [{ type: String, trim: true, lowercase: true }],
     /** Flexible packaging specs that vary by category */
@@ -24,6 +33,7 @@ const productSchema = new Schema(
 );
 
 productSchema.index({ isActive: 1, sortOrder: 1 });
+productSchema.index({ groupByIds: 1, isActive: 1, sortOrder: 1 });
 productSchema.index({ industryTags: 1 });
 productSchema.index({ name: "text", description: "text" });
 
