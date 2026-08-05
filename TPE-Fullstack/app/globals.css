@@ -544,3 +544,44 @@ html {
     @apply font-sans;
   }
 }
+
+/* Elite landing page motion / tokens */
+.elite-page {
+  --elite-sand: #efe6da;
+  --elite-sand-deep: #e4d5c3;
+  --elite-ink: #141820;
+}
+
+.elite-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.elite-page--ready .elite-reveal {
+  opacity: 1;
+  transform: none;
+}
+
+.elite-reveal-d1 {
+  transition-delay: 0.08s;
+}
+
+.elite-reveal-d2 {
+  transition-delay: 0.16s;
+}
+
+.elite-reveal-d3 {
+  transition-delay: 0.24s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .elite-reveal,
+  .elite-page--ready .elite-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
