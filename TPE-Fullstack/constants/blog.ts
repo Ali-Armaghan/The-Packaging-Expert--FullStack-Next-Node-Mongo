@@ -1,9 +1,13 @@
-export type BlogCategory =
-  | "marketing"
-  | "business"
-  | "events"
-  | "customer-success"
-  | "sustainability";
+/** Shared category ids — safe for client + server (no mongoose). */
+export const BLOG_CATEGORIES = [
+  "marketing",
+  "business",
+  "events",
+  "customer-success",
+  "sustainability",
+] as const;
+
+export type BlogCategory = (typeof BLOG_CATEGORIES)[number];
 
 export type BlogPost = {
   id: string;

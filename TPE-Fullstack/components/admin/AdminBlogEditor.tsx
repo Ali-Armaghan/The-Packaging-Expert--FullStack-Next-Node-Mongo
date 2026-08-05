@@ -8,6 +8,13 @@ import { blogCategories } from "@/constants/blog";
 import { buildSeoChecks, estimateReadingMinutes } from "@/lib/blog/seoScore";
 import { slugify } from "@/lib/slug";
 import type { SerializedBlogPost } from "@/lib/blog/serialize";
+import {
+  BLOG_FIELD_LABELS,
+  blogFieldErrorsFromFlatten,
+  createBlogPostSchema,
+  summarizeBlogFieldErrors,
+  updateBlogPostSchema,
+} from "@/lib/validations/blogPost";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AgenticLoader } from "@/components/ui/AgenticLoader";
 import { Badge } from "@/components/ui/badge";
@@ -122,15 +129,37 @@ type AdminBlogEditorProps = {
   postId?: string;
 };
 
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+  return <p className="text-xs text-destructive">{message}</p>;
+}
+
+function fieldClass(hasError: boolean, base?: string) {
+  return cn(
+    base,
+    hasError && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/30",
+  );
+}
+
 export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
   const router = useRouter();
   const [form, setForm] = useState(emptyForm());
   const [loading, setLoading] = useState(Boolean(postId));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [slugTouched, setSlugTouched] = useState(Boolean(postId));
   const [tagInput, setTagInput] = useState("");
   const [keywordInput, setKeywordInput] = useState("");
+
+  const clearFieldError = (key: string) => {
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!postId) return;
@@ -188,6 +217,17 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
   ) => {
     const next = value.trim();
     if (!next) return;
+    if (next.length > 60) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [key]:
+          key === "seoKeywords"
+            ? "Each SEO keyword must be 60 characters or fewer"
+            : "Each tag must be 60 characters or fewer",
+      }));
+      return;
+    }
+    clearFieldError(key);
     setForm((prev) => {
       if (prev[key].includes(next)) return prev;
       return { ...prev, [key]: [...prev[key], next] };
@@ -202,10 +242,18 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
     event.preventDefault();
     setSaving(true);
     setError(null);
+    setFieldErrors({});
 
     try {
       if (form.featuredImage.url && !form.featuredImage.alt.trim()) {
-        throw new Error("Featured image alt text is required for SEO.");
+        const message = "Featured image alt text is required for SEO.";
+        setFieldErrors({ "featuredImage.alt": message });
+        setError(`Featured image alt: ${message}`);
+        document
+          .getElementById("featured-alt")
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setSaving(false);
+        return;
       }
 
       const status = statusOverride ?? form.status;
@@ -224,16 +272,71 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
           form.ogDescription || form.seoDescription || form.excerpt,
       };
 
+      const schema = postId ? updateBlogPostSchema : createBlogPostSchema;
+      const parsed = schema.safeParse(payload);
+      if (!parsed.success) {
+        const nextErrors = blogFieldErrorsFromFlatten(parsed.error.flatten());
+        setFieldErrors(nextErrors);
+        setError(summarizeBlogFieldErrors(nextErrors));
+        const firstKey = Object.keys(nextErrors)[0];
+        const seoKeys = [
+          "seoTitle",
+          "seoDescription",
+          "seoKeywords",
+          "canonicalUrl",
+          "focusKeyword",
+          "ogTitle",
+          "ogDescription",
+          "ogImage",
+        ];
+        const targetId = firstKey
+          ? seoKeys.includes(firstKey)
+            ? "seo-section"
+            : firstKey === "featuredImage.alt"
+              ? "featured-alt"
+              : firstKey
+          : "seo-section";
+        document
+          .getElementById(targetId)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setSaving(false);
+        return;
+      }
+
       const res = await fetch(
         postId ? `/api/admin/blog/${postId}` : "/api/admin/blog",
         {
           method: postId ? "PATCH" : "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(parsed.data),
         },
       );
       const data = await res.json();
       if (!res.ok || !data.success) {
+        const nextErrors = blogFieldErrorsFromFlatten(data.details);
+        if (Object.keys(nextErrors).length > 0) {
+          setFieldErrors(nextErrors);
+          setError(
+            summarizeBlogFieldErrors(nextErrors) ||
+              data.error ||
+              "Failed to save post",
+          );
+          const firstKey = Object.keys(nextErrors)[0];
+          document
+            .getElementById(
+              firstKey?.startsWith("seo") ||
+                firstKey === "canonicalUrl" ||
+                firstKey === "focusKeyword" ||
+                firstKey?.startsWith("og")
+                ? "seo-section"
+                : firstKey === "featuredImage.alt"
+                  ? "featured-alt"
+                  : firstKey || "seo-section",
+            )
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+          setSaving(false);
+          return;
+        }
         throw new Error(data.error || "Failed to save post");
       }
 
@@ -317,8 +420,22 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
 
       {error && (
         <Alert variant="destructive">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertTitle>Could not save</AlertTitle>
+          <AlertDescription>
+            <p>{error}</p>
+            {Object.keys(fieldErrors).length > 0 ? (
+              <ul className="mt-2 list-disc space-y-0.5 pl-4 text-xs">
+                {Object.entries(fieldErrors).map(([key, message]) => (
+                  <li key={key}>
+                    <span className="font-medium">
+                      {BLOG_FIELD_LABELS[key] ?? key}
+                    </span>
+                    : {message}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </AlertDescription>
         </Alert>
       )}
 
@@ -336,8 +453,11 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                   id="title"
                   required
                   value={form.title}
+                  aria-invalid={Boolean(fieldErrors.title)}
+                  className={fieldClass(Boolean(fieldErrors.title))}
                   onChange={(e) => {
                     const title = e.target.value;
+                    clearFieldError("title");
                     setForm((prev) => ({
                       ...prev,
                       title,
@@ -346,20 +466,25 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                   }}
                   placeholder="How to design sustainable packaging"
                 />
+                <FieldError message={fieldErrors.title} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="slug">Slug</Label>
                 <Input
                   id="slug"
                   value={form.slug}
+                  aria-invalid={Boolean(fieldErrors.slug)}
+                  className={fieldClass(Boolean(fieldErrors.slug))}
                   onChange={(e) => {
                     setSlugTouched(true);
+                    clearFieldError("slug");
                     setForm((prev) => ({
                       ...prev,
                       slug: slugify(e.target.value),
                     }));
                   }}
                 />
+                <FieldError message={fieldErrors.slug} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="excerpt">Excerpt / short description</Label>
@@ -367,12 +492,18 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                   id="excerpt"
                   rows={3}
                   value={form.excerpt}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, excerpt: e.target.value }))
-                  }
-                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  aria-invalid={Boolean(fieldErrors.excerpt)}
+                  onChange={(e) => {
+                    clearFieldError("excerpt");
+                    setForm((prev) => ({ ...prev, excerpt: e.target.value }));
+                  }}
+                  className={fieldClass(
+                    Boolean(fieldErrors.excerpt),
+                    "w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+                  )}
                   placeholder="Shown on cards and used as default meta description."
                 />
+                <FieldError message={fieldErrors.excerpt} />
               </div>
               <div className="space-y-2">
                 <Label>Body (HTML rich text)</Label>
@@ -410,17 +541,23 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                 <Input
                   id="featured-alt"
                   value={form.featuredImage.alt}
-                  onChange={(e) =>
+                  aria-invalid={Boolean(fieldErrors["featuredImage.alt"])}
+                  className={fieldClass(
+                    Boolean(fieldErrors["featuredImage.alt"]),
+                  )}
+                  onChange={(e) => {
+                    clearFieldError("featuredImage.alt");
                     setForm((prev) => ({
                       ...prev,
                       featuredImage: {
                         ...prev.featuredImage,
                         alt: e.target.value,
                       },
-                    }))
-                  }
+                    }));
+                  }}
                   placeholder="Describe the cover image"
                 />
+                <FieldError message={fieldErrors["featuredImage.alt"]} />
               </div>
             </CardContent>
           </Card>
@@ -644,11 +781,27 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card
+            id="seo-section"
+            className={cn(
+              Object.keys(fieldErrors).some((k) =>
+                [
+                  "seoTitle",
+                  "seoDescription",
+                  "seoKeywords",
+                  "canonicalUrl",
+                  "focusKeyword",
+                  "ogTitle",
+                  "ogDescription",
+                  "ogImage",
+                ].includes(k),
+              ) && "ring-1 ring-destructive/40",
+            )}
+          >
             <CardHeader>
               <CardTitle>SEO</CardTitle>
               <CardDescription>
-                Tools for search & social previews.
+                Tools for search & social previews. Limits are enforced on save.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -671,22 +824,31 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                   <Label htmlFor="seoTitle">SEO title</Label>
                   <span
                     className={
-                      seoTitleLen > 60
+                      seoTitleLen > 70 || fieldErrors.seoTitle
                         ? "text-destructive"
-                        : "text-muted-foreground"
+                        : seoTitleLen > 60
+                          ? "text-amber-600"
+                          : "text-muted-foreground"
                     }
                   >
-                    {seoTitleLen}/60
+                    {seoTitleLen}/70
+                    <span className="ml-1 font-normal text-muted-foreground">
+                      (ideal ≤60)
+                    </span>
                   </span>
                 </div>
                 <Input
                   id="seoTitle"
                   value={form.seoTitle}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, seoTitle: e.target.value }))
-                  }
+                  aria-invalid={Boolean(fieldErrors.seoTitle)}
+                  className={fieldClass(Boolean(fieldErrors.seoTitle))}
+                  onChange={(e) => {
+                    clearFieldError("seoTitle");
+                    setForm((prev) => ({ ...prev, seoTitle: e.target.value }));
+                  }}
                   placeholder="Defaults to post title"
                 />
+                <FieldError message={fieldErrors.seoTitle} />
               </div>
 
               <div className="space-y-2">
@@ -694,27 +856,38 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                   <Label htmlFor="seoDescription">SEO description</Label>
                   <span
                     className={
-                      seoDescLen > 160
+                      seoDescLen > 180 || fieldErrors.seoDescription
                         ? "text-destructive"
-                        : "text-muted-foreground"
+                        : seoDescLen > 160
+                          ? "text-amber-600"
+                          : "text-muted-foreground"
                     }
                   >
-                    {seoDescLen}/160
+                    {seoDescLen}/180
+                    <span className="ml-1 font-normal text-muted-foreground">
+                      (ideal ≤160)
+                    </span>
                   </span>
                 </div>
                 <textarea
                   id="seoDescription"
                   rows={3}
                   value={form.seoDescription}
-                  onChange={(e) =>
+                  aria-invalid={Boolean(fieldErrors.seoDescription)}
+                  onChange={(e) => {
+                    clearFieldError("seoDescription");
                     setForm((prev) => ({
                       ...prev,
                       seoDescription: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                    }));
+                  }}
+                  className={fieldClass(
+                    Boolean(fieldErrors.seoDescription),
+                    "w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+                  )}
                   placeholder="Defaults to excerpt"
                 />
+                <FieldError message={fieldErrors.seoDescription} />
               </div>
 
               <div className="space-y-2">
@@ -722,13 +895,17 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                 <Input
                   id="focusKeyword"
                   value={form.focusKeyword}
-                  onChange={(e) =>
+                  aria-invalid={Boolean(fieldErrors.focusKeyword)}
+                  className={fieldClass(Boolean(fieldErrors.focusKeyword))}
+                  onChange={(e) => {
+                    clearFieldError("focusKeyword");
                     setForm((prev) => ({
                       ...prev,
                       focusKeyword: e.target.value,
-                    }))
-                  }
+                    }));
+                  }}
                 />
+                <FieldError message={fieldErrors.focusKeyword} />
               </div>
 
               <div className="space-y-2">
@@ -743,14 +920,15 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                       {keyword}
                       <button
                         type="button"
-                        onClick={() =>
+                        onClick={() => {
+                          clearFieldError("seoKeywords");
                           setForm((prev) => ({
                             ...prev,
                             seoKeywords: prev.seoKeywords.filter(
                               (k) => k !== keyword,
                             ),
-                          }))
-                        }
+                          }));
+                        }}
                       >
                         ×
                       </button>
@@ -760,7 +938,12 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                 <div className="flex gap-2">
                   <Input
                     value={keywordInput}
-                    onChange={(e) => setKeywordInput(e.target.value)}
+                    aria-invalid={Boolean(fieldErrors.seoKeywords)}
+                    className={fieldClass(Boolean(fieldErrors.seoKeywords))}
+                    onChange={(e) => {
+                      clearFieldError("seoKeywords");
+                      setKeywordInput(e.target.value);
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
@@ -769,6 +952,7 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                         );
                       }
                     }}
+                    placeholder="Max 60 characters each"
                   />
                   <Button
                     type="button"
@@ -782,6 +966,7 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                     Add
                   </Button>
                 </div>
+                <FieldError message={fieldErrors.seoKeywords} />
               </div>
 
               <div className="space-y-2">
@@ -789,14 +974,22 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                 <Input
                   id="canonical"
                   value={form.canonicalUrl}
-                  onChange={(e) =>
+                  aria-invalid={Boolean(fieldErrors.canonicalUrl)}
+                  className={fieldClass(Boolean(fieldErrors.canonicalUrl))}
+                  onChange={(e) => {
+                    clearFieldError("canonicalUrl");
                     setForm((prev) => ({
                       ...prev,
                       canonicalUrl: e.target.value,
-                    }))
-                  }
-                  placeholder="https://..."
+                    }));
+                  }}
+                  placeholder="https://packagingexpert.com/blog/..."
                 />
+                <FieldError message={fieldErrors.canonicalUrl} />
+                <p className="text-[11px] text-muted-foreground">
+                  Use a full https URL, a site path like /blog/slug, or leave
+                  blank.
+                </p>
               </div>
 
               <Separator />
@@ -808,10 +1001,14 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                 <Input
                   id="ogTitle"
                   value={form.ogTitle}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, ogTitle: e.target.value }))
-                  }
+                  aria-invalid={Boolean(fieldErrors.ogTitle)}
+                  className={fieldClass(Boolean(fieldErrors.ogTitle))}
+                  onChange={(e) => {
+                    clearFieldError("ogTitle");
+                    setForm((prev) => ({ ...prev, ogTitle: e.target.value }));
+                  }}
                 />
+                <FieldError message={fieldErrors.ogTitle} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="ogDescription">OG description</Label>
@@ -819,14 +1016,20 @@ export function AdminBlogEditor({ postId }: AdminBlogEditorProps) {
                   id="ogDescription"
                   rows={2}
                   value={form.ogDescription}
-                  onChange={(e) =>
+                  aria-invalid={Boolean(fieldErrors.ogDescription)}
+                  onChange={(e) => {
+                    clearFieldError("ogDescription");
                     setForm((prev) => ({
                       ...prev,
                       ogDescription: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                    }));
+                  }}
+                  className={fieldClass(
+                    Boolean(fieldErrors.ogDescription),
+                    "w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+                  )}
                 />
+                <FieldError message={fieldErrors.ogDescription} />
               </div>
               <div className="space-y-2">
                 <Label>OG image</Label>

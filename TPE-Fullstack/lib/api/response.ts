@@ -20,9 +20,20 @@ export function apiError(
   );
 }
 
+function summarizeZodFlatten(error: ZodError) {
+  const flat = error.flatten();
+  const parts = Object.entries(flat.fieldErrors).flatMap(([key, messages]) =>
+    (messages ?? []).slice(0, 1).map((message) => `${key}: ${message}`),
+  );
+  if (parts.length === 0 && flat.formErrors.length > 0) {
+    return flat.formErrors[0] ?? "Validation failed";
+  }
+  return parts.slice(0, 4).join(" · ") || "Validation failed";
+}
+
 export function apiFromUnknownError(error: unknown) {
   if (error instanceof ZodError) {
-    return apiError("Validation failed", 400, error.flatten());
+    return apiError(summarizeZodFlatten(error), 400, error.flatten());
   }
 
   if (error instanceof Error) {

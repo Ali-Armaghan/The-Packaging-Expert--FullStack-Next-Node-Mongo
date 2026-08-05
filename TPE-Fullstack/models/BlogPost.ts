@@ -1,14 +1,10 @@
 import { Schema, models, model, type InferSchemaType, type Model } from "mongoose";
+import {
+  BLOG_CATEGORIES,
+  type BlogCategory as BlogCategoryId,
+} from "@/constants/blog";
 
-export const BLOG_CATEGORIES = [
-  "marketing",
-  "business",
-  "events",
-  "customer-success",
-  "sustainability",
-] as const;
-
-export type BlogCategoryId = (typeof BLOG_CATEGORIES)[number];
+export { BLOG_CATEGORIES, type BlogCategoryId };
 
 const featuredImageSchema = new Schema(
   {
