@@ -192,6 +192,12 @@ export function AdminIcon({ name, className }: AdminIconProps) {
           <path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7l3-7z" />
         </IconShell>
       );
+    case "groupby":
+      return (
+        <IconShell className={className}>
+          <path d="M4 6h6v6H4zM14 6h6v6h-6zM4 16h6v4H4zM14 14h6v6h-6z" />
+        </IconShell>
+      );
     case "analytics":
       return (
         <IconShell className={className}>

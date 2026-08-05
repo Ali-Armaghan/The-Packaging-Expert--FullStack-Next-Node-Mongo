@@ -22,6 +22,7 @@ export type AdminNavIcon =
   | "roles"
   | "catalog"
   | "style"
+  | "groupby"
   | "analytics"
   | "admin";
 
@@ -86,6 +87,12 @@ export const adminNavSections: AdminNavSection[] = [
             label: "Style",
             href: "/admin/styles",
             icon: "style",
+          },
+          {
+            id: "group-by",
+            label: "Group By",
+            href: "/admin/group-by",
+            icon: "groupby",
           },
           {
             id: "products",
