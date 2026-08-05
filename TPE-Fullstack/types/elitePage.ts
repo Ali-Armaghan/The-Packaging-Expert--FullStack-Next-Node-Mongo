@@ -43,7 +43,8 @@ export type EliteWhyUsContent = {
     text: string;
     icon: "palette" | "clock" | "shield";
   }>;
-  collage: string[];
+  image: string;
+  imageAlt?: string;
 };
 
 export type EliteIndustriesContent = {

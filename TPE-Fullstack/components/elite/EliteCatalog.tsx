@@ -2,13 +2,27 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { EliteCatalogContent } from "@/types/elitePage";
 import { cn } from "@/lib/utils";
 import { EliteSectionEyebrow } from "./ui";
 
 export function EliteCatalog({ content }: { content: EliteCatalogContent }) {
   const [activeTab, setActiveTab] = useState(0);
+
+  const visibleProducts = useMemo(() => {
+    const tab = content.tabs[activeTab];
+    if (!tab) return content.products;
+    const matched = content.products.filter(
+      (p) => p.name.toLowerCase() === tab.toLowerCase(),
+    );
+    // Keep a full grid feel — show match first, then the rest
+    if (matched.length === 0) return content.products;
+    const rest = content.products.filter(
+      (p) => p.name.toLowerCase() !== tab.toLowerCase(),
+    );
+    return [...matched, ...rest];
+  }, [activeTab, content.products, content.tabs]);
 
   return (
     <section className="relative px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
@@ -52,37 +66,64 @@ export function EliteCatalog({ content }: { content: EliteCatalogContent }) {
           ))}
         </div>
 
-        <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-5 lg:grid-cols-5">
-          {content.products.map((product) => (
-            <Link
-              key={product.name}
-              href={product.href}
-              className="group relative overflow-hidden rounded-2xl bg-white ring-1 ring-black/[0.06] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-28px_rgba(20,24,32,0.45)] hover:ring-primary/25"
-            >
-              <div className="relative aspect-[4/5] overflow-hidden bg-[#eef1f3]">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  loading="lazy"
-                  className="object-cover transition duration-500 group-hover:scale-105"
-                  sizes="(max-width: 640px) 50vw, 20vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent opacity-80" />
-              </div>
-              <div className="p-4">
-                <h3 className="text-sm font-bold text-[color:var(--elite-ink)]">
-                  {product.name}
-                </h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Starting from{" "}
-                  <span className="font-semibold text-primary">
+        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5 lg:gap-6">
+          {visibleProducts.map((product, index) => {
+            const isFeatured =
+              product.name.toLowerCase() ===
+              content.tabs[activeTab]?.toLowerCase();
+
+            return (
+              <Link
+                key={product.name}
+                href={product.href}
+                className={cn(
+                  "group relative flex flex-col rounded-[1.35rem] bg-[linear-gradient(180deg,#f7f3ed_0%,#f3efe8_100%)] p-2.5 transition duration-300 sm:p-3",
+                  "hover:-translate-y-1 hover:bg-[linear-gradient(180deg,#f3ebe1_0%,#eaf6f0_100%)]",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  isFeatured && "ring-1 ring-primary/25",
+                )}
+                style={{ transitionDelay: `${Math.min(index, 8) * 15}ms` }}
+              >
+                <div className="relative aspect-square overflow-hidden rounded-[1.1rem] bg-white/70 shadow-[inset_0_0_0_1px_rgba(20,24,32,0.04)]">
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    fill
+                    loading="lazy"
+                    className="object-cover transition duration-500 group-hover:scale-[1.04]"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                  />
+                  <div
+                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[color:var(--elite-ink)]/25 via-transparent to-white/10 opacity-70 transition group-hover:opacity-90"
+                    aria-hidden
+                  />
+                  <span className="absolute right-2.5 top-2.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-primary shadow-sm backdrop-blur-sm">
                     {product.price}
                   </span>
-                </p>
-              </div>
-            </Link>
-          ))}
+                </div>
+
+                <div className="flex flex-1 flex-col px-1.5 pb-1 pt-3.5 sm:px-2 sm:pt-4">
+                  <h3 className="text-[0.95rem] font-bold leading-snug tracking-[-0.01em] text-[color:var(--elite-ink)] sm:text-base">
+                    {product.name}
+                  </h3>
+                  <div className="mt-2.5 flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      Custom sizes
+                    </span>
+                    <span className="inline-flex h-8 items-center gap-1 rounded-full bg-white/80 px-3 text-xs font-semibold text-primary ring-1 ring-primary/15 transition duration-300 group-hover:bg-primary group-hover:text-white group-hover:ring-primary">
+                      Quote
+                      <span
+                        className="transition group-hover:translate-x-0.5"
+                        aria-hidden
+                      >
+                        →
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

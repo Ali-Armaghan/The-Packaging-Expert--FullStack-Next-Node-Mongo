@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { Clock3, Palette, ShieldCheck, type LucideIcon } from "lucide-react";
 import type { EliteWhyUsContent } from "@/types/elitePage";
-import { cn } from "@/lib/utils";
 import { EliteSectionEyebrow } from "./ui";
 
 const ICONS: Record<EliteWhyUsContent["items"][number]["icon"], LucideIcon> = {
@@ -45,25 +44,49 @@ export function EliteWhyUs({ content }: { content: EliteWhyUsContent }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            {content.collage.map((src, i) => (
+          {/* Single styled image composition */}
+          <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+            <div
+              className="pointer-events-none absolute -right-4 -top-4 h-28 w-28 rounded-full bg-primary/20 blur-2xl sm:-right-6 sm:-top-6"
+              aria-hidden
+            />
+            <div
+              className="pointer-events-none absolute -bottom-6 -left-4 h-32 w-32 rounded-full bg-[#e4d5c3]/80 blur-2xl"
+              aria-hidden
+            />
+
+            {/* Soft offset frame behind the photo */}
+            <div
+              className="absolute inset-3 translate-x-3 translate-y-3 rounded-[1.75rem] bg-primary/15 sm:inset-4 sm:translate-x-4 sm:translate-y-4"
+              aria-hidden
+            />
+            <div
+              className="absolute inset-3 -translate-x-2 -translate-y-2 rounded-[1.75rem] bg-[color:var(--elite-ink)]/8 sm:inset-4 sm:-translate-x-3 sm:-translate-y-3"
+              aria-hidden
+            />
+
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[1.75rem] shadow-[0_28px_60px_-28px_rgba(20,24,32,0.45)] ring-1 ring-black/5">
+              <Image
+                src={content.image}
+                alt={content.imageAlt ?? "Why choose us packaging"}
+                fill
+                loading="lazy"
+                className="object-cover transition duration-700 hover:scale-[1.03]"
+                sizes="(max-width: 1024px) 90vw, 42vw"
+              />
               <div
-                key={src}
-                className={cn(
-                  "relative aspect-[4/5] overflow-hidden rounded-3xl shadow-lg ring-1 ring-black/5",
-                  i % 2 === 1 && "translate-y-6",
-                )}
-              >
-                <Image
-                  src={src}
-                  alt="Packaging detail"
-                  fill
-                  loading="lazy"
-                  className="object-cover transition duration-700 hover:scale-105"
-                  sizes="(max-width: 1024px) 45vw, 22vw"
-                />
+                className="absolute inset-0 bg-gradient-to-t from-[color:var(--elite-ink)]/40 via-transparent to-white/10"
+                aria-hidden
+              />
+              <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">
+                  Crafted for brands
+                </p>
+                <p className="mt-1 text-lg font-bold text-white sm:text-xl">
+                  Premium packaging, made simple
+                </p>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </div>

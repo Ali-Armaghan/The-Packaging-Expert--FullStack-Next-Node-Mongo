@@ -12,10 +12,8 @@ const img = {
   cat8: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=700&q=80",
   cat9: "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=700&q=80",
   cat10: "https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=700&q=80",
-  collage1: "https://images.unsplash.com/photo-1607166452427-7e4477079cb9?w=600&q=80",
-  collage2: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&q=80",
-  collage3: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&q=80",
-  collage4: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80",
+  whyUs:
+    "https://images.unsplash.com/photo-1607166452427-7e4477079cb9?w=1200&q=85",
   industry1: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80",
   industry2: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800&q=80",
   industry3: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80",
@@ -120,7 +118,8 @@ export const ELITE_PAGE_DEFAULTS: ElitePageContent = {
         icon: "shield",
       },
     ],
-    collage: [img.collage1, img.collage2, img.collage3, img.collage4],
+    image: img.whyUs,
+    imageAlt: "Premium custom packaging boxes",
   },
   industries: {
     eyebrow: "Industries",
