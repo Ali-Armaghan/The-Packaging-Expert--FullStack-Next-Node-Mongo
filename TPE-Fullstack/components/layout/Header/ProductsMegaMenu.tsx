@@ -14,13 +14,21 @@ type ProductsMegaMenuProps = {
   open: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
+  onNavigate?: () => void;
   groups?: MegaMenuGroup[];
 };
 
-function MegaMenuLink({ item }: { item: MegaMenuItem }) {
+function MegaMenuLink({
+  item,
+  onNavigate,
+}: {
+  item: MegaMenuItem;
+  onNavigate?: () => void;
+}) {
   return (
     <Link
       href={item.href}
+      onClick={onNavigate}
       className="group flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-muted"
     >
       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-[#dce8ef]">
@@ -47,9 +55,11 @@ function MegaMenuLink({ item }: { item: MegaMenuItem }) {
 function MegaMenuGroupColumn({
   group,
   className,
+  onNavigate,
 }: {
   group: MegaMenuGroup;
   className?: string;
+  onNavigate?: () => void;
 }) {
   return (
     <div className={className}>
@@ -59,7 +69,7 @@ function MegaMenuGroupColumn({
       <ul className="space-y-1">
         {group.items.map((item) => (
           <li key={item.id}>
-            <MegaMenuLink item={item} />
+            <MegaMenuLink item={item} onNavigate={onNavigate} />
           </li>
         ))}
       </ul>
@@ -71,6 +81,7 @@ export function ProductsMegaMenu({
   open,
   onMouseEnter,
   onMouseLeave,
+  onNavigate,
   groups = productsMegaMenuGroups,
 }: ProductsMegaMenuProps) {
   const [productsGroup, othersGroup, bagsGroup] = groups;
@@ -90,11 +101,20 @@ export function ProductsMegaMenu({
       <Container className="py-8">
         <div className="grid grid-cols-[1fr_1fr_280px] gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_300px]">
           <div className="space-y-8">
-            {productsGroup ? <MegaMenuGroupColumn group={productsGroup} /> : null}
-            {othersGroup ? <MegaMenuGroupColumn group={othersGroup} /> : null}
+            {productsGroup ? (
+              <MegaMenuGroupColumn
+                group={productsGroup}
+                onNavigate={onNavigate}
+              />
+            ) : null}
+            {othersGroup ? (
+              <MegaMenuGroupColumn group={othersGroup} onNavigate={onNavigate} />
+            ) : null}
           </div>
 
-          {bagsGroup ? <MegaMenuGroupColumn group={bagsGroup} /> : null}
+          {bagsGroup ? (
+            <MegaMenuGroupColumn group={bagsGroup} onNavigate={onNavigate} />
+          ) : null}
 
           <aside className="rounded-xl bg-muted p-5">
             <div className="grid grid-cols-4 gap-1.5">
@@ -122,6 +142,7 @@ export function ProductsMegaMenu({
             </p>
             <Link
               href={optionLibraryFeature.href}
+              onClick={onNavigate}
               className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary-dark"
             >
               {optionLibraryFeature.linkLabel}

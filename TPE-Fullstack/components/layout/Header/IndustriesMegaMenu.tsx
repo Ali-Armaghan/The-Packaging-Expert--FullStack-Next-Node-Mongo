@@ -13,13 +13,21 @@ type IndustriesMegaMenuProps = {
   open: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
+  onNavigate?: () => void;
   columns?: IndustryMegaMenuItem[][];
 };
 
-function IndustryLink({ item }: { item: IndustryMegaMenuItem }) {
+function IndustryLink({
+  item,
+  onNavigate,
+}: {
+  item: IndustryMegaMenuItem;
+  onNavigate?: () => void;
+}) {
   return (
     <Link
       href={item.href}
+      onClick={onNavigate}
       className="group flex items-center gap-3 rounded-md px-1.5 py-2.5 transition-colors hover:bg-muted"
     >
       <span className="flex h-7 w-7 shrink-0 items-center justify-center text-foreground transition-colors group-hover:text-primary">
@@ -36,6 +44,7 @@ export function IndustriesMegaMenu({
   open,
   onMouseEnter,
   onMouseLeave,
+  onNavigate,
   columns = industriesMegaMenuColumns,
 }: IndustriesMegaMenuProps) {
   return (
@@ -62,7 +71,7 @@ export function IndustriesMegaMenu({
                 <ul key={columnIndex} className="space-y-0.5">
                   {column.map((item) => (
                     <li key={item.id}>
-                      <IndustryLink item={item} />
+                      <IndustryLink item={item} onNavigate={onNavigate} />
                     </li>
                   ))}
                 </ul>
@@ -89,6 +98,7 @@ export function IndustriesMegaMenu({
             </p>
             <Link
               href={inspirationLibraryFeature.href}
+              onClick={onNavigate}
               className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary-dark"
             >
               {inspirationLibraryFeature.linkLabel}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Container } from "@/components/ui/Container";
 import {
   applyLinksToIndustryColumns,
@@ -23,6 +24,7 @@ type DesktopNavProps = {
 };
 
 export function DesktopNav({ menuLinks }: DesktopNavProps) {
+  const pathname = usePathname();
   const [openMenu, setOpenMenu] = useState<MegaMenuId | null>(null);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -34,11 +36,27 @@ export function DesktopNav({ menuLinks }: DesktopNavProps) {
     setOpenMenu(menu);
   };
 
+  const closeMegaMenuNow = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setOpenMenu(null);
+  };
+
   const closeMegaMenu = () => {
     closeTimeoutRef.current = setTimeout(() => {
       setOpenMenu(null);
     }, 120);
   };
+
+  useEffect(() => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setOpenMenu(null);
+  }, [pathname]);
 
   const industryColumns = applyLinksToIndustryColumns(
     industriesMegaMenuColumns,
@@ -61,6 +79,7 @@ export function DesktopNav({ menuLinks }: DesktopNavProps) {
             openMenu={openMenu}
             onMenuEnter={openMegaMenu}
             onMenuLeave={closeMegaMenu}
+            onNavigate={closeMegaMenuNow}
           />
         </div>
       </Container>
@@ -69,6 +88,7 @@ export function DesktopNav({ menuLinks }: DesktopNavProps) {
         open={openMenu === "products"}
         onMouseEnter={() => openMegaMenu("products")}
         onMouseLeave={closeMegaMenu}
+        onNavigate={closeMegaMenuNow}
         groups={productGroups}
       />
 
@@ -76,6 +96,7 @@ export function DesktopNav({ menuLinks }: DesktopNavProps) {
         open={openMenu === "industries"}
         onMouseEnter={() => openMegaMenu("industries")}
         onMouseLeave={closeMegaMenu}
+        onNavigate={closeMegaMenuNow}
         columns={industryColumns}
       />
 
@@ -83,6 +104,7 @@ export function DesktopNav({ menuLinks }: DesktopNavProps) {
         open={openMenu === "categoryByStyle"}
         onMouseEnter={() => openMegaMenu("categoryByStyle")}
         onMouseLeave={closeMegaMenu}
+        onNavigate={closeMegaMenuNow}
         items={styleItems}
       />
     </div>

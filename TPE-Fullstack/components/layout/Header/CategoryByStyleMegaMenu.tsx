@@ -9,13 +9,21 @@ type CategoryByStyleMegaMenuProps = {
   open: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
+  onNavigate?: () => void;
   items?: MegaMenuItem[];
 };
 
-function MegaMenuLink({ item }: { item: MegaMenuItem }) {
+function MegaMenuLink({
+  item,
+  onNavigate,
+}: {
+  item: MegaMenuItem;
+  onNavigate?: () => void;
+}) {
   return (
     <Link
       href={item.href}
+      onClick={onNavigate}
       className="group flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-muted"
     >
       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-[#dce8ef]">
@@ -43,6 +51,7 @@ export function CategoryByStyleMegaMenu({
   open,
   onMouseEnter,
   onMouseLeave,
+  onNavigate,
   items = categoryByStyleGroup.items,
 }: CategoryByStyleMegaMenuProps) {
   return (
@@ -65,7 +74,7 @@ export function CategoryByStyleMegaMenu({
           <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:max-w-3xl">
             {items.map((item) => (
               <li key={item.id}>
-                <MegaMenuLink item={item} />
+                <MegaMenuLink item={item} onNavigate={onNavigate} />
               </li>
             ))}
           </ul>

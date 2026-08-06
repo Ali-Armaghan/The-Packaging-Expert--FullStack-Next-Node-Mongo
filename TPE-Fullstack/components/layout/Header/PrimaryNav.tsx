@@ -81,6 +81,7 @@ export function PrimaryNav({
               >
                 <Link
                   href={href}
+                  onClick={onNavigate}
                   className={cn(
                     "inline-flex items-center gap-1 text-[0.9375rem] font-medium tracking-tight text-navy/85 transition-colors hover:text-primary",
                     (isActive || isMenuOpen) && "text-primary",
