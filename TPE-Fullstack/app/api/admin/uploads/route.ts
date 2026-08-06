@@ -1,5 +1,6 @@
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
 import { requireAnyAdminPermission } from "@/lib/auth/session";
+import { optimizeImageForUpload } from "@/lib/media/optimizeImage";
 import {
   ALLOWED_IMAGE_TYPES,
   MAX_UPLOAD_BYTES,
@@ -36,14 +37,23 @@ export async function POST(request: Request) {
       return apiError("File must be under 5MB", 400);
     }
 
+    const optimized = await optimizeImageForUpload(file);
+
     const uploaded = await uploadToS3({
-      file,
-      filename: file.name || "image.png",
-      contentType: file.type,
+      file: optimized.buffer,
+      filename: optimized.filename,
+      contentType: optimized.contentType,
       folder,
     });
 
-    return apiSuccess(uploaded, 201);
+    return apiSuccess(
+      {
+        ...uploaded,
+        contentType: optimized.contentType,
+        optimized: optimized.contentType === "image/webp",
+      },
+      201,
+    );
   } catch (error) {
     return apiFromUnknownError(error);
   }

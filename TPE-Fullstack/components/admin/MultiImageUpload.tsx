@@ -115,7 +115,7 @@ export function MultiImageUpload({
             <ImagePlusIcon className="size-5" />
           )}
           <span className="px-2 text-center text-xs">
-            {uploading ? "Uploading..." : label}
+            {uploading ? "Optimizing & uploading..." : label}
           </span>
         </button>
       </div>

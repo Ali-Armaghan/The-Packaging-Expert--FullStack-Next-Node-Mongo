@@ -116,7 +116,7 @@ export function ImageUploadField({
           ) : (
             <ImagePlusIcon className="size-5" />
           )}
-          <span>{uploading ? "Uploading..." : label}</span>
+          <span>{uploading ? "Optimizing & uploading..." : label}</span>
         </button>
       )}
 

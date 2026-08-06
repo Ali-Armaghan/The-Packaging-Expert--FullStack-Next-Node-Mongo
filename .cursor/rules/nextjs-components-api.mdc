@@ -1,0 +1,37 @@
+---
+description: Server Components, images, API, SEO, and security for TPE-Fullstack
+globs: TPE-Fullstack/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Components, API, SEO, Security
+
+## Components
+
+- Server Components by default. `"use client"` only for interactivity, hooks, or browser APIs.
+- Keep components small and reusable. Avoid unnecessary re-renders and client boundaries.
+
+## Images
+
+- Use `next/image`. Prefer WebP/AVIF, compress, lazy-load (except LCP/hero when needed).
+- Never serve oversized assets.
+
+## API
+
+- Validate input; return only required fields; keep payloads small.
+- Handle errors properly; protect admin/authenticated routes.
+- Avoid unnecessary client → API hops when the server can load data directly.
+
+## SEO
+
+- Correct `metadata` / Open Graph. Keep sitemap and robots.txt accurate.
+
+## Security & logging
+
+- Never expose secrets; use env vars. Sanitize/validate all inputs.
+- No noisy `console.log` in production paths; log meaningful errors only.
+
+## Packages & deploy
+
+- Do not add packages without need; prefer Next.js built-ins.
+- Stay compatible with AWS Lightsail + Ubuntu + PM2 + Nginx + GitHub Actions.

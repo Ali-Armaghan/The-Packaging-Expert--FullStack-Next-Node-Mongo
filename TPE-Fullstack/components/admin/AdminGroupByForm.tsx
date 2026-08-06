@@ -84,12 +84,12 @@ export function AdminGroupByForm(props: AdminGroupByFormProps) {
   };
 
   const saveMeta = async () => {
-    if (!isEdit) return;
+    if (props.mode !== "edit") return;
     setSaving(true);
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`/api/admin/group-by/${props.id}`, {
+      const res = await fetch(`/api/admin/group-by/${props.group.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -113,16 +113,19 @@ export function AdminGroupByForm(props: AdminGroupByFormProps) {
   };
 
   const saveActiveSection = async () => {
-    if (!isEdit) return;
+    if (props.mode !== "edit") return;
     setSaving(true);
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch(`/api/admin/group-by/${initial.id}/${active}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(content[active]),
-      });
+      const res = await fetch(
+        `/api/admin/group-by/${props.group.id}/${active}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(content[active]),
+        },
+      );
       const data = await res.json();
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Failed to save section");

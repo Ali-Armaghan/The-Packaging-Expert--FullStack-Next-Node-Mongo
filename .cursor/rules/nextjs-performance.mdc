@@ -1,0 +1,35 @@
+---
+description: Next.js rendering, caching, and performance defaults for TPE-Fullstack
+globs: TPE-Fullstack/**/*.{ts,tsx,js,jsx}
+alwaysApply: false
+---
+
+# Next.js Performance
+
+Prioritize fast first load, low TTFB, small JS, few DB/API calls. Target Lighthouse Performance > 90.
+
+## Rendering
+
+- Prefer Static / ISR. Use SSR only for user-specific, auth, or highly dynamic data.
+- Never force SSR (`force-dynamic`) on pages that can be static or revalidated.
+
+## Caching
+
+- Cache data that changes rarely (minutes/hours via `revalidate`).
+- Avoid refetching the same data in one request tree; reuse and pass down.
+
+## Code splitting
+
+- Lazy-load heavy client UI (`next/dynamic`).
+- Dynamically import large libraries. Keep the initial bundle minimal.
+
+## Before shipping a feature
+
+1. Can this be static?
+2. Can this be cached?
+3. Can DB queries be reduced?
+4. Can less JS go to the client?
+5. Can this stay a Server Component?
+6. Is there a simpler, faster approach?
+
+Choose long-term performance and maintainability over convenience.

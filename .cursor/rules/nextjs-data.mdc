@@ -1,0 +1,24 @@
+---
+description: MongoDB vs static content and query optimization for TPE-Fullstack
+globs: TPE-Fullstack/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Data & Database
+
+## Static vs MongoDB
+
+Do **not** fetch static content from MongoDB. Keep in code, constants, JSON, or config:
+
+- Navbar, footer, hero, about, contact info, company stats, static banners/services
+
+Store in MongoDB only dynamic / admin-managed content:
+
+- Products, categories, blogs, testimonials, projects, quotes, form submissions, CMS sections
+
+## Query optimization
+
+- Fetch only required fields (projections). No full-document dumps when partial data suffices.
+- Paginate large lists. Index searchable fields.
+- Avoid duplicate queries; reuse fetched data in the same flow.
+- Minimize round-trips; never query for convenience alone.
