@@ -1,9 +1,8 @@
 import { unstable_cache } from "next/cache";
+import { ISR_REVALIDATE_SECONDS } from "@/lib/cache/revalidate";
 import { HOME_PAGE_TAG, homeSectionTag } from "@/lib/cache/tags";
 import { getHomePageContent, getHomeSection } from "@/lib/home/queries";
 import type { HomePageContent, HomeSectionKey } from "@/types/homePage";
-
-const REVALIDATE_SECONDS = 3600;
 
 export function getCachedHomeSection<K extends HomeSectionKey>(
   section: K,
@@ -13,7 +12,7 @@ export function getCachedHomeSection<K extends HomeSectionKey>(
     ["home-section", section],
     {
       tags: [homeSectionTag(section), HOME_PAGE_TAG],
-      revalidate: REVALIDATE_SECONDS,
+      revalidate: ISR_REVALIDATE_SECONDS,
     },
   )();
 }
@@ -24,7 +23,7 @@ export function getCachedHomePageContent() {
     ["home-page-full"],
     {
       tags: [HOME_PAGE_TAG],
-      revalidate: REVALIDATE_SECONDS,
+      revalidate: ISR_REVALIDATE_SECONDS,
     },
   )();
 }

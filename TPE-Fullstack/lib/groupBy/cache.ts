@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { ISR_REVALIDATE_SECONDS } from "@/lib/cache/revalidate";
 import { groupByTag } from "@/lib/cache/tags";
 import {
   getActiveGroupByBySlug,
@@ -7,8 +8,6 @@ import {
 } from "@/lib/groupBy/queries";
 import type { GroupBySectionKey } from "@/types/groupBy";
 import type { ElitePageContent } from "@/types/elitePage";
-
-const REVALIDATE_SECONDS = 3600;
 
 /** Prebuild candidates: active groups, lowest sortOrder first. */
 export async function listActiveGroupBySlugsForStaticParams(limit = 30) {
@@ -27,7 +26,7 @@ export function getCachedActiveGroupByBySlug(slug: string) {
     ["groupby-by-slug", normalized],
     {
       tags: [groupByTag(normalized)],
-      revalidate: REVALIDATE_SECONDS,
+      revalidate: ISR_REVALIDATE_SECONDS,
     },
   )();
 }
@@ -42,7 +41,7 @@ export function getCachedGroupBySection<K extends GroupBySectionKey>(
     ["groupby-section", normalized, section],
     {
       tags: [groupByTag(normalized)],
-      revalidate: REVALIDATE_SECONDS,
+      revalidate: ISR_REVALIDATE_SECONDS,
     },
   )();
 }
