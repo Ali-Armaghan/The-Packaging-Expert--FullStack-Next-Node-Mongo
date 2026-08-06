@@ -4,6 +4,7 @@ import {
   isGroupBySection,
   updateGroupBySection,
 } from "@/lib/groupBy/queries";
+import { revalidateGroupBySlug } from "@/lib/groupBy/revalidate";
 import {
   catalogMetaSectionSchema,
   heroSectionSchema,
@@ -33,6 +34,8 @@ export async function PUT(request: Request, context: RouteContext) {
     const parsed = parseSection(section, body);
     const updated = await updateGroupBySection(id, section, parsed);
     if (!updated) return apiError("Group not found", 404);
+
+    revalidateGroupBySlug(updated.slug);
 
     return apiSuccess({
       section,

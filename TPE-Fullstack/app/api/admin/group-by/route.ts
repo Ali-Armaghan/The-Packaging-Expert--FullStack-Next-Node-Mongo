@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/db/mongoose";
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
 import { requirePermission } from "@/lib/auth/session";
 import { createGroupByDoc, listGroupBys } from "@/lib/groupBy/queries";
+import { revalidateGroupBySlug } from "@/lib/groupBy/revalidate";
 import { isReservedGroupSlug } from "@/lib/groupBy/reservedSlugs";
 import { slugify } from "@/lib/slug";
 import { createGroupBySchema } from "@/lib/validations/groupBy";
@@ -54,6 +55,8 @@ export async function POST(request: Request) {
         | Parameters<typeof createGroupByDoc>[0]["content"]
         | undefined,
     });
+
+    revalidateGroupBySlug(created.slug);
 
     return apiSuccess(created, 201);
   } catch (error) {

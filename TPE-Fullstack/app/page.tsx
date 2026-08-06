@@ -1,12 +1,12 @@
 import { HomeBelowFold } from "@/components/home/HomeBelowFold";
 import { Hero } from "@/components/sections/Hero";
-import { getHomeSection } from "@/lib/home/queries";
+import { getCachedHomeSection } from "@/lib/home/cache";
 
-export const dynamic = "force-dynamic";
+/** Hybrid home: hero SSR from tagged cache; below-fold via section APIs. */
+export const revalidate = 3600;
 
 export default async function HomePage() {
-  // Banner first — only hero blocks the initial paint.
-  const hero = await getHomeSection("hero");
+  const hero = await getCachedHomeSection("hero");
 
   return (
     <>

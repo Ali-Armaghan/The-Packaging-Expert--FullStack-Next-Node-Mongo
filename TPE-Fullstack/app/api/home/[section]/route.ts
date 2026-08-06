@@ -1,5 +1,5 @@
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
-import { getHomeSection } from "@/lib/home/queries";
+import { getCachedHomeSection } from "@/lib/home/cache";
 import { HOME_SECTIONS, type HomeSectionKey } from "@/types/homePage";
 
 type RouteContext = {
@@ -22,7 +22,7 @@ export async function GET(_request: Request, context: RouteContext) {
       );
     }
 
-    const data = await getHomeSection(section);
+    const data = await getCachedHomeSection(section);
     return apiSuccess({ section, data });
   } catch (error) {
     return apiFromUnknownError(error);

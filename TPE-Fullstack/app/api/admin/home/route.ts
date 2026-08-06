@@ -6,6 +6,10 @@ import {
   updateHomeSection,
 } from "@/lib/home/queries";
 import {
+  revalidateAllHomeSections,
+  revalidateHomeSection,
+} from "@/lib/home/revalidate";
+import {
   homePageBodySchema,
   homeSectionPatchSchema,
   sectionSchemaMap,
@@ -31,6 +35,7 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const payload = homePageBodySchema.parse(body);
     const data = await replaceHomePage(payload);
+    revalidateAllHomeSections();
     return apiSuccess(data);
   } catch (error) {
     if (error instanceof SyntaxError) {
@@ -50,6 +55,7 @@ export async function PATCH(request: Request) {
     const schema = sectionSchemaMap[section];
     const data = schema.parse(rawData);
     const updated = await updateHomeSection(section, data);
+    revalidateHomeSection(section);
     return apiSuccess(updated);
   } catch (error) {
     if (error instanceof SyntaxError) {

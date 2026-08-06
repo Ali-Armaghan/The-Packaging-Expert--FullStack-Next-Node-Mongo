@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/db/mongoose";
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
 import { requirePermission } from "@/lib/auth/session";
 import { getGroupByById } from "@/lib/groupBy/queries";
+import { revalidateGroupBySlugs } from "@/lib/groupBy/revalidate";
 import { isReservedGroupSlug } from "@/lib/groupBy/reservedSlugs";
 import { serializeGroupBy } from "@/lib/groupBy/serialize";
 import { slugify } from "@/lib/slug";
@@ -37,6 +38,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     const doc = await GroupBy.findById(id);
     if (!doc) return apiError("Group not found", 404);
 
+    const previousSlug = doc.slug;
+
     if (payload.name !== undefined) doc.name = payload.name;
     if (payload.isActive !== undefined) doc.isActive = payload.isActive;
     if (payload.sortOrder !== undefined) doc.sortOrder = payload.sortOrder;
@@ -62,7 +65,9 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     await doc.save();
-    return apiSuccess(serializeGroupBy(doc.toObject()));
+    const serialized = serializeGroupBy(doc.toObject());
+    revalidateGroupBySlugs(previousSlug, serialized.slug);
+    return apiSuccess(serialized);
   } catch (error) {
     if (error instanceof SyntaxError) {
       return apiError("Invalid JSON body", 400);
@@ -80,6 +85,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     await connectToDatabase();
     const doc = await GroupBy.findByIdAndDelete(id);
     if (!doc) return apiError("Group not found", 404);
+    revalidateGroupBySlugs(doc.slug);
     return apiSuccess({ id });
   } catch (error) {
     return apiFromUnknownError(error);

@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
 import { requirePermission } from "@/lib/auth/session";
+import { revalidateGroupBysByIds } from "@/lib/groupBy/revalidate";
 import { serializeProduct } from "@/lib/product/serialize";
 import { slugify } from "@/lib/slug";
 import { createProductSchema } from "@/lib/validations/product";
@@ -52,6 +53,8 @@ export async function POST(request: Request) {
       isActive: payload.isActive,
       sortOrder: payload.sortOrder,
     });
+
+    await revalidateGroupBysByIds(payload.groupByIds ?? []);
 
     return apiSuccess(serializeProduct(product.toObject()), 201);
   } catch (error) {

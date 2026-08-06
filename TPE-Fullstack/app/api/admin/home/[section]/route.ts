@@ -1,6 +1,7 @@
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
 import { requirePermission } from "@/lib/auth/session";
 import { getHomeSection, updateHomeSection } from "@/lib/home/queries";
+import { revalidateHomeSection } from "@/lib/home/revalidate";
 import { sectionSchemaMap } from "@/lib/validations/homePage";
 import { HOME_SECTIONS, type HomeSectionKey } from "@/types/homePage";
 
@@ -51,6 +52,7 @@ export async function PUT(request: Request, context: RouteContext) {
     const schema = sectionSchemaMap[section];
     const data = schema.parse(body);
     await updateHomeSection(section, data);
+    revalidateHomeSection(section);
     const saved = await getHomeSection(section);
     return apiSuccess({ section, data: saved });
   } catch (error) {

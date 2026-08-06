@@ -35,6 +35,8 @@ const groupBySchema = new Schema(
 
 groupBySchema.index({ isActive: 1, sortOrder: 1 });
 groupBySchema.index({ name: 1 });
+/** Speeds active public lookups (slug already unique). */
+groupBySchema.index({ slug: 1, isActive: 1 });
 
 export type GroupByDocument = InferSchemaType<typeof groupBySchema> & {
   _id: Schema.Types.ObjectId;

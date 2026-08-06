@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
 import { requirePermission } from "@/lib/auth/session";
+import { revalidateGroupBysByIds } from "@/lib/groupBy/revalidate";
 import { serializeProduct } from "@/lib/product/serialize";
 import { slugify } from "@/lib/slug";
 import { updateProductSchema } from "@/lib/validations/product";
@@ -36,6 +37,10 @@ export async function PATCH(request: Request, context: RouteContext) {
     const doc = await Product.findById(id);
     if (!doc) return apiError("Product not found", 404);
 
+    const previousGroupIds = (doc.groupByIds ?? []).map((value) =>
+      String(value),
+    );
+
     if (payload.name !== undefined) doc.name = payload.name;
     if (payload.description !== undefined) doc.description = payload.description;
     if (payload.price !== undefined) doc.price = payload.price;
@@ -67,7 +72,12 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     await doc.save();
-    return apiSuccess(serializeProduct(doc.toObject()));
+    const serialized = serializeProduct(doc.toObject());
+    await revalidateGroupBysByIds([
+      ...previousGroupIds,
+      ...(serialized.groupByIds ?? []),
+    ]);
+    return apiSuccess(serialized);
   } catch (error) {
     if (error instanceof SyntaxError) {
       return apiError("Invalid JSON body", 400);
@@ -85,6 +95,9 @@ export async function DELETE(_request: Request, context: RouteContext) {
     await connectToDatabase();
     const doc = await Product.findByIdAndDelete(id);
     if (!doc) return apiError("Product not found", 404);
+    await revalidateGroupBysByIds(
+      (doc.groupByIds ?? []).map((value) => String(value)),
+    );
     return apiSuccess({ id });
   } catch (error) {
     return apiFromUnknownError(error);
