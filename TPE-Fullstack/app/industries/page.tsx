@@ -1,16 +1,25 @@
 import type { Metadata } from "next";
 import { MenuHubView } from "@/components/menu-hub/MenuHubView";
+import { applyLinksToHubContent } from "@/lib/menuLinks/apply";
+import { getCachedMenuGroupLinks } from "@/lib/menuLinks/cache";
 import { getStaticMenuHub } from "@/lib/menuHub/content";
 
-export const dynamic = "force-static";
+export const revalidate = 86400;
 
-const content = getStaticMenuHub("industries");
+const base = getStaticMenuHub("industries");
 
 export const metadata: Metadata = {
-  title: content.hero.title,
-  description: content.hero.description,
+  title: base.hero.title,
+  description: base.hero.description,
 };
 
-export default function IndustriesHubPage() {
+export default async function IndustriesHubPage() {
+  let links = {};
+  try {
+    links = await getCachedMenuGroupLinks("industries");
+  } catch {
+    links = {};
+  }
+  const content = applyLinksToHubContent(base, links);
   return <MenuHubView content={content} />;
 }

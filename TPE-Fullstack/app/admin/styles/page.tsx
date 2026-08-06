@@ -1,10 +1,10 @@
-import { AdminPlaceholder } from "@/components/admin";
+import { AdminMenuGroupLinks } from "@/components/admin/AdminMenuGroupLinks";
 
 export default function AdminStylesPage() {
   return (
-    <AdminPlaceholder
-      title="Styles"
-      description="Manage packaging styles and variants used across your catalog."
+    <AdminMenuGroupLinks
+      menuKey="styles"
+      description="Link each Styles menu item to a Group By page."
     />
   );
 }

@@ -9,6 +9,7 @@ type CategoryByStyleMegaMenuProps = {
   open: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
+  items?: MegaMenuItem[];
 };
 
 function MegaMenuLink({ item }: { item: MegaMenuItem }) {
@@ -42,6 +43,7 @@ export function CategoryByStyleMegaMenu({
   open,
   onMouseEnter,
   onMouseLeave,
+  items = categoryByStyleGroup.items,
 }: CategoryByStyleMegaMenuProps) {
   return (
     <div
@@ -61,7 +63,7 @@ export function CategoryByStyleMegaMenu({
             {categoryByStyleGroup.title}
           </p>
           <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:max-w-3xl">
-            {categoryByStyleGroup.items.map((item) => (
+            {items.map((item) => (
               <li key={item.id}>
                 <MegaMenuLink item={item} />
               </li>

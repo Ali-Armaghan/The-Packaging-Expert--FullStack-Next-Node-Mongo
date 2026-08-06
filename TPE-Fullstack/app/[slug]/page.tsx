@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { EliteLanding } from "@/components/elite/EliteLanding";
 import { Button } from "@/components/ui/site-button";
 import { Container } from "@/components/ui/Container";
-import { ISR_REVALIDATE_SECONDS } from "@/lib/cache/revalidate";
 import {
   getCachedActiveGroupByBySlug,
   listActiveGroupBySlugsForStaticParams,
@@ -15,8 +14,8 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-/** Fallback ISR window if on-demand revalidation is missed. */
-export const revalidate = ISR_REVALIDATE_SECONDS;
+/** Fallback ISR window if on-demand revalidation is missed (1 day). */
+export const revalidate = 86400;
 
 /** Allow GroupBys created after build to be generated on first request. */
 export const dynamicParams = true;

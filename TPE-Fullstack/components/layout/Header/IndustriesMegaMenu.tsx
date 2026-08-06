@@ -13,6 +13,7 @@ type IndustriesMegaMenuProps = {
   open: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
+  columns?: IndustryMegaMenuItem[][];
 };
 
 function IndustryLink({ item }: { item: IndustryMegaMenuItem }) {
@@ -35,6 +36,7 @@ export function IndustriesMegaMenu({
   open,
   onMouseEnter,
   onMouseLeave,
+  columns = industriesMegaMenuColumns,
 }: IndustriesMegaMenuProps) {
   return (
     <div
@@ -56,7 +58,7 @@ export function IndustriesMegaMenu({
             </h3>
 
             <div className="grid grid-cols-1 gap-x-10 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
-              {industriesMegaMenuColumns.map((column, columnIndex) => (
+              {columns.map((column, columnIndex) => (
                 <ul key={columnIndex} className="space-y-0.5">
                   {column.map((item) => (
                     <li key={item.id}>

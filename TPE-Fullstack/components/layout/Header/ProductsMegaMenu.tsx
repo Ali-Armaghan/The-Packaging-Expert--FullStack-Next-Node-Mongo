@@ -5,6 +5,7 @@ import {
   optionLibraryFeature,
   optionLibraryImages,
   productsMegaMenuGroups,
+  type MegaMenuGroup,
   type MegaMenuItem,
 } from "@/constants/productsMegaMenu";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,7 @@ type ProductsMegaMenuProps = {
   open: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
+  groups?: MegaMenuGroup[];
 };
 
 function MegaMenuLink({ item }: { item: MegaMenuItem }) {
@@ -46,7 +48,7 @@ function MegaMenuGroupColumn({
   group,
   className,
 }: {
-  group: (typeof productsMegaMenuGroups)[number];
+  group: MegaMenuGroup;
   className?: string;
 }) {
   return (
@@ -69,8 +71,9 @@ export function ProductsMegaMenu({
   open,
   onMouseEnter,
   onMouseLeave,
+  groups = productsMegaMenuGroups,
 }: ProductsMegaMenuProps) {
-  const [productsGroup, othersGroup, bagsGroup] = productsMegaMenuGroups;
+  const [productsGroup, othersGroup, bagsGroup] = groups;
 
   return (
     <div
@@ -87,11 +90,11 @@ export function ProductsMegaMenu({
       <Container className="py-8">
         <div className="grid grid-cols-[1fr_1fr_280px] gap-10 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_300px]">
           <div className="space-y-8">
-            <MegaMenuGroupColumn group={productsGroup} />
-            <MegaMenuGroupColumn group={othersGroup} />
+            {productsGroup ? <MegaMenuGroupColumn group={productsGroup} /> : null}
+            {othersGroup ? <MegaMenuGroupColumn group={othersGroup} /> : null}
           </div>
 
-          <MegaMenuGroupColumn group={bagsGroup} />
+          {bagsGroup ? <MegaMenuGroupColumn group={bagsGroup} /> : null}
 
           <aside className="rounded-xl bg-muted p-5">
             <div className="grid grid-cols-4 gap-1.5">

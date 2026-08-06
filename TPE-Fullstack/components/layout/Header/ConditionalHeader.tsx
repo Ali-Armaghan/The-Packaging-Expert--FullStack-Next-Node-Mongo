@@ -1,9 +1,14 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import type { PublicMenuLinks } from "@/lib/menuLinks/apply";
 import { Header } from "./Header";
 
-export function ConditionalHeader() {
+type ConditionalHeaderProps = {
+  menuLinks: PublicMenuLinks;
+};
+
+export function ConditionalHeader({ menuLinks }: ConditionalHeaderProps) {
   const pathname = usePathname();
   const hideHeader =
     pathname.startsWith("/blog") ||
@@ -14,5 +19,5 @@ export function ConditionalHeader() {
     return null;
   }
 
-  return <Header />;
+  return <Header menuLinks={menuLinks} />;
 }

@@ -1,10 +1,10 @@
-import { AdminPlaceholder } from "@/components/admin";
+import { AdminMenuGroupLinks } from "@/components/admin/AdminMenuGroupLinks";
 
 export default function AdminCategoriesPage() {
   return (
-    <AdminPlaceholder
-      title="Categories"
-      description="Organize packaging types used across the catalog."
+    <AdminMenuGroupLinks
+      menuKey="products"
+      description="Link each Products / Categories menu item to a Group By page."
     />
   );
 }

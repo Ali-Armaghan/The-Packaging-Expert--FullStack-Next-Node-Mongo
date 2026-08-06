@@ -4,8 +4,7 @@ import {
   GoogleTagManagerNoScript,
   GoogleTagManagerScript,
 } from "@/components/analytics";
-import { ConditionalFooter } from "@/components/layout/Footer";
-import { ConditionalHeader } from "@/components/layout/Header";
+import { SiteChrome } from "@/components/layout/SiteChrome";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
 
@@ -42,9 +41,7 @@ export default function RootLayout({
       </head>
       <body className="flex min-h-dvh flex-col bg-background text-foreground">
         <GoogleTagManagerNoScript />
-        <ConditionalHeader />
-        <main className="flex min-h-0 flex-1 flex-col">{children}</main>
-        <ConditionalFooter />
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );
