@@ -20,19 +20,27 @@ export type EliteHeroContent = {
   secondaryCta: { label: string; href: string };
 };
 
+export type EliteCatalogProduct = {
+  id?: string;
+  name: string;
+  price: string;
+  image: string;
+  href: string;
+};
+
+export type EliteCatalogTab = {
+  id: string;
+  label: string;
+  products: EliteCatalogProduct[];
+};
+
 export type EliteCatalogContent = {
   eyebrow: string;
   title: string;
   description: string;
   viewAllHref: string;
   viewAllLabel: string;
-  tabs: string[];
-  products: Array<{
-    name: string;
-    price: string;
-    image: string;
-    href: string;
-  }>;
+  tabs: EliteCatalogTab[];
 };
 
 export type EliteWhyUsContent = {

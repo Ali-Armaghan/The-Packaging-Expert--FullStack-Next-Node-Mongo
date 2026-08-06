@@ -7,8 +7,22 @@ import type {
 export type GroupBySectionKey = EliteSectionKey;
 export type GroupByBelowFoldKey = EliteBelowFoldKey;
 
-/** Catalog meta stored on GroupBy — products come from Product collection. */
-export type GroupByCatalogMeta = Omit<ElitePageContent["catalog"], "products">;
+/** Catalog tab stored on GroupBy — product cards resolved from Product IDs. */
+export type GroupByCatalogTab = {
+  id: string;
+  label: string;
+  productIds: string[];
+};
+
+/** Catalog meta stored on GroupBy — no embedded product cards. */
+export type GroupByCatalogMeta = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  viewAllHref: string;
+  viewAllLabel: string;
+  tabs: GroupByCatalogTab[];
+};
 
 export type GroupByContent = Omit<ElitePageContent, "catalog"> & {
   catalog: GroupByCatalogMeta;

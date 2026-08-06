@@ -1,5 +1,7 @@
 import { getGroupByContentDefaults } from "@/lib/groupBy/defaults";
 import type {
+  GroupByCatalogMeta,
+  GroupByCatalogTab,
   GroupByContent,
   SerializedGroupBy,
   SerializedGroupByListItem,
@@ -12,6 +14,88 @@ function asObject(value: unknown): Record<string, unknown> {
     : {};
 }
 
+function slugifyTabId(label: string, index: number) {
+  const base = label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return base || `tab-${index + 1}`;
+}
+
+/** Accept new `{ id, label, productIds }` tabs and legacy `string[]` tabs. */
+export function normalizeCatalogTabs(
+  raw: unknown,
+  defaults: GroupByCatalogTab[],
+): GroupByCatalogTab[] {
+  if (!Array.isArray(raw) || raw.length === 0) return defaults;
+
+  const tabs = raw
+    .map((entry, index) => {
+      if (typeof entry === "string") {
+        const label = entry.trim();
+        if (!label) return null;
+        return {
+          id: slugifyTabId(label, index),
+          label,
+          productIds: [] as string[],
+        };
+      }
+
+      if (!entry || typeof entry !== "object") return null;
+      const tab = entry as Record<string, unknown>;
+      const label =
+        (typeof tab.label === "string" && tab.label.trim()) ||
+        (typeof tab.name === "string" && tab.name.trim()) ||
+        "";
+      if (!label) return null;
+
+      const id =
+        (typeof tab.id === "string" && tab.id.trim()) ||
+        slugifyTabId(label, index);
+
+      const productIds = Array.isArray(tab.productIds)
+        ? tab.productIds
+            .filter((id): id is string => typeof id === "string")
+            .map((id) => id.trim())
+            .filter(Boolean)
+        : [];
+
+      return { id, label, productIds };
+    })
+    .filter((tab): tab is GroupByCatalogTab => Boolean(tab));
+
+  return tabs.length > 0 ? tabs : defaults;
+}
+
+function normalizeCatalog(
+  raw: unknown,
+  defaults: GroupByCatalogMeta,
+): GroupByCatalogMeta {
+  const catalogRaw = asObject(raw);
+  const { products: _ignored, tabs: rawTabs, ...rest } = catalogRaw;
+
+  return {
+    ...defaults,
+    ...rest,
+    eyebrow:
+      typeof rest.eyebrow === "string" ? rest.eyebrow : defaults.eyebrow,
+    title: typeof rest.title === "string" ? rest.title : defaults.title,
+    description:
+      typeof rest.description === "string"
+        ? rest.description
+        : defaults.description,
+    viewAllHref:
+      typeof rest.viewAllHref === "string"
+        ? rest.viewAllHref
+        : defaults.viewAllHref,
+    viewAllLabel:
+      typeof rest.viewAllLabel === "string"
+        ? rest.viewAllLabel
+        : defaults.viewAllLabel,
+    tabs: normalizeCatalogTabs(rawTabs, defaults.tabs),
+  };
+}
+
 /** Merge stored Mixed content with elite defaults (catalog without products). */
 export function normalizeGroupByContent(
   raw: unknown,
@@ -20,15 +104,9 @@ export function normalizeGroupByContent(
   const defaults = getGroupByContentDefaults(name);
   const incoming = asObject(raw);
 
-  const catalogRaw = asObject(incoming.catalog);
-  const { products: _ignored, ...catalogFromRaw } = catalogRaw;
-
   return {
     hero: { ...defaults.hero, ...asObject(incoming.hero) } as ElitePageContent["hero"],
-    catalog: {
-      ...defaults.catalog,
-      ...catalogFromRaw,
-    } as GroupByContent["catalog"],
+    catalog: normalizeCatalog(incoming.catalog, defaults.catalog),
     whyUs: { ...defaults.whyUs, ...asObject(incoming.whyUs) } as ElitePageContent["whyUs"],
     industries: {
       ...defaults.industries,

@@ -1,6 +1,10 @@
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
-import { requirePermission } from "@/lib/auth/session";
+import { hasPermission } from "@/lib/auth/permissions";
+import {
+  requirePermission,
+  requireSession,
+} from "@/lib/auth/session";
 import { revalidateGroupBysByIds } from "@/lib/groupBy/revalidate";
 import { serializeProduct } from "@/lib/product/serialize";
 import { slugify } from "@/lib/slug";
@@ -9,8 +13,19 @@ import { Product } from "@/models/Product";
 
 export async function GET() {
   try {
-    const { error, session } = await requirePermission("products");
+    const { error, session } = await requireSession();
     if (error || !session) return error!;
+
+    const access = {
+      role: session.user.role,
+      permissions: session.user.permissions,
+    };
+    if (
+      !hasPermission(access, "products") &&
+      !hasPermission(access, "group-by")
+    ) {
+      return apiError("Forbidden", 403);
+    }
 
     await connectToDatabase();
     const products = await Product.find({})

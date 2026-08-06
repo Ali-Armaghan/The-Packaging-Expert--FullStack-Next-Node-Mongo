@@ -45,11 +45,17 @@ export const heroSectionSchema = z.object({
   secondaryCta: ctaSchema,
 });
 
+export const catalogTabSchema = z.object({
+  id: z.string().trim().min(1).max(80),
+  label: z.string().trim().min(1).max(80),
+  productIds: z.array(z.string().trim().min(1).max(40)).max(50),
+});
+
 export const catalogMetaSectionSchema = z.object({
   eyebrow: z.string().trim().max(120),
   title: z.string().trim().max(300),
   description: z.string().trim().max(1000),
   viewAllHref: z.string().trim().max(500),
   viewAllLabel: z.string().trim().max(120),
-  tabs: z.array(z.string().trim().max(80)).max(20),
+  tabs: z.array(catalogTabSchema).max(20),
 });

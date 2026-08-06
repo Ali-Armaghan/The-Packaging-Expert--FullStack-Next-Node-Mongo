@@ -45,3 +45,19 @@ export async function revalidateGroupBysByIds(
     .lean();
   revalidateGroupBySlugs(...docs.map((doc) => doc.slug));
 }
+
+/** Invalidate group pages that pick this product in catalog tabs. */
+export async function revalidateGroupBysUsingProduct(
+  productId: string | { toString(): string } | null | undefined,
+) {
+  const id = productId == null ? "" : String(productId).trim();
+  if (!id || !mongoose.isValidObjectId(id)) return;
+
+  await connectToDatabase();
+  const docs = await GroupBy.find({
+    "content.catalog.tabs.productIds": id,
+  })
+    .select({ slug: 1 })
+    .lean();
+  revalidateGroupBySlugs(...docs.map((doc) => doc.slug));
+}

@@ -9,20 +9,15 @@ import { EliteSectionEyebrow } from "./ui";
 
 export function EliteCatalog({ content }: { content: EliteCatalogContent }) {
   const [activeTab, setActiveTab] = useState(0);
-
-  const visibleProducts = useMemo(() => {
-    const tab = content.tabs[activeTab];
-    if (!tab) return content.products;
-    const matched = content.products.filter(
-      (p) => p.name.toLowerCase() === tab.toLowerCase(),
-    );
-    // Keep a full grid feel — show match first, then the rest
-    if (matched.length === 0) return content.products;
-    const rest = content.products.filter(
-      (p) => p.name.toLowerCase() !== tab.toLowerCase(),
-    );
-    return [...matched, ...rest];
-  }, [activeTab, content.products, content.tabs]);
+  const safeTabIndex = Math.min(
+    activeTab,
+    Math.max(content.tabs.length - 1, 0),
+  );
+  const active = content.tabs[safeTabIndex];
+  const visibleProducts = useMemo(
+    () => active?.products ?? [],
+    [active?.products],
+  );
 
   return (
     <section className="relative px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
@@ -48,39 +43,36 @@ export function EliteCatalog({ content }: { content: EliteCatalogContent }) {
           </Link>
         </div>
 
-        <div className="mt-8 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {content.tabs.map((tab, i) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setActiveTab(i)}
-              className={cn(
-                "shrink-0 rounded-full px-4 py-2.5 text-sm font-semibold transition duration-300",
-                activeTab === i
-                  ? "bg-primary text-white shadow-[0_10px_24px_-12px_rgba(52,173,120,0.8)]"
-                  : "bg-white text-muted-foreground ring-1 ring-black/5 hover:text-foreground hover:ring-primary/30",
-              )}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        {content.tabs.length > 0 ? (
+          <div className="mt-8 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {content.tabs.map((tab, i) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(i)}
+                className={cn(
+                  "shrink-0 rounded-full px-4 py-2.5 text-sm font-semibold transition duration-300",
+                  safeTabIndex === i
+                    ? "bg-primary text-white shadow-[0_10px_24px_-12px_rgba(52,173,120,0.8)]"
+                    : "bg-white text-muted-foreground ring-1 ring-black/5 hover:text-foreground hover:ring-primary/30",
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
 
-        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5 lg:gap-6">
-          {visibleProducts.map((product, index) => {
-            const isFeatured =
-              product.name.toLowerCase() ===
-              content.tabs[activeTab]?.toLowerCase();
-
-            return (
+        {visibleProducts.length > 0 ? (
+          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-5 lg:gap-6">
+            {visibleProducts.map((product, index) => (
               <Link
-                key={product.name}
+                key={product.id ?? `${product.name}-${index}`}
                 href={product.href}
                 className={cn(
                   "group relative flex flex-col rounded-[1.35rem] bg-[linear-gradient(180deg,#f7f3ed_0%,#f3efe8_100%)] p-2.5 transition duration-300 sm:p-3",
                   "hover:-translate-y-1 hover:bg-[linear-gradient(180deg,#f3ebe1_0%,#eaf6f0_100%)]",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                  isFeatured && "ring-1 ring-primary/25",
                 )}
                 style={{ transitionDelay: `${Math.min(index, 8) * 15}ms` }}
               >
@@ -122,9 +114,13 @@ export function EliteCatalog({ content }: { content: EliteCatalogContent }) {
                   </div>
                 </div>
               </Link>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-10 text-sm text-muted-foreground">
+            No products in this tab yet.
+          </p>
+        )}
       </div>
     </section>
   );

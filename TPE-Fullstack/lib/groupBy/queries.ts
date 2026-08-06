@@ -9,7 +9,11 @@ import {
 import { GROUP_BY_SECTIONS, GroupBy } from "@/models/GroupBy";
 import { Product } from "@/models/Product";
 import type { GroupByContent, GroupBySectionKey } from "@/types/groupBy";
-import type { EliteCatalogContent, ElitePageContent } from "@/types/elitePage";
+import type {
+  EliteCatalogContent,
+  EliteCatalogProduct,
+  ElitePageContent,
+} from "@/types/elitePage";
 
 export async function listGroupBys() {
   await connectToDatabase();
@@ -34,6 +38,75 @@ export async function getActiveGroupByBySlug(slug: string) {
   return doc ? serializeGroupBy(doc) : null;
 }
 
+function mapProductDoc(doc: {
+  _id: { toString(): string };
+  name: string;
+  price?: string | null;
+  image?: string | null;
+  images?: string[] | null;
+}): EliteCatalogProduct {
+  const price = typeof doc.price === "string" ? doc.price : "";
+  const image =
+    (typeof doc.image === "string" && doc.image) ||
+    (Array.isArray(doc.images) && typeof doc.images[0] === "string"
+      ? doc.images[0]
+      : "") ||
+    "";
+  return {
+    id: String(doc._id),
+    name: doc.name,
+    price: price || "Quote",
+    image,
+    href: "/quote",
+  };
+}
+
+export async function getProductsByIds(
+  productIds: string[],
+): Promise<Map<string, EliteCatalogProduct>> {
+  await connectToDatabase();
+  const validIds = productIds.filter((id) =>
+    mongoose.Types.ObjectId.isValid(id),
+  );
+  if (validIds.length === 0) return new Map();
+
+  const docs = await Product.find({
+    _id: { $in: validIds.map((id) => new mongoose.Types.ObjectId(id)) },
+    isActive: true,
+  }).lean();
+
+  const map = new Map<string, EliteCatalogProduct>();
+  for (const doc of docs) {
+    const product = mapProductDoc(doc);
+    if (product.id) map.set(product.id, product);
+  }
+  return map;
+}
+
+export async function resolveCatalogContent(
+  catalog: GroupByContent["catalog"],
+): Promise<EliteCatalogContent> {
+  const allIds = Array.from(
+    new Set(catalog.tabs.flatMap((tab) => tab.productIds)),
+  );
+  const productMap = await getProductsByIds(allIds);
+
+  return {
+    eyebrow: catalog.eyebrow,
+    title: catalog.title,
+    description: catalog.description,
+    viewAllHref: catalog.viewAllHref,
+    viewAllLabel: catalog.viewAllLabel,
+    tabs: catalog.tabs.map((tab) => ({
+      id: tab.id,
+      label: tab.label,
+      products: tab.productIds
+        .map((id) => productMap.get(id))
+        .filter((product): product is EliteCatalogProduct => Boolean(product)),
+    })),
+  };
+}
+
 export async function getGroupBySection<K extends GroupBySectionKey>(
   slug: string,
   section: K,
@@ -42,20 +115,18 @@ export async function getGroupBySection<K extends GroupBySectionKey>(
   if (!group) return null;
 
   if (section === "catalog") {
-    const products = await getCatalogProductsForGroup(group.id);
-    const meta = group.content.catalog;
-    return {
-      ...meta,
-      products,
-    } as ElitePageContent[K];
+    return (await resolveCatalogContent(
+      group.content.catalog,
+    )) as ElitePageContent[K];
   }
 
   return group.content[section] as ElitePageContent[K];
 }
 
+/** @deprecated Prefer tab productIds; kept for product→group revalidation helpers. */
 export async function getCatalogProductsForGroup(
   groupById: string,
-): Promise<EliteCatalogContent["products"]> {
+): Promise<EliteCatalogProduct[]> {
   await connectToDatabase();
   if (!mongoose.Types.ObjectId.isValid(groupById)) return [];
 
@@ -66,21 +137,7 @@ export async function getCatalogProductsForGroup(
     .sort({ sortOrder: 1, name: 1 })
     .lean();
 
-  return docs.map((doc) => {
-    const price = "price" in doc && typeof doc.price === "string" ? doc.price : "";
-    const image =
-      ("image" in doc && typeof doc.image === "string" && doc.image) ||
-      (Array.isArray(doc.images) && typeof doc.images[0] === "string"
-        ? doc.images[0]
-        : "") ||
-      "";
-    return {
-      name: doc.name,
-      price: price || "Quote",
-      image,
-      href: "/quote",
-    };
-  });
+  return docs.map(mapProductDoc);
 }
 
 export function isGroupBySection(value: string): value is GroupBySectionKey {
@@ -100,16 +157,22 @@ export async function createGroupByDoc(input: {
     { ...base, ...input.content },
     input.name,
   );
-  // strip accidental products
-  const { products: _p, ...catalog } = content.catalog as GroupByContent["catalog"] & {
-    products?: unknown;
-  };
   const doc = await GroupBy.create({
     name: input.name,
     slug: input.slug,
     isActive: input.isActive ?? true,
     sortOrder: input.sortOrder ?? 0,
-    content: { ...content, catalog },
+    content: {
+      ...content,
+      catalog: {
+        ...content.catalog,
+        tabs: content.catalog.tabs.map((tab) => ({
+          id: tab.id,
+          label: tab.label,
+          productIds: tab.productIds,
+        })),
+      },
+    },
   });
   return serializeGroupBy(doc.toObject());
 }
@@ -135,10 +198,7 @@ export async function updateGroupBySection(
     { ...current, [section]: nextSection },
     doc.name,
   );
-  const { products: _p, ...catalog } = nextContent.catalog as GroupByContent["catalog"] & {
-    products?: unknown;
-  };
-  doc.set("content", { ...nextContent, catalog });
+  doc.set("content", nextContent);
   await doc.save();
   return serializeGroupBy(doc.toObject());
 }

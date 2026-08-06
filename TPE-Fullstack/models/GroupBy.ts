@@ -27,7 +27,7 @@ const groupBySchema = new Schema(
     },
     isActive: { type: Boolean, default: true, index: true },
     sortOrder: { type: Number, default: 0 },
-    /** Elite page section payloads (catalog.products not stored — live from Product). */
+    /** Elite page section payloads (catalog tabs store productIds; cards resolved live). */
     content: { type: Schema.Types.Mixed, required: true },
   },
   { timestamps: true },

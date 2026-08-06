@@ -1,7 +1,10 @@
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
 import { requirePermission } from "@/lib/auth/session";
-import { revalidateGroupBysByIds } from "@/lib/groupBy/revalidate";
+import {
+  revalidateGroupBysByIds,
+  revalidateGroupBysUsingProduct,
+} from "@/lib/groupBy/revalidate";
 import { serializeProduct } from "@/lib/product/serialize";
 import { slugify } from "@/lib/slug";
 import { updateProductSchema } from "@/lib/validations/product";
@@ -73,9 +76,12 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     await doc.save();
     const serialized = serializeProduct(doc.toObject());
-    await revalidateGroupBysByIds([
-      ...previousGroupIds,
-      ...(serialized.groupByIds ?? []),
+    await Promise.all([
+      revalidateGroupBysByIds([
+        ...previousGroupIds,
+        ...(serialized.groupByIds ?? []),
+      ]),
+      revalidateGroupBysUsingProduct(serialized.id),
     ]);
     return apiSuccess(serialized);
   } catch (error) {
@@ -95,9 +101,12 @@ export async function DELETE(_request: Request, context: RouteContext) {
     await connectToDatabase();
     const doc = await Product.findByIdAndDelete(id);
     if (!doc) return apiError("Product not found", 404);
-    await revalidateGroupBysByIds(
-      (doc.groupByIds ?? []).map((value) => String(value)),
-    );
+    await Promise.all([
+      revalidateGroupBysByIds(
+        (doc.groupByIds ?? []).map((value) => String(value)),
+      ),
+      revalidateGroupBysUsingProduct(id),
+    ]);
     return apiSuccess({ id });
   } catch (error) {
     return apiFromUnknownError(error);

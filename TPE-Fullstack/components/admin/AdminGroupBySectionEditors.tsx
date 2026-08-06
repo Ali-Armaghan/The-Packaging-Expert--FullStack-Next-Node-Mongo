@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,8 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { GroupByContent } from "@/types/groupBy";
+import type { GroupByCatalogTab, GroupByContent } from "@/types/groupBy";
 import { ImageUploadField } from "./ImageUploadField";
+
+type ProductOption = {
+  id: string;
+  name: string;
+  image?: string;
+  isActive?: boolean;
+  price?: string;
+};
 
 const fieldClass =
   "w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -138,6 +148,14 @@ export function GroupHeroEditor({
   );
 }
 
+function newCatalogTab(index: number): GroupByCatalogTab {
+  return {
+    id: `tab-${Date.now()}-${index}`,
+    label: `Tab ${index + 1}`,
+    productIds: [],
+  };
+}
+
 export function GroupCatalogEditor({
   value,
   onChange,
@@ -145,11 +163,66 @@ export function GroupCatalogEditor({
   value: GroupByContent["catalog"];
   onChange: (v: GroupByContent["catalog"]) => void;
 }) {
+  const [products, setProducts] = useState<ProductOption[]>([]);
+  const [productsError, setProductsError] = useState<string | null>(null);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoadingProducts(true);
+      setProductsError(null);
+      try {
+        const res = await fetch("/api/admin/products");
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "Failed to load products");
+        }
+        if (!cancelled) {
+          setProducts(
+            (data.data as ProductOption[]).filter((p) => p.isActive !== false),
+          );
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setProductsError(
+            err instanceof Error ? err.message : "Failed to load products",
+          );
+        }
+      } finally {
+        if (!cancelled) setLoadingProducts(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const updateTab = (index: number, patch: Partial<GroupByCatalogTab>) => {
+    onChange({
+      ...value,
+      tabs: value.tabs.map((tab, i) =>
+        i === index ? { ...tab, ...patch } : tab,
+      ),
+    });
+  };
+
+  const toggleProduct = (tabIndex: number, productId: string, checked: boolean) => {
+    const tab = value.tabs[tabIndex];
+    if (!tab) return;
+    const productIds = checked
+      ? tab.productIds.includes(productId)
+        ? tab.productIds
+        : [...tab.productIds, productId]
+      : tab.productIds.filter((id) => id !== productId);
+    updateTab(tabIndex, { productIds });
+  };
+
   return (
     <div className="space-y-4">
       <p className="rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-        Product cards come from Products linked to this group. Here you only set
-        catalog section copy and tabs.
+        Add catalog tabs, then pick which products appear in each tab on the
+        public group page.
       </p>
       <div className="space-y-2">
         <Label>Eyebrow</Label>
@@ -190,19 +263,118 @@ export function GroupCatalogEditor({
           />
         </div>
       </div>
-      <TextArea
-        label="Tabs (one per line)"
-        value={value.tabs.join("\n")}
-        onChange={(v) =>
-          onChange({
-            ...value,
-            tabs: v
-              .split("\n")
-              .map((s) => s.trim())
-              .filter(Boolean),
-          })
-        }
-      />
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <Label>Tabs & products</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              onChange({
+                ...value,
+                tabs: [...value.tabs, newCatalogTab(value.tabs.length)],
+              })
+            }
+          >
+            <PlusIcon className="size-4" />
+            Add tab
+          </Button>
+        </div>
+
+        {productsError ? (
+          <p className="text-xs text-destructive">{productsError}</p>
+        ) : null}
+        {loadingProducts ? (
+          <p className="text-xs text-muted-foreground">Loading products…</p>
+        ) : null}
+
+        {value.tabs.length === 0 ? (
+          <p className="rounded-lg border border-dashed px-3 py-6 text-center text-sm text-muted-foreground">
+            No tabs yet. Add a tab, then select products for it.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {value.tabs.map((tab, index) => (
+              <div
+                key={tab.id}
+                className="space-y-3 rounded-xl border border-border p-4"
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <Label>Tab label</Label>
+                    <Input
+                      value={tab.label}
+                      onChange={(e) =>
+                        updateTab(index, { label: e.target.value })
+                      }
+                      placeholder="e.g. Mailer boxes"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() =>
+                      onChange({
+                        ...value,
+                        tabs: value.tabs.filter((_, i) => i !== index),
+                      })
+                    }
+                  >
+                    <Trash2Icon className="size-4" />
+                    Remove
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>
+                    Products in this tab ({tab.productIds.length} selected)
+                  </Label>
+                  {products.length === 0 && !loadingProducts ? (
+                    <p className="text-xs text-muted-foreground">
+                      No active products found. Create products first.
+                    </p>
+                  ) : (
+                    <div className="max-h-56 space-y-1 overflow-y-auto rounded-lg border border-border p-2">
+                      {products.map((product) => {
+                        const checked = tab.productIds.includes(product.id);
+                        return (
+                          <label
+                            key={product.id}
+                            className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-1.5 hover:bg-muted/60"
+                          >
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(state) =>
+                                toggleProduct(
+                                  index,
+                                  product.id,
+                                  state === true,
+                                )
+                              }
+                            />
+                            <span className="min-w-0 flex-1 truncate text-sm">
+                              {product.name}
+                            </span>
+                            {product.price ? (
+                              <span className="shrink-0 text-xs text-muted-foreground">
+                                {product.price}
+                              </span>
+                            ) : null}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
