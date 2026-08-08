@@ -1,8 +1,8 @@
-import { getPublicBlogHeaderNav } from "@/lib/nav/queries";
+import { getCachedPublicBlogHeaderNav } from "@/lib/blog/cache";
 import { BlogHeader } from "./BlogHeader";
 
 /** Server wrapper so layout can stream the header shell immediately. */
 export async function BlogHeaderWithNav() {
-  const navItems = await getPublicBlogHeaderNav();
+  const navItems = await getCachedPublicBlogHeaderNav();
   return <BlogHeader navItems={navItems} />;
 }

@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import {
   BlogBrowseAll,
   BlogCategorySection,
   BlogFeatured,
 } from "@/components/blog";
-import {
-  getBrowseAllPublicPosts,
-  getFeaturedPublicPost,
-  getFeaturedSidebarPublicPosts,
-  getPublicPostsByCategory,
-} from "@/lib/blog/queries";
-import type { BlogCategory } from "@/constants/blog";
+import { BlogIndexSkeleton } from "@/components/blog/BlogIndexSkeleton";
+import { getCachedBlogIndexData } from "@/lib/blog/cache";
 
-export const dynamic = "force-dynamic";
+/** Fallback ISR window if on-demand revalidation is missed (1 day). */
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -20,22 +17,9 @@ export const metadata: Metadata = {
     "Packaging insights, design tips, business strategies, and sustainability guides from the Packaging Expert team.",
 };
 
-const categories: BlogCategory[] = [
-  "marketing",
-  "business",
-  "events",
-  "customer-success",
-  "sustainability",
-];
-
-export default async function BlogPage() {
-  const [featured, sidebarPosts, browseAll, ...categoryPosts] =
-    await Promise.all([
-      getFeaturedPublicPost(),
-      getFeaturedSidebarPublicPosts(),
-      getBrowseAllPublicPosts(),
-      ...categories.map((category) => getPublicPostsByCategory(category)),
-    ]);
+async function BlogPageContent() {
+  const { featured, sidebarPosts, browseAll, categories, categoryPosts } =
+    await getCachedBlogIndexData();
 
   return (
     <>
@@ -49,5 +33,13 @@ export default async function BlogPage() {
       ))}
       <BlogBrowseAll posts={browseAll} />
     </>
+  );
+}
+
+export default function BlogPage() {
+  return (
+    <Suspense fallback={<BlogIndexSkeleton />}>
+      <BlogPageContent />
+    </Suspense>
   );
 }

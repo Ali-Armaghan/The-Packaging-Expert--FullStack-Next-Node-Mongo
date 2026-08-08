@@ -7,9 +7,10 @@ import { Container } from "@/components/ui/Container";
 import { siteConfig } from "@/config/site";
 import { sanitizeBlogHtml } from "@/lib/blog/sanitizeHtml";
 import {
-  getPublishedPostBySlug,
-  getRelatedPublicPosts,
-} from "@/lib/blog/queries";
+  getCachedPublishedPostBySlug,
+  getCachedRelatedPublicPosts,
+  listPublishedSlugsForStaticParams,
+} from "@/lib/blog/cache";
 import { estimateReadingMinutes } from "@/lib/blog/seoScore";
 import { isHttpUrl, safeAbsoluteUrl } from "@/lib/url";
 
@@ -17,14 +18,21 @@ type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export const dynamic = "force-dynamic";
+/** Fallback ISR window if on-demand revalidation is missed (1 day). */
+export const revalidate = 86400;
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  const slugs = await listPublishedSlugsForStaticParams(50);
+  return slugs.map((slug) => ({ slug }));
+}
 
 export async function generateMetadata({
   params,
 }: BlogPostPageProps): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const post = await getPublishedPostBySlug(slug);
+    const post = await getCachedPublishedPostBySlug(slug);
 
     if (!post) {
       return { title: "Post Not Found" };
@@ -93,7 +101,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   let post;
   try {
-    post = await getPublishedPostBySlug(slug);
+    post = await getCachedPublishedPostBySlug(slug);
   } catch {
     throw new Error("Unable to load this blog post right now.");
   }
@@ -102,9 +110,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
-  let related: Awaited<ReturnType<typeof getRelatedPublicPosts>> = [];
+  let related: Awaited<ReturnType<typeof getCachedRelatedPublicPosts>> = [];
   try {
-    related = await getRelatedPublicPosts(post.category, post.slug, 3);
+    related = await getCachedRelatedPublicPosts(post.category, post.slug, 3);
   } catch {
     related = [];
   }

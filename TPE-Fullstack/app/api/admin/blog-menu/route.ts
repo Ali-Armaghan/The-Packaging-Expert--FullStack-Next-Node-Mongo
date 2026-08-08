@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
 import { requirePermission } from "@/lib/auth/session";
+import { revalidateBlogNav } from "@/lib/blog/revalidate";
 import {
   ensureBlogHeaderNavSeeded,
   getAdminNavMenuItems,
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
       })),
     });
 
+    revalidateBlogNav();
     return apiSuccess(serializeNavMenuItem(item.toObject()), 201);
   } catch (error) {
     if (error instanceof SyntaxError) {
@@ -92,6 +94,7 @@ export async function PATCH(request: Request) {
     );
 
     const items = await getAdminNavMenuItems("blog-header");
+    revalidateBlogNav();
     return apiSuccess(items);
   } catch (error) {
     if (error instanceof SyntaxError) {

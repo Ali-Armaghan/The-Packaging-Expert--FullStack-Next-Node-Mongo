@@ -1,10 +1,10 @@
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { ConditionalFooter } from "@/components/layout/Footer";
 import { ConditionalHeader } from "@/components/layout/Header";
 import { getCachedAllMenuGroupLinks } from "@/lib/menuLinks/cache";
 import type { PublicMenuLinks } from "@/lib/menuLinks/apply";
 
-export async function SiteChrome({ children }: { children: ReactNode }) {
+async function SiteHeader() {
   let menuLinks: PublicMenuLinks = {
     industries: {},
     styles: {},
@@ -17,9 +17,16 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
     // Keep defaults if DB is unavailable during build/runtime.
   }
 
+  return <ConditionalHeader menuLinks={menuLinks} />;
+}
+
+/** Sync chrome so route shells (e.g. blog header) can stream immediately. */
+export function SiteChrome({ children }: { children: ReactNode }) {
   return (
     <>
-      <ConditionalHeader menuLinks={menuLinks} />
+      <Suspense fallback={null}>
+        <SiteHeader />
+      </Suspense>
       <main className="flex min-h-0 flex-1 flex-col">{children}</main>
       <ConditionalFooter />
     </>

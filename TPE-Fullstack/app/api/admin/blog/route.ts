@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
 import { requirePermission } from "@/lib/auth/session";
+import { revalidateBlogContent } from "@/lib/blog/revalidate";
 import { serializeBlogPost, getCategoryLabel } from "@/lib/blog/serialize";
 import { slugify } from "@/lib/slug";
 import { createBlogPostSchema } from "@/lib/validations/blogPost";
@@ -139,7 +140,11 @@ export async function POST(request: Request) {
     }
 
     const post = await BlogPost.create(buildPayload(payload, slug));
-    return apiSuccess(serializeBlogPost(post.toObject()), 201);
+    const serialized = serializeBlogPost(post.toObject());
+    if (serialized.status === "published") {
+      revalidateBlogContent({ slugs: [serialized.slug], index: true });
+    }
+    return apiSuccess(serialized, 201);
   } catch (error) {
     if (error instanceof SyntaxError) {
       return apiError("Invalid JSON body", 400);

@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
 import { requirePermission } from "@/lib/auth/session";
+import { revalidateBlogContent } from "@/lib/blog/revalidate";
 import { serializeBlogPost, getCategoryLabel } from "@/lib/blog/serialize";
 import {
   collectBlogMediaUrls,
@@ -53,6 +54,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     const post = await BlogPost.findById(id);
     if (!post) return apiError("Post not found", 404);
 
+    const previousSlug = post.slug;
+    const previousStatus = post.status;
     const previousUrls = collectBlogMediaUrls(post.toObject());
 
     if (payload.title !== undefined) post.title = payload.title;
@@ -157,7 +160,17 @@ export async function PATCH(request: Request, context: RouteContext) {
     const nextUrls = collectBlogMediaUrls(post.toObject());
     await deleteRemovedMedia(previousUrls, nextUrls);
 
-    return apiSuccess(serializeBlogPost(post.toObject()));
+    const serialized = serializeBlogPost(post.toObject());
+    const touchedPublic =
+      previousStatus === "published" || serialized.status === "published";
+    if (touchedPublic) {
+      revalidateBlogContent({
+        slugs: [previousSlug, serialized.slug],
+        index: true,
+      });
+    }
+
+    return apiSuccess(serialized);
   } catch (error) {
     if (error instanceof SyntaxError) {
       return apiError("Invalid JSON body", 400);
@@ -177,9 +190,15 @@ export async function DELETE(_request: Request, context: RouteContext) {
     const post = await BlogPost.findById(id);
     if (!post) return apiError("Post not found", 404);
 
+    const slug = post.slug;
+    const wasPublished = post.status === "published";
     const mediaUrls = collectBlogMediaUrls(post.toObject());
     await BlogPost.findByIdAndDelete(id);
     await deleteAllMedia(mediaUrls);
+
+    if (wasPublished) {
+      revalidateBlogContent({ slugs: [slug], index: true });
+    }
 
     return apiSuccess({ id });
   } catch (error) {

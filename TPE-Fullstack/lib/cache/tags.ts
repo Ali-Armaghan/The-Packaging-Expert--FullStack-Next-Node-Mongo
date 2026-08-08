@@ -9,3 +9,10 @@ export function homeSectionTag(section: string) {
 }
 
 export const HOME_PAGE_TAG = "home-page";
+
+export const BLOG_INDEX_TAG = "blog-index";
+export const BLOG_NAV_TAG = "blog-nav";
+
+export function blogPostTag(slug: string) {
+  return `blog-post-${slug.trim().toLowerCase()}`;
+}

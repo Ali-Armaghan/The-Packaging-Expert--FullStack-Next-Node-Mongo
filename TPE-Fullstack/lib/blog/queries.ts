@@ -32,7 +32,10 @@ export async function getPublishedPostBySlug(
 
 export async function getPublishedSlugs(): Promise<string[]> {
   await connectToDatabase();
-  const docs = await BlogPost.find(publishedFilter()).select("slug").lean();
+  const docs = await BlogPost.find(publishedFilter())
+    .sort({ publishedAt: -1, createdAt: -1 })
+    .select("slug")
+    .lean();
   return docs.map((doc) => doc.slug);
 }
 

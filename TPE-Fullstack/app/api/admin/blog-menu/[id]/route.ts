@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
 import { requirePermission } from "@/lib/auth/session";
+import { revalidateBlogNav } from "@/lib/blog/revalidate";
 import { serializeNavMenuItem } from "@/lib/nav/serialize";
 import { updateNavMenuItemSchema } from "@/lib/validations/navMenu";
 import { NavMenuItem } from "@/models/NavMenuItem";
@@ -56,6 +57,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     await existing.save();
+    revalidateBlogNav();
     return apiSuccess(serializeNavMenuItem(existing.toObject()));
   } catch (error) {
     if (error instanceof SyntaxError) {
@@ -76,6 +78,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     const deleted = await NavMenuItem.findByIdAndDelete(id);
     if (!deleted) return apiError("Menu item not found", 404);
 
+    revalidateBlogNav();
     return apiSuccess({ id });
   } catch (error) {
     return apiFromUnknownError(error);
