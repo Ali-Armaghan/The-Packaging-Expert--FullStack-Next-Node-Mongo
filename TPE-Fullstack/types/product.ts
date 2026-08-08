@@ -42,12 +42,41 @@ export type ProductFeatureSection = {
   imageSide: "left" | "right";
 };
 
+export type ProductDimensionField = {
+  id: string;
+  label: string;
+  required?: boolean;
+};
+
+export type ProductOrderProcessIcon =
+  | "customize"
+  | "quote"
+  | "consult"
+  | "shipping";
+
+export type ProductOrderProcessStep = {
+  icon: ProductOrderProcessIcon;
+  title: string;
+  text: string;
+};
+
+export type ProductOrderProcess = {
+  title: string;
+  description: string;
+  steps: ProductOrderProcessStep[];
+};
+
 /** Everything the public product page renders beyond core fields. */
 export type ProductDetailContent = {
+  sku: string;
   breadcrumbLabel: string;
   summary: string;
   gallery: string[];
+  /** Length / Width / Depth style number inputs */
+  dimensionFields: ProductDimensionField[];
+  /** Material / Print / Finishing dropdowns */
   selectors: ProductSelector[];
+  /** Chip groups e.g. Additional Options, Add-on */
   optionGroups: ProductOptionGroup[];
   quantityOptions: string[];
   ctaLabel: string;
@@ -55,6 +84,7 @@ export type ProductDetailContent = {
   priceNoteLabel: string;
   priceNoteHref: string;
   tabs: ProductTab[];
+  orderProcess: ProductOrderProcess;
   highlights: ProductHighlight[];
   banner: ProductBanner;
   featureSections: ProductFeatureSection[];

@@ -233,9 +233,17 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
 
       <SectionCard
         title="Header"
-        description="Breadcrumb label, summary copy, and extra gallery images."
+        description="SKU, breadcrumb, summary, and gallery images."
       >
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="space-y-2">
+            <Label>SKU / product code</Label>
+            <Input
+              value={detail.sku}
+              placeholder="F064"
+              onChange={(e) => patch("sku", e.target.value)}
+            />
+          </div>
           <div className="space-y-2">
             <Label>Breadcrumb label</Label>
             <Input
@@ -309,8 +317,75 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
       </SectionCard>
 
       <SectionCard
+        title="Dimensions"
+        description="Length / Width / Depth style inputs shown above the dropdowns."
+      >
+        <div className="space-y-3">
+          {detail.dimensionFields.map((field, index) => (
+            <div
+              key={field.id}
+              className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-[1fr_auto_auto]"
+            >
+              <Input
+                placeholder="Label e.g. Length (inch)"
+                value={field.label}
+                onChange={(e) => {
+                  const next = [...detail.dimensionFields];
+                  next[index] = { ...field, label: e.target.value };
+                  patch("dimensionFields", next);
+                }}
+              />
+              <label className="flex items-center gap-2 text-sm">
+                <Checkbox
+                  checked={field.required !== false}
+                  onCheckedChange={(v) => {
+                    const next = [...detail.dimensionFields];
+                    next[index] = { ...field, required: v === true };
+                    patch("dimensionFields", next);
+                  }}
+                />
+                Required
+              </label>
+              <Button
+                type="button"
+                size="icon-sm"
+                variant="ghost"
+                onClick={() =>
+                  patch(
+                    "dimensionFields",
+                    detail.dimensionFields.filter((_, i) => i !== index),
+                  )
+                }
+              >
+                <Trash2Icon className="size-3.5 text-destructive" />
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            onClick={() =>
+              patch("dimensionFields", [
+                ...detail.dimensionFields,
+                {
+                  id: `dim-${Date.now()}`,
+                  label: "",
+                  required: true,
+                },
+              ])
+            }
+          >
+            <PlusIcon className="size-3.5" />
+            Add dimension field
+          </Button>
+        </div>
+      </SectionCard>
+
+      <SectionCard
         title="Dropdown selectors"
-        description="Rendered above the option chips (quantity, print side, box style…)."
+        description="Material / Print / Finishing style dropdowns."
         action={
           <Button
             type="button"
@@ -531,6 +606,135 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             />
           </div>
         ))}
+      </SectionCard>
+
+      <SectionCard
+        title="Order Process tab"
+        description="Shown when the Order Process tab is selected — title, intro, and step cards."
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Section title</Label>
+            <Input
+              value={detail.orderProcess?.title ?? ""}
+              onChange={(e) =>
+                patch("orderProcess", {
+                  ...(detail.orderProcess ?? {
+                    title: "",
+                    description: "",
+                    steps: [],
+                  }),
+                  title: e.target.value,
+                })
+              }
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label>Description</Label>
+          <textarea
+            rows={3}
+            className={textareaClass}
+            value={detail.orderProcess?.description ?? ""}
+            onChange={(e) =>
+              patch("orderProcess", {
+                ...(detail.orderProcess ?? {
+                  title: "",
+                  description: "",
+                  steps: [],
+                }),
+                description: e.target.value,
+              })
+            }
+          />
+        </div>
+        <div className="space-y-3">
+          {(detail.orderProcess?.steps ?? []).map((step, index) => {
+            const steps = detail.orderProcess?.steps ?? [];
+            const updateStep = (patchValue: Partial<typeof step>) => {
+              const next = [...steps];
+              next[index] = { ...step, ...patchValue };
+              patch("orderProcess", {
+                ...(detail.orderProcess ?? {
+                  title: "",
+                  description: "",
+                  steps: [],
+                }),
+                steps: next,
+              });
+            };
+            return (
+              <div
+                key={index}
+                className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-[auto_1fr_2fr_auto]"
+              >
+                <select
+                  value={step.icon}
+                  className="h-9 rounded-md border border-input bg-transparent px-2 text-sm"
+                  onChange={(e) =>
+                    updateStep({
+                      icon: e.target.value as typeof step.icon,
+                    })
+                  }
+                >
+                  <option value="customize">customize</option>
+                  <option value="quote">quote</option>
+                  <option value="consult">consult</option>
+                  <option value="shipping">shipping</option>
+                </select>
+                <Input
+                  placeholder="Step title"
+                  value={step.title}
+                  onChange={(e) => updateStep({ title: e.target.value })}
+                />
+                <Input
+                  placeholder="Step text"
+                  value={step.text}
+                  onChange={(e) => updateStep({ text: e.target.value })}
+                />
+                <Button
+                  type="button"
+                  size="icon-sm"
+                  variant="ghost"
+                  onClick={() =>
+                    patch("orderProcess", {
+                      ...(detail.orderProcess ?? {
+                        title: "",
+                        description: "",
+                        steps: [],
+                      }),
+                      steps: steps.filter((_, i) => i !== index),
+                    })
+                  }
+                >
+                  <Trash2Icon className="size-3.5 text-destructive" />
+                </Button>
+              </div>
+            );
+          })}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            onClick={() =>
+              patch("orderProcess", {
+                ...(detail.orderProcess ?? {
+                  title: "",
+                  description: "",
+                  steps: [],
+                }),
+                steps: [
+                  ...(detail.orderProcess?.steps ?? []),
+                  { icon: "customize", title: "", text: "" },
+                ],
+              })
+            }
+          >
+            <PlusIcon className="size-3.5" />
+            Add step
+          </Button>
+        </div>
       </SectionCard>
 
       <SectionCard

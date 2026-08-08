@@ -127,7 +127,7 @@ export function MenuHubView({ content }: { content: MenuHubContent }) {
                 className="group"
                 style={{ animationDelay: `${index * 80}ms` }}
               >
-                <div className="relative mb-4 aspect-[16/10] overflow-hidden rounded-2xl bg-white ring-1 ring-black/5">
+                <div className="relative mb-4 aspect-[16/10] overflow-hidden rounded-[3px] bg-white ring-1 ring-black/5">
                   <Image
                     src={item.image}
                     alt=""
@@ -169,7 +169,7 @@ export function MenuHubView({ content }: { content: MenuHubContent }) {
                     <Link
                       href={menuItem.href}
                       className={cn(
-                        "group flex h-full flex-col overflow-hidden rounded-2xl",
+                        "group flex h-full flex-col overflow-hidden rounded-[3px]",
                         "border border-border/70 bg-white shadow-sm",
                         "transition duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-lg",
                       )}
@@ -185,7 +185,7 @@ export function MenuHubView({ content }: { content: MenuHubContent }) {
                           />
                         ) : menuItem.icon && isIndustryIcon(menuItem.icon) ? (
                           <div className="flex h-full items-center justify-center text-primary">
-                            <span className="rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-primary/10">
+                            <span className="rounded-[3px] bg-white/80 p-4 shadow-sm ring-1 ring-primary/10">
                               <IndustryIcon
                                 icon={menuItem.icon}
                                 className="h-9 w-9"
@@ -222,7 +222,7 @@ export function MenuHubView({ content }: { content: MenuHubContent }) {
 
       <section className="pb-16 sm:pb-20">
         <Container>
-          <div className="relative overflow-hidden rounded-[1.75rem] bg-[#1a1f2c] text-white">
+          <div className="relative overflow-hidden rounded-[4px] bg-[#1a1f2c] text-white">
             <Image
               src={ctaBand.image}
               alt=""

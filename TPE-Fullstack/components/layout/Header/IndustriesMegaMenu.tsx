@@ -79,8 +79,8 @@ export function IndustriesMegaMenu({
             </div>
           </div>
 
-          <aside className="rounded-xl bg-muted p-5">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-white">
+          <aside className="rounded-[3px] bg-muted p-5">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-[3px] bg-white">
               <Image
                 src={inspirationLibraryFeature.image}
                 alt=""

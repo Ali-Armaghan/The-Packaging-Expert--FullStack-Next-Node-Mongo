@@ -9,9 +9,21 @@ const groupSchema = z.object({
 });
 
 export const productDetailSchema = z.object({
+  sku: z.string().trim().max(40).optional().default(""),
   breadcrumbLabel: z.string().trim().max(160).optional().default(""),
   summary: z.string().trim().max(2000).optional().default(""),
   gallery: z.array(z.string().trim().max(1000)).max(12).optional().default([]),
+  dimensionFields: z
+    .array(
+      z.object({
+        id: z.string().trim().max(80).optional().default(""),
+        label: z.string().trim().min(1).max(80),
+        required: z.boolean().optional().default(true),
+      }),
+    )
+    .max(6)
+    .optional()
+    .default([]),
   selectors: z.array(groupSchema).max(10).optional().default([]),
   optionGroups: z.array(groupSchema).max(10).optional().default([]),
   quantityOptions: optionListSchema.optional().default([]),
@@ -30,6 +42,26 @@ export const productDetailSchema = z.object({
     .max(8)
     .optional()
     .default([]),
+  orderProcess: z
+    .object({
+      title: z.string().trim().max(160).optional().default(""),
+      description: z.string().trim().max(1000).optional().default(""),
+      steps: z
+        .array(
+          z.object({
+            icon: z
+              .enum(["customize", "quote", "consult", "shipping"])
+              .optional()
+              .default("customize"),
+            title: z.string().trim().min(1).max(120),
+            text: z.string().trim().max(600).optional().default(""),
+          }),
+        )
+        .max(8)
+        .optional()
+        .default([]),
+    })
+    .optional(),
   highlights: z
     .array(
       z.object({

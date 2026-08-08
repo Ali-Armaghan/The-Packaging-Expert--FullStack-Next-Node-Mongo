@@ -2,10 +2,14 @@ import { getProductDetailDefaults } from "@/lib/product/defaults";
 import type {
   ProductBanner,
   ProductDetailContent,
+  ProductDimensionField,
   ProductFeatureSection,
   ProductHighlight,
   ProductHighlightIcon,
   ProductOptionGroup,
+  ProductOrderProcess,
+  ProductOrderProcessIcon,
+  ProductOrderProcessStep,
   ProductSelector,
   ProductTab,
   SerializedProduct,
@@ -17,6 +21,13 @@ const HIGHLIGHT_ICONS: ProductHighlightIcon[] = [
   "leaf",
   "shield",
   "clock",
+];
+
+const ORDER_ICONS: ProductOrderProcessIcon[] = [
+  "customize",
+  "quote",
+  "consult",
+  "shipping",
 ];
 
 function asObject(value: unknown): Record<string, unknown> {
@@ -139,6 +150,58 @@ function normalizeFeatureSections(
     .filter((item): item is ProductFeatureSection => item !== null);
 }
 
+function normalizeDimensionFields(
+  raw: unknown,
+  fallback: ProductDimensionField[],
+): ProductDimensionField[] {
+  if (!Array.isArray(raw)) return fallback;
+
+  const items = raw
+    .map((entry, index) => {
+      const row = asObject(entry);
+      const label = str(row.label).trim();
+      if (!label) return null;
+      return {
+        id: str(row.id).trim() || slugifyId(label, index, "dim"),
+        label,
+        required: row.required !== false,
+      } as ProductDimensionField;
+    })
+    .filter((item): item is ProductDimensionField => item !== null);
+
+  return items.length ? items : fallback;
+}
+
+function normalizeOrderProcess(
+  raw: unknown,
+  fallback: ProductOrderProcess,
+): ProductOrderProcess {
+  const row = asObject(raw);
+  const stepsRaw = Array.isArray(row.steps) ? row.steps : null;
+
+  const steps: ProductOrderProcessStep[] = stepsRaw
+    ? stepsRaw
+        .map((entry) => {
+          const step = asObject(entry);
+          const title = str(step.title).trim();
+          if (!title) return null;
+          const icon = str(step.icon) as ProductOrderProcessIcon;
+          return {
+            icon: ORDER_ICONS.includes(icon) ? icon : "customize",
+            title,
+            text: str(step.text),
+          };
+        })
+        .filter((item): item is ProductOrderProcessStep => item !== null)
+    : fallback.steps;
+
+  return {
+    title: str(row.title, fallback.title),
+    description: str(row.description, fallback.description),
+    steps: steps.length ? steps : fallback.steps,
+  };
+}
+
 /** Merge stored Mixed detail with defaults so the page always renders. */
 export function normalizeProductDetail(
   raw: unknown,
@@ -148,9 +211,14 @@ export function normalizeProductDetail(
   const incoming = asObject(raw);
 
   return {
+    sku: str(incoming.sku, defaults.sku),
     breadcrumbLabel: str(incoming.breadcrumbLabel, defaults.breadcrumbLabel),
     summary: str(incoming.summary, defaults.summary),
     gallery: strList(incoming.gallery),
+    dimensionFields: normalizeDimensionFields(
+      incoming.dimensionFields,
+      defaults.dimensionFields,
+    ),
     selectors: normalizeGroups<ProductSelector>(
       incoming.selectors,
       defaults.selectors,
@@ -169,6 +237,10 @@ export function normalizeProductDetail(
     priceNoteLabel: str(incoming.priceNoteLabel, defaults.priceNoteLabel),
     priceNoteHref: str(incoming.priceNoteHref, defaults.priceNoteHref),
     tabs: normalizeTabs(incoming.tabs, defaults.tabs),
+    orderProcess: normalizeOrderProcess(
+      incoming.orderProcess,
+      defaults.orderProcess,
+    ),
     highlights: normalizeHighlights(incoming.highlights, defaults.highlights),
     banner: normalizeBanner(incoming.banner, defaults.banner),
     featureSections: normalizeFeatureSections(

@@ -14,7 +14,7 @@ export function getCachedProductBySlug(
   const normalized = slug.trim().toLowerCase();
   return unstable_cache(
     async () => getPublicProductBySlug(normalized),
-    ["product-by-slug", normalized],
+    ["product-by-slug-v5", normalized],
     {
       tags: [productTag(normalized), PRODUCT_INDEX_TAG],
       revalidate: ISR_REVALIDATE_SECONDS,

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed:admin": "npx tsx scripts/seed-admin.ts",
+    "seed:sample-product": "npx tsx scripts/seed-sample-product.ts",
     "check:db": "npx tsx scripts/check-db.ts"
   },
   "dependencies": {

@@ -51,7 +51,7 @@ export function EliteCatalog({ content }: { content: EliteCatalogContent }) {
                 type="button"
                 onClick={() => setActiveTab(i)}
                 className={cn(
-                  "shrink-0 rounded-full px-4 py-2.5 text-sm font-semibold transition duration-300",
+                  "shrink-0 rounded-[3px] px-4 py-2.5 text-sm font-semibold transition duration-300",
                   safeTabIndex === i
                     ? "bg-primary text-white shadow-[0_10px_24px_-12px_rgba(52,173,120,0.8)]"
                     : "bg-white text-muted-foreground ring-1 ring-black/5 hover:text-foreground hover:ring-primary/30",
@@ -70,13 +70,13 @@ export function EliteCatalog({ content }: { content: EliteCatalogContent }) {
                 key={product.id ?? `${product.name}-${index}`}
                 href={product.href}
                 className={cn(
-                  "group relative flex flex-col rounded-[1.35rem] bg-[linear-gradient(180deg,#f7f3ed_0%,#f3efe8_100%)] p-2.5 transition duration-300 sm:p-3",
+                  "group relative flex flex-col rounded-[4px] bg-[linear-gradient(180deg,#f7f3ed_0%,#f3efe8_100%)] p-2.5 transition duration-300 sm:p-3",
                   "hover:-translate-y-1 hover:bg-[linear-gradient(180deg,#f3ebe1_0%,#eaf6f0_100%)]",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                 )}
                 style={{ transitionDelay: `${Math.min(index, 8) * 15}ms` }}
               >
-                <div className="relative aspect-square overflow-hidden rounded-[1.1rem] bg-white/70 shadow-[inset_0_0_0_1px_rgba(20,24,32,0.04)]">
+                <div className="relative aspect-square overflow-hidden rounded-[3px] bg-white/70 shadow-[inset_0_0_0_1px_rgba(20,24,32,0.04)]">
                   <Image
                     src={product.image}
                     alt={product.name}
@@ -89,7 +89,7 @@ export function EliteCatalog({ content }: { content: EliteCatalogContent }) {
                     className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[color:var(--elite-ink)]/25 via-transparent to-white/10 opacity-70 transition group-hover:opacity-90"
                     aria-hidden
                   />
-                  <span className="absolute right-2.5 top-2.5 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold text-primary shadow-sm backdrop-blur-sm">
+                  <span className="absolute right-2.5 top-2.5 rounded-[3px] bg-white/90 px-2.5 py-1 text-[11px] font-bold text-primary shadow-sm backdrop-blur-sm">
                     {product.price}
                   </span>
                 </div>
@@ -102,7 +102,7 @@ export function EliteCatalog({ content }: { content: EliteCatalogContent }) {
                     <span className="text-xs text-muted-foreground">
                       Custom sizes
                     </span>
-                    <span className="inline-flex h-8 items-center gap-1 rounded-full bg-white/80 px-3 text-xs font-semibold text-primary ring-1 ring-primary/15 transition duration-300 group-hover:bg-primary group-hover:text-white group-hover:ring-primary">
+                    <span className="inline-flex h-8 items-center gap-1 rounded-[3px] bg-white/80 px-3 text-xs font-semibold text-primary ring-1 ring-primary/15 transition duration-300 group-hover:bg-primary group-hover:text-white group-hover:ring-primary">
                       Quote
                       <span
                         className="transition group-hover:translate-x-0.5"

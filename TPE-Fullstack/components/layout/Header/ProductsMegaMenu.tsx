@@ -116,7 +116,7 @@ export function ProductsMegaMenu({
             <MegaMenuGroupColumn group={bagsGroup} onNavigate={onNavigate} />
           ) : null}
 
-          <aside className="rounded-xl bg-muted p-5">
+          <aside className="rounded-[3px] bg-muted p-5">
             <div className="grid grid-cols-4 gap-1.5">
               {optionLibraryImages.map((image, index) => (
                 <div

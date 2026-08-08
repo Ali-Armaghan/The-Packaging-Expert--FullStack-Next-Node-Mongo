@@ -1,45 +1,58 @@
 import type { ProductDetailContent } from "@/types/product";
 
+const NEED = "Need Consultation";
+
 /** Seed content for a new product page — admin can edit every field. */
 export function getProductDetailDefaults(
   name = "Custom packaging",
 ): ProductDetailContent {
   return {
+    sku: "",
     breadcrumbLabel: name,
     summary:
       "Custom packaging with a clean structure and premium print finish — built to protect your product and elevate the unboxing moment.",
     gallery: [],
-    selectors: [
-      {
-        id: "quantity",
-        label: "Select Quantity",
-        options: ["100", "250", "500", "1000", "2500"],
-      },
-      {
-        id: "print-side",
-        label: "Print Side",
-        options: ["Outside only", "Inside only", "Both sides"],
-      },
-      {
-        id: "box-style",
-        label: "Box Style",
-        options: ["Standard", "Custom size"],
-      },
+    dimensionFields: [
+      { id: "length", label: "Length (inch)", required: true },
+      { id: "width", label: "Width (inch)", required: true },
+      { id: "depth", label: "Depth (inch)", required: true },
     ],
-    optionGroups: [
+    selectors: [
       {
         id: "material",
         label: "Material",
-        options: ["Kraft", "Corrugated", "Cardboard", "Rigid"],
+        options: [NEED, "Kraft", "Corrugated", "Cardboard", "Rigid"],
+      },
+      {
+        id: "print",
+        label: "Print",
+        options: [NEED, "Outside only", "Inside only", "Both sides"],
       },
       {
         id: "finishing",
         label: "Finishing",
-        options: ["Matte", "Gloss", "Soft touch", "Spot UV", "Foil stamping"],
+        options: [NEED, "Matte", "Gloss", "Soft touch", "Spot UV"],
       },
     ],
-    quantityOptions: ["100", "250", "500", "1000"],
-    ctaLabel: "Add to cart",
+    optionGroups: [
+      {
+        id: "additional-options",
+        label: "Additional Options",
+        options: [
+          "Foil Stamping",
+          "Embossing",
+          "Debossing",
+          "Window Patching",
+        ],
+      },
+      {
+        id: "add-on",
+        label: "Add-on",
+        options: ["Insert", "Plastic Hang Tab", "Adhesive Strip"],
+      },
+    ],
+    quantityOptions: ["100", "250", "500", "1000", "2500"],
+    ctaLabel: "Add to quote",
     ctaHref: "/quote",
     priceNoteLabel: "Price on request",
     priceNoteHref: "/contact",
@@ -62,9 +75,36 @@ export function getProductDetailDefaults(
       {
         id: "order-process",
         label: "Order Process",
-        body: "Share your specs, approve the digital proof, and we produce and ship within 10–12 business days.",
+        body: "",
       },
     ],
+    orderProcess: {
+      title: "Our Ordering Process",
+      description:
+        "Looking for custom packaging? Make it a breeze by following our four easy steps — soon you'll be on your way to meeting all your packaging needs!",
+      steps: [
+        {
+          icon: "customize",
+          title: "Customize your packaging",
+          text: "Choose from our vast selection of packaging solutions and customize it with our wide range of options to create your dream packaging.",
+        },
+        {
+          icon: "quote",
+          title: "Add to quote and submit",
+          text: "After customizing your packaging, simply add it to quote and submit quotation to be reviewed by one of our packaging specialists.",
+        },
+        {
+          icon: "consult",
+          title: "Consult with our expert",
+          text: "Get expert consultation on your quotation to save on costs, streamline efficiency and reduce environmental impacts.",
+        },
+        {
+          icon: "shipping",
+          title: "Production & shipping",
+          text: "Once everything is ready for production, have us manage your entire production and shipping! Just sit and wait for your order!",
+        },
+      ],
+    },
     highlights: [
       {
         icon: "globe",
