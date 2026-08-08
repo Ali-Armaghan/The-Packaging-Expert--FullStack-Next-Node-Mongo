@@ -1,19 +1,19 @@
+import { Suspense } from "react";
 import { BlogFooter } from "@/components/blog/BlogFooter";
 import { BlogHeader } from "@/components/blog/BlogHeader";
-import { getPublicBlogHeaderNav } from "@/lib/nav/queries";
+import { BlogHeaderWithNav } from "@/components/blog/BlogHeaderWithNav";
+import { blogHeaderNavItems } from "@/constants/blogHeader";
 
-export const dynamic = "force-dynamic";
-
-export default async function BlogLayout({
+export default function BlogLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const navItems = await getPublicBlogHeaderNav();
-
   return (
     <>
-      <BlogHeader navItems={navItems} />
+      <Suspense fallback={<BlogHeader navItems={blogHeaderNavItems} />}>
+        <BlogHeaderWithNav />
+      </Suspense>
       {children}
       <BlogFooter />
     </>
