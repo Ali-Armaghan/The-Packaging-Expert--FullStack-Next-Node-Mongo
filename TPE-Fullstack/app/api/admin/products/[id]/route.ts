@@ -5,7 +5,8 @@ import {
   revalidateGroupBysByIds,
   revalidateGroupBysUsingProduct,
 } from "@/lib/groupBy/revalidate";
-import { serializeProduct } from "@/lib/product/serialize";
+import { revalidateProductSlugs } from "@/lib/product/revalidate";
+import { normalizeProductDetail, serializeProduct } from "@/lib/product/serialize";
 import { slugify } from "@/lib/slug";
 import { updateProductSchema } from "@/lib/validations/product";
 import { Product } from "@/models/Product";
@@ -43,6 +44,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     const previousGroupIds = (doc.groupByIds ?? []).map((value) =>
       String(value),
     );
+    const previousSlug = doc.slug;
 
     if (payload.name !== undefined) doc.name = payload.name;
     if (payload.description !== undefined) doc.description = payload.description;
@@ -56,6 +58,13 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
     if (payload.isActive !== undefined) doc.isActive = payload.isActive;
     if (payload.sortOrder !== undefined) doc.sortOrder = payload.sortOrder;
+    if (payload.detail !== undefined) {
+      doc.set(
+        "detail",
+        normalizeProductDetail(payload.detail, payload.name ?? doc.name),
+      );
+      doc.markModified("detail");
+    }
 
     if (payload.slug !== undefined || payload.name !== undefined) {
       const nextSlug = slugify(payload.slug || payload.name || doc.name);
@@ -83,6 +92,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       ]),
       revalidateGroupBysUsingProduct(serialized.id),
     ]);
+    revalidateProductSlugs(previousSlug, serialized.slug);
     return apiSuccess(serialized);
   } catch (error) {
     if (error instanceof SyntaxError) {
@@ -107,6 +117,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       ),
       revalidateGroupBysUsingProduct(id),
     ]);
+    revalidateProductSlugs(doc.slug);
     return apiSuccess({ id });
   } catch (error) {
     return apiFromUnknownError(error);

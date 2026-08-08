@@ -6,6 +6,8 @@ import {
   requireSession,
 } from "@/lib/auth/session";
 import { revalidateGroupBysByIds } from "@/lib/groupBy/revalidate";
+import { getProductDetailDefaults } from "@/lib/product/defaults";
+import { revalidateProductSlugs } from "@/lib/product/revalidate";
 import { serializeProduct } from "@/lib/product/serialize";
 import { slugify } from "@/lib/slug";
 import { createProductSchema } from "@/lib/validations/product";
@@ -67,9 +69,11 @@ export async function POST(request: Request) {
       groupByIds: payload.groupByIds,
       isActive: payload.isActive,
       sortOrder: payload.sortOrder,
+      detail: payload.detail ?? getProductDetailDefaults(payload.name),
     });
 
     await revalidateGroupBysByIds(payload.groupByIds ?? []);
+    revalidateProductSlugs(slug);
 
     return apiSuccess(serializeProduct(product.toObject()), 201);
   } catch (error) {

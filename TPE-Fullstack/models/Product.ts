@@ -26,6 +26,8 @@ const productSchema = new Schema(
     industryTags: [{ type: String, trim: true, lowercase: true }],
     /** Flexible packaging specs that vary by category */
     specs: { type: Schema.Types.Mixed, default: {} },
+    /** Public product page content (gallery, options, tabs, banners…) */
+    detail: { type: Schema.Types.Mixed, default: {} },
     isActive: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
   },

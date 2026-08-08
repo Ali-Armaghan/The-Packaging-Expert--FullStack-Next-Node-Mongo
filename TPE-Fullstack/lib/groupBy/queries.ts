@@ -41,6 +41,7 @@ export async function getActiveGroupByBySlug(slug: string) {
 function mapProductDoc(doc: {
   _id: { toString(): string };
   name: string;
+  slug?: string | null;
   price?: string | null;
   image?: string | null;
   images?: string[] | null;
@@ -57,7 +58,7 @@ function mapProductDoc(doc: {
     name: doc.name,
     price: price || "Quote",
     image,
-    href: "/quote",
+    href: doc.slug ? `/products/${doc.slug}` : "/quote",
   };
 }
 

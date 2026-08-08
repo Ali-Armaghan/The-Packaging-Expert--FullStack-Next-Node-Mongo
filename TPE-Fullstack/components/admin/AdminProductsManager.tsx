@@ -1,7 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
+import {
+  LayoutTemplateIcon,
+  PencilIcon,
+  PlusIcon,
+  Trash2Icon,
+  XIcon,
+} from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AgenticLoader } from "@/components/ui/AgenticLoader";
 import { Badge } from "@/components/ui/badge";
@@ -393,6 +400,13 @@ export function AdminProductsManager() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        <Link
+                          href={`/admin/products/${item.id}/edit`}
+                          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input px-3 text-xs font-medium transition hover:bg-accent"
+                        >
+                          <LayoutTemplateIcon className="size-3.5" />
+                          Page content
+                        </Link>
                         <Button
                           type="button"
                           size="icon-sm"

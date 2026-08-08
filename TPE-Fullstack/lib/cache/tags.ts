@@ -16,3 +16,9 @@ export const BLOG_NAV_TAG = "blog-nav";
 export function blogPostTag(slug: string) {
   return `blog-post-${slug.trim().toLowerCase()}`;
 }
+
+export const PRODUCT_INDEX_TAG = "product-index";
+
+export function productTag(slug: string) {
+  return `product-${slug.trim().toLowerCase()}`;
+}
