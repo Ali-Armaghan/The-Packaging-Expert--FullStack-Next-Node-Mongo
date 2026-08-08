@@ -35,29 +35,29 @@ export function Hero({ content }: HeroProps) {
           alt={content.imageAlt || content.title}
           fill
           priority
-          className="object-cover object-center"
+          className="home-hero-image-enter object-cover object-center"
           sizes="100vw"
         />
 
         {/* Readability overlay — keeps copy clear over any CMS image */}
         <div
-          className="absolute inset-0 bg-gradient-to-r from-[#1a1f2c]/90 via-[#1a1f2c]/55 to-[#1a1f2c]/25"
+          className="home-enter absolute inset-0 bg-gradient-to-r from-[#1a1f2c]/90 via-[#1a1f2c]/55 to-[#1a1f2c]/25"
           aria-hidden="true"
         />
         <div
-          className="absolute inset-0 bg-gradient-to-t from-[#1a1f2c]/50 via-transparent to-[#1a1f2c]/20"
+          className="home-enter absolute inset-0 bg-gradient-to-t from-[#1a1f2c]/50 via-transparent to-[#1a1f2c]/20"
           aria-hidden="true"
         />
 
         <Container className="relative z-10 flex min-h-[min(52vh,480px)] items-center py-10 sm:py-12 lg:py-14">
           <div className="max-w-xl">
-            <h1 className="text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl lg:text-[2.75rem] lg:leading-[1.15]">
+            <h1 className="home-enter home-enter-delay-1 text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl lg:text-[2.75rem] lg:leading-[1.15]">
               {content.title}
             </h1>
-            <p className="mt-4 text-base leading-relaxed text-white/90 sm:text-lg">
+            <p className="home-enter home-enter-delay-2 mt-4 text-base leading-relaxed text-white/90 sm:text-lg">
               {content.subtitle}
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="home-enter home-enter-delay-3 mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button
                 href={content.primaryCta.href || "/quote"}
                 size="lg"
@@ -78,7 +78,7 @@ export function Hero({ content }: HeroProps) {
         </Container>
       </div>
 
-      <div className="border-b border-border bg-white">
+      <div className="home-enter home-enter-delay-4 border-b border-border bg-white">
         <Container>
           <div className="flex flex-col items-start justify-between gap-4 py-4 sm:flex-row sm:items-center">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">

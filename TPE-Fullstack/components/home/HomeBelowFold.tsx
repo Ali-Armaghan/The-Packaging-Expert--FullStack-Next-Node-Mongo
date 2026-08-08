@@ -103,55 +103,73 @@ export function HomeBelowFold() {
   return (
     <>
       {sections.features ? (
-        <Features content={sections.features} />
+        <div className="home-section-enter">
+          <Features content={sections.features} />
+        </div>
       ) : failed.features ? null : (
         <HomeSectionSkeleton section="features" />
       )}
 
       {sections.expertise ? (
-        <Expertise content={sections.expertise} />
+        <div className="home-section-enter">
+          <Expertise content={sections.expertise} />
+        </div>
       ) : failed.expertise ? null : (
         <HomeSectionSkeleton section="expertise" />
       )}
 
       {sections.catalog ? (
-        <Catalog content={sections.catalog} />
+        <div className="home-section-enter">
+          <Catalog content={sections.catalog} />
+        </div>
       ) : failed.catalog ? null : (
         <HomeSectionSkeleton section="catalog" />
       )}
 
       {sections.industries ? (
-        <Industries content={sections.industries} />
+        <div className="home-section-enter">
+          <Industries content={sections.industries} />
+        </div>
       ) : failed.industries ? null : (
         <HomeSectionSkeleton section="industries" />
       )}
 
       {sections.sustainability ? (
-        <Sustainability content={sections.sustainability} />
+        <div className="home-section-enter">
+          <Sustainability content={sections.sustainability} />
+        </div>
       ) : failed.sustainability ? null : (
         <HomeSectionSkeleton section="sustainability" />
       )}
 
       {sections.howItWorks ? (
-        <HowItWorks content={sections.howItWorks} />
+        <div className="home-section-enter">
+          <HowItWorks content={sections.howItWorks} />
+        </div>
       ) : failed.howItWorks ? null : (
         <HomeSectionSkeleton section="howItWorks" />
       )}
 
       {sections.testimonials ? (
-        <Testimonials content={sections.testimonials} />
+        <div className="home-section-enter">
+          <Testimonials content={sections.testimonials} />
+        </div>
       ) : failed.testimonials ? null : (
         <HomeSectionSkeleton section="testimonials" />
       )}
 
       {sections.faq ? (
-        <FAQ content={sections.faq} />
+        <div className="home-section-enter">
+          <FAQ content={sections.faq} />
+        </div>
       ) : failed.faq ? null : (
         <HomeSectionSkeleton section="faq" />
       )}
 
       {sections.instagram ? (
-        <InstagramFeed content={sections.instagram} />
+        <div className="home-section-enter">
+          <InstagramFeed content={sections.instagram} />
+        </div>
       ) : failed.instagram ? null : (
         <HomeSectionSkeleton section="instagram" />
       )}
