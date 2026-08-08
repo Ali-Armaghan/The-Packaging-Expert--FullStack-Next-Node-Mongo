@@ -144,55 +144,73 @@ export function EliteBelowFold({ slug }: { slug?: string } = {}) {
   return (
     <>
       {sections.catalog ? (
-        <EliteCatalog content={sections.catalog} />
+        <div className="route-enter">
+          <EliteCatalog content={sections.catalog} />
+        </div>
       ) : failed.catalog ? null : (
         <EliteSectionSkeleton section="catalog" />
       )}
 
       {sections.whyUs ? (
-        <EliteWhyUs content={sections.whyUs} />
+        <div className="route-enter">
+          <EliteWhyUs content={sections.whyUs} />
+        </div>
       ) : failed.whyUs ? null : (
         <EliteSectionSkeleton section="whyUs" />
       )}
 
       {sections.industries ? (
-        <EliteIndustries content={sections.industries} />
+        <div className="route-enter">
+          <EliteIndustries content={sections.industries} />
+        </div>
       ) : failed.industries ? null : (
         <EliteSectionSkeleton section="industries" />
       )}
 
       {sections.process ? (
-        <EliteProcess content={sections.process} />
+        <div className="route-enter">
+          <EliteProcess content={sections.process} />
+        </div>
       ) : failed.process ? null : (
         <EliteSectionSkeleton section="process" />
       )}
 
       {sections.features ? (
-        <EliteFeatures content={sections.features} />
+        <div className="route-enter">
+          <EliteFeatures content={sections.features} />
+        </div>
       ) : failed.features ? null : (
         <EliteSectionSkeleton section="features" />
       )}
 
       {sections.stats ? (
-        <EliteStats content={sections.stats} />
+        <div className="route-enter">
+          <EliteStats content={sections.stats} />
+        </div>
       ) : failed.stats ? null : (
         <EliteSectionSkeleton section="stats" />
       )}
 
       {sections.testimonials ? (
-        <EliteTestimonials content={sections.testimonials} />
+        <div className="route-enter">
+          <EliteTestimonials content={sections.testimonials} />
+        </div>
       ) : failed.testimonials ? null : (
         <EliteSectionSkeleton section="testimonials" />
       )}
 
       {sections.faq ? (
-        <EliteFaq content={sections.faq} />
+        <div className="route-enter">
+          <EliteFaq content={sections.faq} />
+        </div>
       ) : failed.faq ? null : (
         <EliteSectionSkeleton section="faq" />
       )}
 
       {sections.partners ? (
-        <ElitePartners content={sections.partners} />
+        <div className="route-enter">
+          <ElitePartners content={sections.partners} />
+        </div>
       ) : failed.partners ? null : (
         <EliteSectionSkeleton section="partners" />
       )}

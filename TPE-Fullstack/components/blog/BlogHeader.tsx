@@ -168,11 +168,7 @@ export function BlogHeader({ navItems }: BlogHeaderProps) {
     navItems && navItems.length > 0 ? navItems : fallbackNavItems;
 
   return (
-    <header
-      id="site-header"
-      className="relative z-40 w-full bg-white"
-      style={{ viewTransitionName: "site-header" }}
-    >
+    <header id="site-header" className="route-enter relative z-40 w-full bg-white">
       <Container>
         <div className="flex items-center justify-between gap-4 py-4 sm:py-5">
           <Logo className="shrink-0" />

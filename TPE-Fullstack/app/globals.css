@@ -503,57 +503,24 @@ html {
   animation: home-fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Soft route transitions (home ↔ blog header morph + page crossfade) */
-::view-transition {
-  pointer-events: none;
-}
-
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 320ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-::view-transition-old(root) {
-  animation-name: vt-fade-out;
-}
-
-::view-transition-new(root) {
-  animation-name: vt-fade-in;
-}
-
-::view-transition-group(site-header) {
-  animation-duration: 380ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  z-index: 100;
-}
-
-::view-transition-old(site-header) {
-  animation: 220ms ease-out both vt-fade-out;
-}
-
-::view-transition-new(site-header) {
-  animation: 280ms ease-out 40ms both vt-fade-in;
-}
-
-@keyframes vt-fade-out {
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes vt-fade-in {
+/* Soft content entrance — no JS gate, no full-page view-transition flash */
+@keyframes route-enter {
   from {
     opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-::view-transition-old(.page-fade) {
-  animation: 180ms ease-out both vt-fade-out;
+.route-enter {
+  animation: route-enter 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-::view-transition-new(.page-fade) {
-  animation: 260ms ease-out 70ms both vt-fade-in;
+.route-enter-delay {
+  animation: route-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -565,15 +532,10 @@ html {
   .agentic-page-loader__bar > span,
   .home-hero-image-enter,
   .home-enter,
-  .home-section-enter {
+  .home-section-enter,
+  .route-enter,
+  .route-enter-delay {
     animation: none;
-  }
-
-  ::view-transition-old(*),
-  ::view-transition-new(*),
-  ::view-transition-group(*) {
-    animation-duration: 0s !important;
-    animation-delay: 0s !important;
   }
 }
 
@@ -666,36 +628,35 @@ html {
   --elite-ink: #141820;
 }
 
-.elite-reveal {
-  opacity: 0;
-  transform: translateY(18px);
-  transition:
-    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+@keyframes elite-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.elite-page--ready .elite-reveal {
-  opacity: 1;
-  transform: none;
+.elite-reveal {
+  animation: elite-reveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .elite-reveal-d1 {
-  transition-delay: 0.08s;
+  animation-delay: 0.06s;
 }
 
 .elite-reveal-d2 {
-  transition-delay: 0.16s;
+  animation-delay: 0.12s;
 }
 
 .elite-reveal-d3 {
-  transition-delay: 0.24s;
+  animation-delay: 0.18s;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .elite-reveal,
-  .elite-page--ready .elite-reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
+  .elite-reveal {
+    animation: none;
   }
 }

@@ -13,9 +13,11 @@ export function EliteLanding({
   slug?: string;
 }) {
   return (
-    <ElitePageShell>
-      <EliteHero content={hero} />
-      <EliteBelowFold slug={slug} />
-    </ElitePageShell>
+    <div className="route-enter">
+      <ElitePageShell>
+        <EliteHero content={hero} />
+        <EliteBelowFold slug={slug} />
+      </ElitePageShell>
+    </div>
   );
 }

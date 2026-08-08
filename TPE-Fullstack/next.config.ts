@@ -4,7 +4,6 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["isomorphic-dompurify", "jsdom", "sharp"],
   experimental: {
     imgOptTimeoutInSeconds: 30,
-    viewTransition: true,
   },
   images: {
     loader: "custom",

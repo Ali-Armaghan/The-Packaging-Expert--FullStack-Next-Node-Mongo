@@ -10,12 +10,12 @@ export default function BlogLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <div className="route-enter flex min-h-0 flex-1 flex-col">
       <Suspense fallback={<BlogHeader navItems={blogHeaderNavItems} />}>
         <BlogHeaderWithNav />
       </Suspense>
-      {children}
+      <div className="route-enter-delay flex-1">{children}</div>
       <BlogFooter />
-    </>
+    </div>
   );
 }
