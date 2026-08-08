@@ -11,9 +11,7 @@ export function ConditionalFooter() {
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/sign-up");
 
-  if (hideFooter) {
-    return null;
-  }
+  if (hideFooter) return null;
 
   return <Footer />;
 }

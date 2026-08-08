@@ -1,4 +1,4 @@
-import { Suspense, type ReactNode } from "react";
+import { Suspense, type ReactNode, ViewTransition } from "react";
 import { ConditionalFooter } from "@/components/layout/Footer";
 import { ConditionalHeader } from "@/components/layout/Header";
 import { getCachedAllMenuGroupLinks } from "@/lib/menuLinks/cache";
@@ -27,7 +27,15 @@ export function SiteChrome({ children }: { children: ReactNode }) {
       <Suspense fallback={null}>
         <SiteHeader />
       </Suspense>
-      <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+      <main className="flex min-h-0 flex-1 flex-col">
+        <ViewTransition
+          enter="page-fade"
+          exit="page-fade"
+          default="none"
+        >
+          {children}
+        </ViewTransition>
+      </main>
       <ConditionalFooter />
     </>
   );

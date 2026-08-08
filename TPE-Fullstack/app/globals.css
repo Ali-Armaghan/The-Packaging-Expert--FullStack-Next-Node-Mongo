@@ -503,6 +503,59 @@ html {
   animation: home-fade-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Soft route transitions (home ↔ blog header morph + page crossfade) */
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 320ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(root) {
+  animation-name: vt-fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: vt-fade-in;
+}
+
+::view-transition-group(site-header) {
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 100;
+}
+
+::view-transition-old(site-header) {
+  animation: 220ms ease-out both vt-fade-out;
+}
+
+::view-transition-new(site-header) {
+  animation: 280ms ease-out 40ms both vt-fade-in;
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+::view-transition-old(.page-fade) {
+  animation: 180ms ease-out both vt-fade-out;
+}
+
+::view-transition-new(.page-fade) {
+  animation: 260ms ease-out 70ms both vt-fade-in;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .search-field__shimmer::after,
   .agentic-loader__orbit,
@@ -514,6 +567,13 @@ html {
   .home-enter,
   .home-section-enter {
     animation: none;
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
   }
 }
 

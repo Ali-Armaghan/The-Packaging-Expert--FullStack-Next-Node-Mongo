@@ -14,7 +14,11 @@ type HeaderProps = {
 
 export function Header({ menuLinks }: HeaderProps) {
   return (
-    <header id="site-header" className="relative z-40 w-full bg-white shadow-sm">
+    <header
+      id="site-header"
+      className="relative z-40 w-full bg-white shadow-sm"
+      style={{ viewTransitionName: "site-header" }}
+    >
       <AnnouncementBar />
       <UtilityNav />
 
