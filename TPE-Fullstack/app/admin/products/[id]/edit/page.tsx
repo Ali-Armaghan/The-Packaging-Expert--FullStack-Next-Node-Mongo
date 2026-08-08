@@ -1,4 +1,4 @@
-import { AdminProductPageEditor } from "@/components/admin/AdminProductPageEditor";
+import { AdminProductEditor } from "@/components/admin/AdminProductEditor";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -6,5 +6,5 @@ type PageProps = {
 
 export default async function AdminProductEditPage({ params }: PageProps) {
   const { id } = await params;
-  return <AdminProductPageEditor productId={id} />;
+  return <AdminProductEditor mode="edit" productId={id} />;
 }

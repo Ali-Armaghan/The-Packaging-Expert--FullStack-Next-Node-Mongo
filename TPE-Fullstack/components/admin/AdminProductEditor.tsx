@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { ArrowLeftIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AgenticLoader } from "@/components/ui/AgenticLoader";
@@ -17,12 +18,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getProductDetailDefaults } from "@/lib/product/defaults";
+import { slugify } from "@/lib/slug";
 import type {
   ProductDetailContent,
   ProductHighlightIcon,
+  SerializedProduct,
 } from "@/types/product";
 import { ImageUploadField } from "./ImageUploadField";
 
+type GroupOption = { id: string; name: string; slug: string; isActive: boolean };
 type ProductOption = { id: string; name: string; slug: string };
 
 const HIGHLIGHT_ICONS: ProductHighlightIcon[] = [
@@ -34,9 +38,8 @@ const HIGHLIGHT_ICONS: ProductHighlightIcon[] = [
 ];
 
 const textareaClass =
-  "w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+  "w-full rounded-[3px] border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
-/** Comma-separated input <-> string[] so admins can edit option lists inline. */
 function ListInput({
   value,
   onChange,
@@ -70,8 +73,8 @@ function SectionCard({
 }: {
   title: string;
   description?: string;
-  action?: React.ReactNode;
-  children: React.ReactNode;
+  action?: ReactNode;
+  children: ReactNode;
 }) {
   return (
     <Card>
@@ -89,38 +92,99 @@ function SectionCard({
   );
 }
 
-export function AdminProductPageEditor({ productId }: { productId: string }) {
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
-  const [detail, setDetail] = useState<ProductDetailContent | null>(null);
+type Basics = {
+  name: string;
+  slug: string;
+  description: string;
+  price: string;
+  image: string;
+  groupByIds: string[];
+  isActive: boolean;
+  sortOrder: number;
+};
+
+const emptyBasics = (): Basics => ({
+  name: "",
+  slug: "",
+  description: "",
+  price: "",
+  image: "",
+  groupByIds: [],
+  isActive: true,
+  sortOrder: 0,
+});
+
+type AdminProductEditorProps =
+  | { mode: "create" }
+  | { mode: "edit"; productId: string };
+
+/** Full product screen: basics + every product-page section (all saved to DB). */
+export function AdminProductEditor(props: AdminProductEditorProps) {
+  const router = useRouter();
+  const isCreate = props.mode === "create";
+  const productId = props.mode === "edit" ? props.productId : null;
+
+  const [basics, setBasics] = useState<Basics>(emptyBasics());
+  const [detail, setDetail] = useState<ProductDetailContent | null>(
+    isCreate ? getProductDetailDefaults() : null,
+  );
+  const [slugTouched, setSlugTouched] = useState(false);
+  const [groups, setGroups] = useState<GroupOption[]>([]);
   const [products, setProducts] = useState<ProductOption[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isCreate);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
   const load = useCallback(async () => {
-    setLoading(true);
     setError(null);
     try {
-      const [productRes, listRes] = await Promise.all([
-        fetch(`/api/admin/products/${productId}`),
-        fetch("/api/admin/products"),
-      ]);
-      const productJson = await productRes.json();
-      if (!productRes.ok || !productJson.success) {
-        throw new Error(productJson.error || "Failed to load product");
+      const requests: Promise<Response>[] = [
+        fetch("/api/admin/group-by"),
+        fetch("/api/admin/products?lite=1"),
+      ];
+      if (productId) {
+        requests.unshift(fetch(`/api/admin/products/${productId}`));
       }
-      setName(productJson.data.name);
-      setSlug(productJson.data.slug);
-      setDetail(
-        productJson.data.detail ?? getProductDetailDefaults(productJson.data.name),
-      );
 
+      const responses = await Promise.all(requests);
+      let offset = 0;
+
+      if (productId) {
+        const productRes = responses[0]!;
+        const productJson = await productRes.json();
+        if (!productRes.ok || !productJson.success) {
+          throw new Error(productJson.error || "Failed to load product");
+        }
+        const data = productJson.data as SerializedProduct;
+        setBasics({
+          name: data.name,
+          slug: data.slug,
+          description: data.description,
+          price: data.price,
+          image: data.image,
+          groupByIds: data.groupByIds,
+          isActive: data.isActive,
+          sortOrder: data.sortOrder,
+        });
+        setDetail(data.detail ?? getProductDetailDefaults(data.name));
+        setSlugTouched(true);
+        offset = 1;
+      }
+
+      const groupsRes = responses[offset]!;
+      const listRes = responses[offset + 1]!;
+      const groupsJson = await groupsRes.json();
       const listJson = await listRes.json();
+
+      if (groupsRes.ok && groupsJson.success) {
+        setGroups(groupsJson.data as GroupOption[]);
+      }
       if (listRes.ok && listJson.success) {
         setProducts(
-          (listJson.data as ProductOption[]).filter((p) => p.id !== productId),
+          (listJson.data as ProductOption[]).filter(
+            (p) => !productId || p.id !== productId,
+          ),
         );
       }
     } catch (err) {
@@ -134,7 +198,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
     void load();
   }, [load]);
 
-  const patch = <K extends keyof ProductDetailContent>(
+  const patchDetail = <K extends keyof ProductDetailContent>(
     key: K,
     value: ProductDetailContent[K],
   ) => {
@@ -142,21 +206,72 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
     setDetail((prev) => (prev ? { ...prev, [key]: value } : prev));
   };
 
+  const patchBasics = <K extends keyof Basics>(key: K, value: Basics[K]) => {
+    setSaved(false);
+    setBasics((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const toggleGroup = (id: string) => {
+    setSaved(false);
+    setBasics((prev) => ({
+      ...prev,
+      groupByIds: prev.groupByIds.includes(id)
+        ? prev.groupByIds.filter((g) => g !== id)
+        : [...prev.groupByIds, id],
+    }));
+  };
+
   const save = async () => {
     if (!detail) return;
+    if (!basics.name.trim()) {
+      setError("Name is required");
+      return;
+    }
+
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/products/${productId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ detail }),
-      });
+      const nextSlug = slugify(basics.slug || basics.name);
+      const payload = {
+        ...basics,
+        slug: nextSlug,
+        detail: {
+          ...detail,
+          breadcrumbLabel: detail.breadcrumbLabel || basics.name,
+        },
+      };
+
+      const res = await fetch(
+        isCreate ? "/api/admin/products" : `/api/admin/products/${productId}`,
+        {
+          method: isCreate ? "POST" : "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to save page content");
+        throw new Error(data.error || "Failed to save product");
       }
-      setDetail(data.data.detail);
+
+      const savedProduct = data.data as SerializedProduct;
+      if (isCreate) {
+        router.replace(`/admin/products/${savedProduct.id}/edit`);
+        router.refresh();
+        return;
+      }
+
+      setBasics({
+        name: savedProduct.name,
+        slug: savedProduct.slug,
+        description: savedProduct.description,
+        price: savedProduct.price,
+        image: savedProduct.image,
+        groupByIds: savedProduct.groupByIds,
+        isActive: savedProduct.isActive,
+        sortOrder: savedProduct.sortOrder,
+      });
+      setDetail(savedProduct.detail);
       setSaved(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
@@ -183,6 +298,8 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
     );
   }
 
+  const previewSlug = slugify(basics.slug || basics.name) || "…";
+
   return (
     <div className="space-y-6 pb-16">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -195,22 +312,32 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             Back to products
           </Link>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-            {name} — page content
+            {isCreate ? "Add product" : `${basics.name || "Product"} — edit`}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Everything on <code>/products/{slug}</code> is edited here.
+            Public page:{" "}
+            <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+              /products/{previewSlug}
+            </code>
+            . All sections below are stored in the database.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            href={`/products/${slug}`}
-            target="_blank"
-            className="inline-flex h-9 items-center rounded-md border border-input px-4 text-sm font-medium transition hover:bg-accent"
-          >
-            Preview
-          </Link>
+          {!isCreate && basics.slug ? (
+            <Link
+              href={`/products/${basics.slug}`}
+              target="_blank"
+              className="inline-flex h-9 items-center rounded-[3px] border border-input px-4 text-sm font-medium transition hover:bg-accent"
+            >
+              Preview
+            </Link>
+          ) : null}
           <Button type="button" onClick={() => void save()} disabled={saving}>
-            {saving ? "Saving…" : "Save changes"}
+            {saving
+              ? "Saving…"
+              : isCreate
+                ? "Create product"
+                : "Save changes"}
           </Button>
         </div>
       </div>
@@ -226,14 +353,126 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
         <Alert>
           <AlertTitle>Saved</AlertTitle>
           <AlertDescription>
-            The live product page has been revalidated.
+            Live product page cache has been revalidated.
           </AlertDescription>
         </Alert>
       ) : null}
 
       <SectionCard
-        title="Header"
-        description="SKU, breadcrumb, summary, and gallery images."
+        title="Basics"
+        description="Core product fields used in catalogs and the detail page header."
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Name</Label>
+            <Input
+              required
+              value={basics.name}
+              onChange={(e) => {
+                const name = e.target.value;
+                setSaved(false);
+                setBasics((prev) => ({
+                  ...prev,
+                  name,
+                  slug: slugTouched ? prev.slug : slugify(name),
+                }));
+                if (!slugTouched) {
+                  setDetail((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          breadcrumbLabel: prev.breadcrumbLabel || name,
+                        }
+                      : prev,
+                  );
+                }
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Slug</Label>
+            <Input
+              value={basics.slug}
+              onChange={(e) => {
+                setSlugTouched(true);
+                patchBasics("slug", slugify(e.target.value));
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Price label</Label>
+            <Input
+              value={basics.price}
+              placeholder="From $0.48"
+              onChange={(e) => patchBasics("price", e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Sort order</Label>
+            <Input
+              type="number"
+              value={basics.sortOrder}
+              onChange={(e) =>
+                patchBasics("sortOrder", Number(e.target.value) || 0)
+              }
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label>Short description</Label>
+          <textarea
+            rows={3}
+            className={textareaClass}
+            value={basics.description}
+            onChange={(e) => patchBasics("description", e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Primary image</Label>
+          <ImageUploadField
+            value={basics.image}
+            folder="products"
+            onChange={(image) => patchBasics("image", image)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Group By pages</Label>
+          {groups.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No groups yet. Create a Group By first.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-3">
+              {groups.map((g) => (
+                <label
+                  key={g.id}
+                  className="flex items-center gap-2 rounded-[3px] border border-border px-3 py-2 text-sm"
+                >
+                  <Checkbox
+                    checked={basics.groupByIds.includes(g.id)}
+                    onCheckedChange={() => toggleGroup(g.id)}
+                  />
+                  {g.name}
+                  <span className="text-xs text-muted-foreground">
+                    /{g.slug}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox
+            checked={basics.isActive}
+            onCheckedChange={(v) => patchBasics("isActive", v === true)}
+          />
+          Active (visible on the public site)
+        </label>
+      </SectionCard>
+
+      <SectionCard
+        title="Page header"
+        description="SKU, breadcrumb, summary, and gallery for the product detail page."
       >
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
@@ -241,31 +480,31 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             <Input
               value={detail.sku}
               placeholder="F064"
-              onChange={(e) => patch("sku", e.target.value)}
+              onChange={(e) => patchDetail("sku", e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label>Breadcrumb label</Label>
             <Input
               value={detail.breadcrumbLabel}
-              onChange={(e) => patch("breadcrumbLabel", e.target.value)}
+              onChange={(e) => patchDetail("breadcrumbLabel", e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label>Related section title</Label>
             <Input
               value={detail.relatedTitle}
-              onChange={(e) => patch("relatedTitle", e.target.value)}
+              onChange={(e) => patchDetail("relatedTitle", e.target.value)}
             />
           </div>
         </div>
         <div className="space-y-2">
-          <Label>Summary</Label>
+          <Label>Summary (right column)</Label>
           <textarea
             rows={3}
             className={textareaClass}
             value={detail.summary}
-            onChange={(e) => patch("summary", e.target.value)}
+            onChange={(e) => patchDetail("summary", e.target.value)}
           />
         </div>
         <div className="space-y-3">
@@ -276,7 +515,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
               size="sm"
               variant="outline"
               className="gap-1.5"
-              onClick={() => patch("gallery", [...detail.gallery, ""])}
+              onClick={() => patchDetail("gallery", [...detail.gallery, ""])}
             >
               <PlusIcon className="size-3.5" />
               Add image
@@ -292,7 +531,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
                   onChange={(url) => {
                     const next = [...detail.gallery];
                     next[index] = url;
-                    patch("gallery", next);
+                    patchDetail("gallery", next);
                   }}
                 />
                 <Button
@@ -301,7 +540,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
                   variant="ghost"
                   className="gap-1.5 text-destructive"
                   onClick={() =>
-                    patch(
+                    patchDetail(
                       "gallery",
                       detail.gallery.filter((_, i) => i !== index),
                     )
@@ -318,13 +557,13 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
 
       <SectionCard
         title="Dimensions"
-        description="Length / Width / Depth style inputs shown above the dropdowns."
+        description="Length / Width / Depth inputs above the dropdowns."
       >
         <div className="space-y-3">
           {detail.dimensionFields.map((field, index) => (
             <div
               key={field.id}
-              className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-[1fr_auto_auto]"
+              className="grid gap-3 rounded-[3px] border border-border p-3 sm:grid-cols-[1fr_auto_auto]"
             >
               <Input
                 placeholder="Label e.g. Length (inch)"
@@ -332,7 +571,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
                 onChange={(e) => {
                   const next = [...detail.dimensionFields];
                   next[index] = { ...field, label: e.target.value };
-                  patch("dimensionFields", next);
+                  patchDetail("dimensionFields", next);
                 }}
               />
               <label className="flex items-center gap-2 text-sm">
@@ -341,7 +580,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
                   onCheckedChange={(v) => {
                     const next = [...detail.dimensionFields];
                     next[index] = { ...field, required: v === true };
-                    patch("dimensionFields", next);
+                    patchDetail("dimensionFields", next);
                   }}
                 />
                 Required
@@ -351,7 +590,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
                 size="icon-sm"
                 variant="ghost"
                 onClick={() =>
-                  patch(
+                  patchDetail(
                     "dimensionFields",
                     detail.dimensionFields.filter((_, i) => i !== index),
                   )
@@ -367,13 +606,9 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             variant="outline"
             className="gap-1.5"
             onClick={() =>
-              patch("dimensionFields", [
+              patchDetail("dimensionFields", [
                 ...detail.dimensionFields,
-                {
-                  id: `dim-${Date.now()}`,
-                  label: "",
-                  required: true,
-                },
+                { id: `dim-${Date.now()}`, label: "", required: true },
               ])
             }
           >
@@ -393,7 +628,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             variant="outline"
             className="gap-1.5"
             onClick={() =>
-              patch("selectors", [
+              patchDetail("selectors", [
                 ...detail.selectors,
                 { id: `selector-${Date.now()}`, label: "", options: [] },
               ])
@@ -407,7 +642,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
         {detail.selectors.map((selector, index) => (
           <div
             key={selector.id}
-            className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-[1fr_2fr_auto]"
+            className="grid gap-3 rounded-[3px] border border-border p-3 sm:grid-cols-[1fr_2fr_auto]"
           >
             <Input
               placeholder="Label"
@@ -415,7 +650,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
               onChange={(e) => {
                 const next = [...detail.selectors];
                 next[index] = { ...selector, label: e.target.value };
-                patch("selectors", next);
+                patchDetail("selectors", next);
               }}
             />
             <ListInput
@@ -424,7 +659,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
               onChange={(options) => {
                 const next = [...detail.selectors];
                 next[index] = { ...selector, options };
-                patch("selectors", next);
+                patchDetail("selectors", next);
               }}
             />
             <Button
@@ -432,7 +667,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
               size="icon-sm"
               variant="ghost"
               onClick={() =>
-                patch(
+                patchDetail(
                   "selectors",
                   detail.selectors.filter((_, i) => i !== index),
                 )
@@ -446,7 +681,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
 
       <SectionCard
         title="Option chips"
-        description="Selectable pill groups such as material and finishing."
+        description="Additional Options / Add-on style chip groups."
         action={
           <Button
             type="button"
@@ -454,7 +689,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             variant="outline"
             className="gap-1.5"
             onClick={() =>
-              patch("optionGroups", [
+              patchDetail("optionGroups", [
                 ...detail.optionGroups,
                 { id: `option-${Date.now()}`, label: "", options: [] },
               ])
@@ -468,7 +703,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
         {detail.optionGroups.map((group, index) => (
           <div
             key={group.id}
-            className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-[1fr_2fr_auto]"
+            className="grid gap-3 rounded-[3px] border border-border p-3 sm:grid-cols-[1fr_2fr_auto]"
           >
             <Input
               placeholder="Label"
@@ -476,7 +711,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
               onChange={(e) => {
                 const next = [...detail.optionGroups];
                 next[index] = { ...group, label: e.target.value };
-                patch("optionGroups", next);
+                patchDetail("optionGroups", next);
               }}
             />
             <ListInput
@@ -485,7 +720,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
               onChange={(options) => {
                 const next = [...detail.optionGroups];
                 next[index] = { ...group, options };
-                patch("optionGroups", next);
+                patchDetail("optionGroups", next);
               }}
             />
             <Button
@@ -493,7 +728,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
               size="icon-sm"
               variant="ghost"
               onClick={() =>
-                patch(
+                patchDetail(
                   "optionGroups",
                   detail.optionGroups.filter((_, i) => i !== index),
                 )
@@ -511,44 +746,44 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             <Label>Button label</Label>
             <Input
               value={detail.ctaLabel}
-              onChange={(e) => patch("ctaLabel", e.target.value)}
+              onChange={(e) => patchDetail("ctaLabel", e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label>Button link</Label>
             <Input
               value={detail.ctaHref}
-              onChange={(e) => patch("ctaHref", e.target.value)}
+              onChange={(e) => patchDetail("ctaHref", e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label>Price note label</Label>
             <Input
               value={detail.priceNoteLabel}
-              onChange={(e) => patch("priceNoteLabel", e.target.value)}
+              onChange={(e) => patchDetail("priceNoteLabel", e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label>Price note link</Label>
             <Input
               value={detail.priceNoteHref}
-              onChange={(e) => patch("priceNoteHref", e.target.value)}
+              onChange={(e) => patchDetail("priceNoteHref", e.target.value)}
             />
           </div>
         </div>
         <div className="space-y-2">
           <Label>Quantity dropdown options</Label>
           <ListInput
-            placeholder="100, 250, 500"
+            placeholder="100, 250, 500, 1000"
             value={detail.quantityOptions}
-            onChange={(options) => patch("quantityOptions", options)}
+            onChange={(options) => patchDetail("quantityOptions", options)}
           />
         </div>
       </SectionCard>
 
       <SectionCard
         title="Tabs"
-        description="Details, available options, inspiration, order process…"
+        description="Details, Available Options, Inspiration, Order Process…"
         action={
           <Button
             type="button"
@@ -556,7 +791,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             variant="outline"
             className="gap-1.5"
             onClick={() =>
-              patch("tabs", [
+              patchDetail("tabs", [
                 ...detail.tabs,
                 { id: `tab-${Date.now()}`, label: "", body: "" },
               ])
@@ -568,7 +803,10 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
         }
       >
         {detail.tabs.map((tab, index) => (
-          <div key={tab.id} className="space-y-3 rounded-lg border border-border p-3">
+          <div
+            key={tab.id}
+            className="space-y-3 rounded-[3px] border border-border p-3"
+          >
             <div className="flex items-center gap-3">
               <Input
                 placeholder="Tab label"
@@ -576,7 +814,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
                 onChange={(e) => {
                   const next = [...detail.tabs];
                   next[index] = { ...tab, label: e.target.value };
-                  patch("tabs", next);
+                  patchDetail("tabs", next);
                 }}
               />
               <Button
@@ -584,7 +822,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
                 size="icon-sm"
                 variant="ghost"
                 onClick={() =>
-                  patch(
+                  patchDetail(
                     "tabs",
                     detail.tabs.filter((_, i) => i !== index),
                   )
@@ -596,12 +834,12 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             <textarea
               rows={4}
               className={textareaClass}
-              placeholder="Tab content — one paragraph per line"
+              placeholder="Tab content (leave empty for Order Process cards)"
               value={tab.body}
               onChange={(e) => {
                 const next = [...detail.tabs];
                 next[index] = { ...tab, body: e.target.value };
-                patch("tabs", next);
+                patchDetail("tabs", next);
               }}
             />
           </div>
@@ -610,25 +848,23 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
 
       <SectionCard
         title="Order Process tab"
-        description="Shown when the Order Process tab is selected — title, intro, and step cards."
+        description="Rendered when the Order Process tab is selected."
       >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label>Section title</Label>
-            <Input
-              value={detail.orderProcess?.title ?? ""}
-              onChange={(e) =>
-                patch("orderProcess", {
-                  ...(detail.orderProcess ?? {
-                    title: "",
-                    description: "",
-                    steps: [],
-                  }),
-                  title: e.target.value,
-                })
-              }
-            />
-          </div>
+        <div className="space-y-2">
+          <Label>Section title</Label>
+          <Input
+            value={detail.orderProcess?.title ?? ""}
+            onChange={(e) =>
+              patchDetail("orderProcess", {
+                ...(detail.orderProcess ?? {
+                  title: "",
+                  description: "",
+                  steps: [],
+                }),
+                title: e.target.value,
+              })
+            }
+          />
         </div>
         <div className="space-y-2">
           <Label>Description</Label>
@@ -637,7 +873,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             className={textareaClass}
             value={detail.orderProcess?.description ?? ""}
             onChange={(e) =>
-              patch("orderProcess", {
+              patchDetail("orderProcess", {
                 ...(detail.orderProcess ?? {
                   title: "",
                   description: "",
@@ -654,7 +890,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             const updateStep = (patchValue: Partial<typeof step>) => {
               const next = [...steps];
               next[index] = { ...step, ...patchValue };
-              patch("orderProcess", {
+              patchDetail("orderProcess", {
                 ...(detail.orderProcess ?? {
                   title: "",
                   description: "",
@@ -666,11 +902,11 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             return (
               <div
                 key={index}
-                className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-[auto_1fr_2fr_auto]"
+                className="grid gap-3 rounded-[3px] border border-border p-3 sm:grid-cols-[auto_1fr_2fr_auto]"
               >
                 <select
                   value={step.icon}
-                  className="h-9 rounded-md border border-input bg-transparent px-2 text-sm"
+                  className="h-9 rounded-[3px] border border-input bg-transparent px-2 text-sm"
                   onChange={(e) =>
                     updateStep({
                       icon: e.target.value as typeof step.icon,
@@ -697,7 +933,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
                   size="icon-sm"
                   variant="ghost"
                   onClick={() =>
-                    patch("orderProcess", {
+                    patchDetail("orderProcess", {
                       ...(detail.orderProcess ?? {
                         title: "",
                         description: "",
@@ -718,7 +954,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             variant="outline"
             className="gap-1.5"
             onClick={() =>
-              patch("orderProcess", {
+              patchDetail("orderProcess", {
                 ...(detail.orderProcess ?? {
                   title: "",
                   description: "",
@@ -739,7 +975,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
 
       <SectionCard
         title="Highlights"
-        description="Icon + title + text row below the tabs."
+        description="Icon row below the tabs."
         action={
           <Button
             type="button"
@@ -747,7 +983,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             variant="outline"
             className="gap-1.5"
             onClick={() =>
-              patch("highlights", [
+              patchDetail("highlights", [
                 ...detail.highlights,
                 { icon: "box", title: "", text: "" },
               ])
@@ -761,18 +997,18 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
         {detail.highlights.map((highlight, index) => (
           <div
             key={index}
-            className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-[auto_1fr_2fr_auto]"
+            className="grid gap-3 rounded-[3px] border border-border p-3 sm:grid-cols-[auto_1fr_2fr_auto]"
           >
             <select
               value={highlight.icon}
-              className="h-9 rounded-md border border-input bg-transparent px-2 text-sm"
+              className="h-9 rounded-[3px] border border-input bg-transparent px-2 text-sm"
               onChange={(e) => {
                 const next = [...detail.highlights];
                 next[index] = {
                   ...highlight,
                   icon: e.target.value as ProductHighlightIcon,
                 };
-                patch("highlights", next);
+                patchDetail("highlights", next);
               }}
             >
               {HIGHLIGHT_ICONS.map((icon) => (
@@ -787,7 +1023,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
               onChange={(e) => {
                 const next = [...detail.highlights];
                 next[index] = { ...highlight, title: e.target.value };
-                patch("highlights", next);
+                patchDetail("highlights", next);
               }}
             />
             <Input
@@ -796,7 +1032,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
               onChange={(e) => {
                 const next = [...detail.highlights];
                 next[index] = { ...highlight, text: e.target.value };
-                patch("highlights", next);
+                patchDetail("highlights", next);
               }}
             />
             <Button
@@ -804,7 +1040,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
               size="icon-sm"
               variant="ghost"
               onClick={() =>
-                patch(
+                patchDetail(
                   "highlights",
                   detail.highlights.filter((_, i) => i !== index),
                 )
@@ -823,7 +1059,10 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             <Input
               value={detail.banner.eyebrow}
               onChange={(e) =>
-                patch("banner", { ...detail.banner, eyebrow: e.target.value })
+                patchDetail("banner", {
+                  ...detail.banner,
+                  eyebrow: e.target.value,
+                })
               }
             />
           </div>
@@ -832,7 +1071,10 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             <Input
               value={detail.banner.title}
               onChange={(e) =>
-                patch("banner", { ...detail.banner, title: e.target.value })
+                patchDetail("banner", {
+                  ...detail.banner,
+                  title: e.target.value,
+                })
               }
             />
           </div>
@@ -841,7 +1083,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             <Input
               value={detail.banner.buttonLabel}
               onChange={(e) =>
-                patch("banner", {
+                patchDetail("banner", {
                   ...detail.banner,
                   buttonLabel: e.target.value,
                 })
@@ -853,7 +1095,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             <Input
               value={detail.banner.buttonHref}
               onChange={(e) =>
-                patch("banner", {
+                patchDetail("banner", {
                   ...detail.banner,
                   buttonHref: e.target.value,
                 })
@@ -868,7 +1110,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             className={textareaClass}
             value={detail.banner.description}
             onChange={(e) =>
-              patch("banner", {
+              patchDetail("banner", {
                 ...detail.banner,
                 description: e.target.value,
               })
@@ -880,7 +1122,9 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
           <ImageUploadField
             value={detail.banner.image}
             folder="products"
-            onChange={(image) => patch("banner", { ...detail.banner, image })}
+            onChange={(image) =>
+              patchDetail("banner", { ...detail.banner, image })
+            }
           />
         </div>
       </SectionCard>
@@ -895,7 +1139,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             variant="outline"
             className="gap-1.5"
             onClick={() =>
-              patch("featureSections", [
+              patchDetail("featureSections", [
                 ...detail.featureSections,
                 {
                   title: "",
@@ -918,12 +1162,12 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
           const update = (patchValue: Partial<typeof section>) => {
             const next = [...detail.featureSections];
             next[index] = { ...section, ...patchValue };
-            patch("featureSections", next);
+            patchDetail("featureSections", next);
           };
           return (
             <div
               key={index}
-              className="space-y-3 rounded-lg border border-border p-3"
+              className="space-y-3 rounded-[3px] border border-border p-3"
             >
               <div className="flex items-center gap-3">
                 <Input
@@ -933,7 +1177,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
                 />
                 <select
                   value={section.imageSide}
-                  className="h-9 shrink-0 rounded-md border border-input bg-transparent px-2 text-sm"
+                  className="h-9 shrink-0 rounded-[3px] border border-input bg-transparent px-2 text-sm"
                   onChange={(e) =>
                     update({ imageSide: e.target.value as "left" | "right" })
                   }
@@ -946,7 +1190,7 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
                   size="icon-sm"
                   variant="ghost"
                   onClick={() =>
-                    patch(
+                    patchDetail(
                       "featureSections",
                       detail.featureSections.filter((_, i) => i !== index),
                     )
@@ -995,12 +1239,12 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
             {products.map((product) => (
               <label
                 key={product.id}
-                className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm"
+                className="flex items-center gap-2 rounded-[3px] border border-border px-3 py-2 text-sm"
               >
                 <Checkbox
                   checked={detail.relatedProductIds.includes(product.id)}
                   onCheckedChange={() =>
-                    patch(
+                    patchDetail(
                       "relatedProductIds",
                       detail.relatedProductIds.includes(product.id)
                         ? detail.relatedProductIds.filter(
@@ -1019,9 +1263,18 @@ export function AdminProductPageEditor({ productId }: { productId: string }) {
 
       <div className="flex justify-end">
         <Button type="button" onClick={() => void save()} disabled={saving}>
-          {saving ? "Saving…" : "Save changes"}
+          {saving
+            ? "Saving…"
+            : isCreate
+              ? "Create product"
+              : "Save changes"}
         </Button>
       </div>
     </div>
   );
+}
+
+/** @deprecated Use AdminProductEditor */
+export function AdminProductPageEditor({ productId }: { productId: string }) {
+  return <AdminProductEditor mode="edit" productId={productId} />;
 }

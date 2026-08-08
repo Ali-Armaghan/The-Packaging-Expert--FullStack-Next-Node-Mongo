@@ -6,7 +6,11 @@ import {
   revalidateGroupBysUsingProduct,
 } from "@/lib/groupBy/revalidate";
 import { revalidateProductSlugs } from "@/lib/product/revalidate";
-import { normalizeProductDetail, serializeProduct } from "@/lib/product/serialize";
+import {
+  normalizeProductDetail,
+  resolveProductImages,
+  serializeProduct,
+} from "@/lib/product/serialize";
 import { slugify } from "@/lib/slug";
 import { updateProductSchema } from "@/lib/validations/product";
 import { Product } from "@/models/Product";
@@ -49,21 +53,28 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (payload.name !== undefined) doc.name = payload.name;
     if (payload.description !== undefined) doc.description = payload.description;
     if (payload.price !== undefined) doc.price = payload.price;
-    if (payload.image !== undefined) {
-      doc.image = payload.image;
-      if (payload.image) doc.set("images", [payload.image]);
-    }
     if (payload.groupByIds !== undefined) {
       doc.set("groupByIds", payload.groupByIds);
     }
     if (payload.isActive !== undefined) doc.isActive = payload.isActive;
     if (payload.sortOrder !== undefined) doc.sortOrder = payload.sortOrder;
+
     if (payload.detail !== undefined) {
-      doc.set(
-        "detail",
-        normalizeProductDetail(payload.detail, payload.name ?? doc.name),
+      const detail = normalizeProductDetail(
+        payload.detail,
+        payload.name ?? doc.name,
       );
+      doc.set("detail", detail);
       doc.markModified("detail");
+      const { image, images } = resolveProductImages(
+        detail.gallery,
+        payload.image !== undefined ? payload.image : doc.image,
+      );
+      doc.image = image;
+      doc.set("images", images);
+    } else if (payload.image !== undefined) {
+      doc.image = payload.image;
+      if (payload.image) doc.set("images", [payload.image]);
     }
 
     if (payload.slug !== undefined || payload.name !== undefined) {

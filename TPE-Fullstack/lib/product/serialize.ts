@@ -285,3 +285,40 @@ export function serializeProduct(doc: {
     updatedAt: doc.updatedAt?.toISOString(),
   };
 }
+
+/** Admin list / related pickers — skips normalizing heavy `detail`. */
+export function serializeProductLite(doc: {
+  _id: { toString(): string };
+  name: string;
+  slug: string;
+  price?: string | null;
+  image?: string | null;
+  images?: string[] | null;
+  groupByIds?: { toString(): string }[] | null;
+  isActive?: boolean | null;
+  sortOrder?: number | null;
+}) {
+  return {
+    id: String(doc._id),
+    name: doc.name,
+    slug: doc.slug,
+    price: doc.price ?? "",
+    image: doc.image || doc.images?.[0] || "",
+    groupByIds: (doc.groupByIds ?? []).map((id) => String(id)),
+    isActive: doc.isActive ?? true,
+    sortOrder: doc.sortOrder ?? 0,
+  };
+}
+
+/** Prefer gallery images; fall back to primary image. */
+export function resolveProductImages(
+  gallery: string[] | undefined,
+  primaryImage: string | undefined,
+): { image: string; images: string[] } {
+  const fromGallery = (gallery ?? []).filter((url) => url.trim() !== "");
+  if (fromGallery.length) {
+    return { image: primaryImage?.trim() || fromGallery[0]!, images: fromGallery };
+  }
+  const image = primaryImage?.trim() || "";
+  return { image, images: image ? [image] : [] };
+}

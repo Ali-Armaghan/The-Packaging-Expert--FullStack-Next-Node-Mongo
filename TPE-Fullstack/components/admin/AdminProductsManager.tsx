@@ -1,14 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
-import {
-  LayoutTemplateIcon,
-  PencilIcon,
-  PlusIcon,
-  Trash2Icon,
-  XIcon,
-} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AgenticLoader } from "@/components/ui/AgenticLoader";
 import { Badge } from "@/components/ui/badge";
@@ -16,13 +10,9 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -31,17 +21,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { slugify } from "@/lib/slug";
 import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog";
-import { ImageUploadField } from "./ImageUploadField";
 
-type GroupOption = { id: string; name: string; slug: string; isActive: boolean };
+type GroupOption = { id: string; name: string; slug: string };
 
 type ProductRow = {
   id: string;
   name: string;
   slug: string;
-  description: string;
   price: string;
   image: string;
   groupByIds: string[];
@@ -49,27 +36,11 @@ type ProductRow = {
   sortOrder: number;
 };
 
-const emptyForm = (): Omit<ProductRow, "id"> => ({
-  name: "",
-  slug: "",
-  description: "",
-  price: "",
-  image: "",
-  groupByIds: [],
-  isActive: true,
-  sortOrder: 0,
-});
-
 export function AdminProductsManager() {
   const [items, setItems] = useState<ProductRow[]>([]);
   const [groups, setGroups] = useState<GroupOption[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState(emptyForm());
-  const [slugTouched, setSlugTouched] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ProductRow | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -78,7 +49,7 @@ export function AdminProductsManager() {
     setError(null);
     try {
       const [productsRes, groupsRes] = await Promise.all([
-        fetch("/api/admin/products"),
+        fetch("/api/admin/products?lite=1"),
         fetch("/api/admin/group-by"),
       ]);
       const productsJson = await productsRes.json();
@@ -100,68 +71,6 @@ export function AdminProductsManager() {
   useEffect(() => {
     void load();
   }, [load]);
-
-  const resetForm = () => {
-    setForm(emptyForm());
-    setEditingId(null);
-    setShowForm(false);
-    setSlugTouched(false);
-  };
-
-  const startEdit = (row: ProductRow) => {
-    setEditingId(row.id);
-    setForm({
-      name: row.name,
-      slug: row.slug,
-      description: row.description,
-      price: row.price,
-      image: row.image,
-      groupByIds: row.groupByIds,
-      isActive: row.isActive,
-      sortOrder: row.sortOrder,
-    });
-    setSlugTouched(true);
-    setShowForm(true);
-  };
-
-  const toggleGroup = (id: string) => {
-    setForm((prev) => ({
-      ...prev,
-      groupByIds: prev.groupByIds.includes(id)
-        ? prev.groupByIds.filter((g) => g !== id)
-        : [...prev.groupByIds, id],
-    }));
-  };
-
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    setSaving(true);
-    setError(null);
-    try {
-      const payload = {
-        ...form,
-        slug: form.slug || slugify(form.name),
-      };
-      const res = await fetch(
-        editingId ? `/api/admin/products/${editingId}` : "/api/admin/products",
-        {
-          method: editingId ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      );
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to save product");
-      }
-      resetForm();
-      await load();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -192,17 +101,14 @@ export function AdminProductsManager() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Link products to Group By pages — they appear in that page&apos;s
-            catalog section.
+            Add a product and fill every section of the public detail page. All
+            content is stored in the database and served from cache.
           </p>
         </div>
         <Button
-          type="button"
+          nativeButton={false}
+          render={<Link href="/admin/products/new" />}
           className="gap-1.5"
-          onClick={() => {
-            resetForm();
-            setShowForm(true);
-          }}
         >
           <PlusIcon className="size-4" />
           Add product
@@ -216,140 +122,6 @@ export function AdminProductsManager() {
         </Alert>
       ) : null}
 
-      {showForm ? (
-        <Card>
-          <CardHeader className="flex flex-row items-start justify-between gap-3">
-            <div>
-              <CardTitle>{editingId ? "Edit product" : "New product"}</CardTitle>
-              <CardDescription>
-                Select one or more Group By pages for catalog placement.
-              </CardDescription>
-            </div>
-            <Button type="button" size="icon-sm" variant="ghost" onClick={resetForm}>
-              <XIcon className="size-4" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Name</Label>
-                  <Input
-                    required
-                    value={form.name}
-                    onChange={(e) => {
-                      const name = e.target.value;
-                      setForm((prev) => ({
-                        ...prev,
-                        name,
-                        slug: slugTouched ? prev.slug : slugify(name),
-                      }));
-                    }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Slug</Label>
-                  <Input
-                    value={form.slug}
-                    onChange={(e) => {
-                      setSlugTouched(true);
-                      setForm((prev) => ({
-                        ...prev,
-                        slug: slugify(e.target.value),
-                      }));
-                    }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Price label</Label>
-                  <Input
-                    value={form.price}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, price: e.target.value }))
-                    }
-                    placeholder="$0.68"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Sort order</Label>
-                  <Input
-                    type="number"
-                    value={form.sortOrder}
-                    onChange={(e) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        sortOrder: Number(e.target.value) || 0,
-                      }))
-                    }
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Description</Label>
-                <textarea
-                  rows={3}
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Image</Label>
-                <ImageUploadField
-                  value={form.image}
-                  onChange={(image) => setForm((prev) => ({ ...prev, image }))}
-                  folder="products"
-                  label="Upload product image"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Group By</Label>
-                {groups.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No groups yet. Create a Group By first.
-                  </p>
-                ) : (
-                  <div className="flex flex-wrap gap-3">
-                    {groups.map((g) => (
-                      <label
-                        key={g.id}
-                        className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm"
-                      >
-                        <Checkbox
-                          checked={form.groupByIds.includes(g.id)}
-                          onCheckedChange={() => toggleGroup(g.id)}
-                        />
-                        {g.name}
-                        <span className="text-xs text-muted-foreground">
-                          /{g.slug}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <label className="flex items-center gap-2 text-sm">
-                <Checkbox
-                  checked={form.isActive}
-                  onCheckedChange={(v) =>
-                    setForm((prev) => ({ ...prev, isActive: v === true }))
-                  }
-                />
-                Active
-              </label>
-              <Button type="submit" disabled={saving}>
-                {saving ? "Saving…" : editingId ? "Update product" : "Create product"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      ) : null}
-
       <Card>
         <CardHeader>
           <CardTitle>All products</CardTitle>
@@ -361,12 +133,22 @@ export function AdminProductsManager() {
               Loading…
             </div>
           ) : items.length === 0 ? (
-            <p className="py-8 text-sm text-muted-foreground">No products yet.</p>
+            <div className="py-10 text-center">
+              <p className="text-sm text-muted-foreground">No products yet.</p>
+              <Link
+                href="/admin/products/new"
+                className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-[3px] bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/80"
+              >
+                <PlusIcon className="size-4" />
+                Add your first product
+              </Link>
+            </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
+                  <TableHead>Slug</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Groups</TableHead>
                   <TableHead>Status</TableHead>
@@ -377,6 +159,9 @@ export function AdminProductsManager() {
                 {items.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">{item.name}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      /products/{item.slug}
+                    </TableCell>
                     <TableCell>{item.price || "—"}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
@@ -402,19 +187,11 @@ export function AdminProductsManager() {
                       <div className="flex justify-end gap-1">
                         <Link
                           href={`/admin/products/${item.id}/edit`}
-                          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input px-3 text-xs font-medium transition hover:bg-accent"
-                        >
-                          <LayoutTemplateIcon className="size-3.5" />
-                          Page content
-                        </Link>
-                        <Button
-                          type="button"
-                          size="icon-sm"
-                          variant="ghost"
-                          onClick={() => startEdit(item)}
+                          className="inline-flex size-8 items-center justify-center rounded-[3px] hover:bg-accent"
+                          aria-label={`Edit ${item.name}`}
                         >
                           <PencilIcon className="size-3.5" />
-                        </Button>
+                        </Link>
                         <Button
                           type="button"
                           size="icon-sm"
@@ -441,7 +218,7 @@ export function AdminProductsManager() {
         title="Delete product?"
         description={
           deleteTarget
-            ? `Delete “${deleteTarget.name}”? It will disappear from linked group catalogs.`
+            ? `Delete “${deleteTarget.name}”? It will disappear from linked group catalogs and the public product page.`
             : ""
         }
         loading={deleting}

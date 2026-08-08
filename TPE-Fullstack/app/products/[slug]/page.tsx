@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductDetailView } from "@/components/product/ProductDetailView";
 import {
-  getCachedProductBySlug,
-  getCachedRelatedProducts,
+  getProductPage,
   listProductSlugsForStaticParams,
 } from "@/lib/product/cache";
 
@@ -23,9 +22,10 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = await getCachedProductBySlug(slug);
-  if (!product) return { title: "Product not found" };
+  const data = await getProductPage(slug);
+  if (!data) return { title: "Product not found" };
 
+  const { product } = data;
   const description = product.detail.summary || product.description;
   return {
     title: product.name,
@@ -40,9 +40,10 @@ export async function generateMetadata({
 
 export default async function ProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const product = await getCachedProductBySlug(slug);
-  if (!product) notFound();
+  const data = await getProductPage(slug);
+  if (!data) notFound();
 
-  const related = await getCachedRelatedProducts(product);
-  return <ProductDetailView product={product} related={related} />;
+  return (
+    <ProductDetailView product={data.product} related={data.related} />
+  );
 }
