@@ -13,7 +13,7 @@ export type MegaMenuGroup = {
 
 export const productsMegaMenuGroups: MegaMenuGroup[] = [
   {
-    title: "Products",
+    title: "Category",
     items: [
       {
         id: "folding-carton",

@@ -30,7 +30,7 @@ const industries: MenuHubContent = {
     image: "/images/hero-packaging.png",
     imageAlt: "Custom packaging for every industry",
     primaryCta: { label: "Request a quote", href: "/quote" },
-    secondaryCta: { label: "View products", href: "/products" },
+    secondaryCta: { label: "View categories", href: "/category" },
   },
   intro: {
     title: "Industry-ready packaging expertise",
@@ -96,7 +96,7 @@ const styles: MenuHubContent = {
     image: "/images/catalog/rigid-boxes.png",
     imageAlt: "Packaging styles",
     primaryCta: { label: "Request a quote", href: "/quote" },
-    secondaryCta: { label: "View products", href: "/products" },
+    secondaryCta: { label: "View categories", href: "/category" },
   },
   intro: {
     title: "Style-led packaging collections",
@@ -152,12 +152,12 @@ const styles: MenuHubContent = {
 const products: MenuHubContent = {
   hubKey: "products",
   hero: {
-    eyebrow: "Products",
-    title: "Packaging products & categories",
+    eyebrow: "Category",
+    title: "Packaging categories",
     description:
       "Explore cartons, corrugated, rigid boxes, bags, labels, and more — all customizable for your brand.",
     image: "/images/catalog/product-packaging.png",
-    imageAlt: "Packaging product categories",
+    imageAlt: "Packaging categories",
     primaryCta: { label: "Request a quote", href: "/quote" },
     secondaryCta: { label: "Browse industries", href: "/industries" },
   },

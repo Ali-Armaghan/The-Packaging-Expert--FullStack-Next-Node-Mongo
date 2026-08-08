@@ -30,7 +30,7 @@ export function ProductBanner({
             ) : null}
             {banner.buttonLabel ? (
               <Link
-                href={banner.buttonHref || "/products"}
+                href={banner.buttonHref || "/category"}
                 className="mt-8 inline-flex h-11 items-center rounded-[3px] border border-foreground/20 bg-transparent px-6 text-[13px] font-semibold text-foreground transition hover:border-primary hover:text-primary"
               >
                 {banner.buttonLabel}

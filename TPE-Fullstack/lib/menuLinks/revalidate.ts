@@ -6,8 +6,8 @@ const IMMEDIATE = { expire: 0 } as const;
 
 const HUB_PATH: Record<MenuLinkKey, string> = {
   industries: "/industries",
-  styles: "/products/style",
-  products: "/products",
+  styles: "/style",
+  products: "/category",
 };
 
 export function revalidateMenuLinks(menuKey: MenuLinkKey) {

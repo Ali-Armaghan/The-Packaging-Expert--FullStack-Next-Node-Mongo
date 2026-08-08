@@ -38,5 +38,5 @@ export function getMenuCatalog(menuKey: MenuLinkKey): MenuCatalogItem[] {
 export const MENU_LINK_LABELS: Record<MenuLinkKey, string> = {
   industries: "Industries",
   styles: "Styles",
-  products: "Categories / Products",
+  products: "Category",
 };

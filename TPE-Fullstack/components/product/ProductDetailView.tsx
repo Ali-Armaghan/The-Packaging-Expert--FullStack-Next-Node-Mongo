@@ -45,11 +45,11 @@ export function ProductDetailView({
                 <ChevronRightIcon className="size-3.5 opacity-50" />
               </li>
               <li>
-                <Link
-                  href="/products"
+                  <Link
+                  href="/category"
                   className="transition hover:text-primary"
                 >
-                  Products
+                  Category
                 </Link>
               </li>
               <li aria-hidden>

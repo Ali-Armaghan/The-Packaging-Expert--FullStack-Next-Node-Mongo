@@ -56,7 +56,7 @@ function EmptySearchState({ query }: { query: string }) {
       </p>
       <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
         <Link
-          href="/products"
+          href="/category"
           className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-dark"
         >
           Browse products

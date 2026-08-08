@@ -17,7 +17,7 @@ type PrimaryNavProps = {
 };
 
 const megaMenuNavItems: Record<string, MegaMenuId> = {
-  Products: "products",
+  Category: "products",
   Industries: "industries",
   Styles: "categoryByStyle",
 };
@@ -70,7 +70,13 @@ export function PrimaryNav({
           const isMegaMenuItem = Boolean(megaMenuId) && !vertical;
           const isMenuOpen = openMenu === megaMenuId;
           const isActive =
-            href === "/" ? pathname === "/" : pathname.startsWith(href);
+            href === "/"
+              ? pathname === "/"
+              : href === "/category"
+                ? pathname === "/category" ||
+                  (pathname.startsWith("/products/") &&
+                    !pathname.startsWith("/products/style"))
+                : pathname === href || pathname.startsWith(`${href}/`);
 
           if (isMegaMenuItem && megaMenuId) {
             return (

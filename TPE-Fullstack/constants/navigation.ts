@@ -9,8 +9,8 @@ export const utilityNavItems: NavItem[] = [
 
 export const mainNavItems: NavItem[] = [
   { label: "Industries", href: "/industries" },
-  { label: "Styles", href: "/products/style" },
-  { label: "Products", href: "/products" },
+  { label: "Styles", href: "/style" },
+  { label: "Category", href: "/category" },
   { label: "Services", href: "/services" },
   { label: "Why Packaging Expert", href: "/about" },
 ];

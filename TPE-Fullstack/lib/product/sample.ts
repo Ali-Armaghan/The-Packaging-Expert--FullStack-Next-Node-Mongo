@@ -144,7 +144,7 @@ export function getSampleProductDetail(): ProductDetailContent {
       description:
         "Our structural engineers help you choose the right board, flute, and finish so your packaging performs in transit and on the shelf.",
       buttonLabel: "Explore corrugated packaging",
-      buttonHref: "/products",
+      buttonHref: "/category",
       image: IMG.banner,
     },
     featureSections: [

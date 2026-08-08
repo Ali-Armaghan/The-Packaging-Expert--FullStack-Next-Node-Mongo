@@ -5,6 +5,7 @@ export const RESERVED_GROUP_SLUGS = new Set([
   "auth",
   "blog",
   "catalog",
+  "category",
   "contact",
   "elite",
   "favicon.ico",
@@ -18,6 +19,7 @@ export const RESERVED_GROUP_SLUGS = new Set([
   "sign-in",
   "sign-up",
   "sitemap.xml",
+  "style",
   "terms",
 ]);
 

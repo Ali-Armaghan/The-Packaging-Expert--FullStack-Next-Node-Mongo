@@ -23,7 +23,7 @@ export const footerLinkGroups: FooterLinkGroup[] = [
     ],
   },
   {
-    title: "Products",
+    title: "Category",
     links: [
       { label: "Custom Boxes", href: "/catalog" },
       { label: "Mailers", href: "/catalog/mailers" },
