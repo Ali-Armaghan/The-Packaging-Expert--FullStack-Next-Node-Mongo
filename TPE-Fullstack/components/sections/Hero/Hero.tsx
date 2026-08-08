@@ -35,6 +35,7 @@ export function Hero({ content }: HeroProps) {
           alt={content.imageAlt || content.title}
           fill
           priority
+          fetchPriority="high"
           className="home-hero-image-enter object-cover object-center"
           sizes="100vw"
         />

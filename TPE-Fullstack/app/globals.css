@@ -1,6 +1,38 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "./boxes-loader.css";
+
+/* Full-screen splash — must paint with first HTML */
+.initial-site-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f7f8f7;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.initial-site-loader--hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.initial-site-loader__text {
+  margin-top: 2.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(26, 31, 44, 0.7);
+}
+
+body.initial-loader-active {
+  overflow: hidden;
+}
 
 @custom-variant dark (&:is(.dark *));
 

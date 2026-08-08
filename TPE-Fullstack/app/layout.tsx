@@ -4,6 +4,8 @@ import {
   GoogleTagManagerNoScript,
   GoogleTagManagerScript,
 } from "@/components/analytics";
+import { InitialSiteLoader } from "@/components/layout/InitialSiteLoader";
+import { InitialSiteLoaderMarkup } from "@/components/layout/InitialSiteLoaderMarkup";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
@@ -39,8 +41,10 @@ export default function RootLayout({
       <head>
         <GoogleTagManagerScript />
       </head>
-      <body className="flex min-h-dvh flex-col bg-background text-foreground">
+      <body className="initial-loader-active flex min-h-dvh flex-col bg-background text-foreground">
         <GoogleTagManagerNoScript />
+        <InitialSiteLoaderMarkup />
+        <InitialSiteLoader />
         <SiteChrome>{children}</SiteChrome>
       </body>
     </html>

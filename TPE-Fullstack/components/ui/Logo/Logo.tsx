@@ -26,6 +26,7 @@ export function Logo({ className, variant = "default" }: LogoProps) {
         width={320}
         height={74}
         priority
+        fetchPriority="high"
         className={cn(
           "h-11 w-auto object-contain object-left sm:h-12 lg:h-14",
           variant === "light" && "brightness-110",
