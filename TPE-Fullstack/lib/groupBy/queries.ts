@@ -70,10 +70,11 @@ export async function getProductsByIds(
   );
   if (validIds.length === 0) return new Map();
 
-  const docs = await Product.find({
-    _id: { $in: validIds.map((id) => new mongoose.Types.ObjectId(id)) },
-    isActive: true,
-  }).lean();
+  // `.where().in()` avoids mongoose's strict `$in` ObjectId typing clash.
+  const docs = await Product.find({ isActive: true })
+    .where("_id")
+    .in(validIds)
+    .lean();
 
   const map = new Map<string, EliteCatalogProduct>();
   for (const doc of docs) {
@@ -117,10 +118,10 @@ export async function getGroupBySection<K extends GroupBySectionKey>(
   if (section === "catalog") {
     return (await resolveCatalogContent(
       group.content.catalog,
-    )) as ElitePageContent[K];
+    )) as unknown as ElitePageContent[K];
   }
 
-  return group.content[section] as ElitePageContent[K];
+  return group.content[section] as unknown as ElitePageContent[K];
 }
 
 /** @deprecated Prefer tab productIds; kept for product→group revalidation helpers. */
