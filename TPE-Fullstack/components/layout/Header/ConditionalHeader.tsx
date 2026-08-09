@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { Home2Header } from "@/components/home2/nav";
 import type { PublicMenuLinks } from "@/lib/menuLinks/apply";
 import { Header } from "./Header";
 
@@ -17,6 +18,11 @@ export function ConditionalHeader({ menuLinks }: ConditionalHeaderProps) {
     pathname.startsWith("/sign-up");
 
   if (hideHeader) return null;
+
+  // /home2 gets its own glass studio header — nowhere else.
+  if (pathname === "/home2" || pathname.startsWith("/home2/")) {
+    return <Home2Header menuLinks={menuLinks} />;
+  }
 
   return <Header menuLinks={menuLinks} />;
 }
