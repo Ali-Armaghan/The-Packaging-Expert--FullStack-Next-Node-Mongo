@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Home2Hero } from "@/components/home2/hero/Home2Hero";
 import { Home2Catalog } from "@/components/home2/sections/Home2Catalog";
 import { Home2Closing } from "@/components/home2/sections/Home2Closing";
+import { Home2Faq } from "@/components/home2/sections/Home2Faq";
 import { Home2Industries } from "@/components/home2/sections/Home2Industries";
 import { Home2Marquee } from "@/components/home2/sections/Home2Marquee";
 import { Home2Pillars } from "@/components/home2/sections/Home2Pillars";
@@ -11,6 +12,7 @@ import { Home2Vision } from "@/components/home2/sections/Home2Vision";
 import {
   home2Catalog,
   home2Closing,
+  home2Faq,
   home2Hero,
   home2Industries,
   home2Marquee,
@@ -41,6 +43,7 @@ export default function Home2Page() {
       <Home2Industries content={home2Industries} />
       <Home2Process content={home2Process} />
       <Home2Testimonials content={home2Testimonials} />
+      <Home2Faq content={home2Faq} />
       <Home2Closing content={home2Closing} />
     </div>
   );

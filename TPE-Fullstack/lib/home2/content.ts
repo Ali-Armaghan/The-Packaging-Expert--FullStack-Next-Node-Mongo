@@ -701,6 +701,66 @@ export const home2Testimonials: Home2TestimonialsContent = {
   ],
 };
 
+export type Home2FaqItem = {
+  id: string;
+  question: string;
+  answer: string;
+};
+
+export type Home2FaqContent = {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  cta: Home2Cta;
+  items: Home2FaqItem[];
+};
+
+export const home2Faq: Home2FaqContent = {
+  eyebrow: "Support",
+  title: "Questions, answered clearly.",
+  subtitle:
+    "Straight answers on MOQs, timelines, design help, and shipping — before you start a project.",
+  cta: { label: "Still need help? Contact us", href: "/contact" },
+  items: [
+    {
+      id: "minimum-order",
+      question: "What is the minimum order quantity?",
+      answer:
+        "Minimums vary by format. Many custom options start around 100 units, with flexible quantities for growing brands. We’ll confirm the right MOQ for your product when you request a quote.",
+    },
+    {
+      id: "turnaround",
+      question: "How long does production take?",
+      answer:
+        "Typical projects ship in about 8–12 days after proof approval. Rush options may be available depending on specs, finishes, and order size.",
+    },
+    {
+      id: "design-help",
+      question: "Do you offer design assistance?",
+      answer:
+        "Yes. Our team provides proofs and helps prepare artwork for print. Share your logo and brand assets — we’ll guide revisions until you’re ready to go to press.",
+    },
+    {
+      id: "materials",
+      question: "What materials do you offer?",
+      answer:
+        "Cardstock, corrugated, rigid board, kraft, pouches, mailers, and more. Eco-friendly and recyclable options are available across many product lines.",
+    },
+    {
+      id: "shipping",
+      question: "Do you ship internationally?",
+      answer:
+        "Yes — we ship across the USA and offer international options. Delivery timelines and costs depend on your location and order size.",
+    },
+    {
+      id: "samples",
+      question: "Can I order samples before a bulk run?",
+      answer:
+        "Sample orders are available for many products so you can review material, print quality, and sizing before committing to full production.",
+    },
+  ],
+};
+
 export const home2Closing: Home2ClosingContent = {
   eyebrow: "Ready when you are",
   title: "Let’s build packaging worth opening.",
