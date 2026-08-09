@@ -1,6 +1,24 @@
 import type { Metadata } from "next";
 import { Home2Hero } from "@/components/home2/hero/Home2Hero";
-import { home2Hero } from "@/lib/home2/content";
+import { Home2Catalog } from "@/components/home2/sections/Home2Catalog";
+import { Home2Closing } from "@/components/home2/sections/Home2Closing";
+import { Home2Industries } from "@/components/home2/sections/Home2Industries";
+import { Home2Marquee } from "@/components/home2/sections/Home2Marquee";
+import { Home2Pillars } from "@/components/home2/sections/Home2Pillars";
+import { Home2Process } from "@/components/home2/sections/Home2Process";
+import { Home2Testimonials } from "@/components/home2/sections/Home2Testimonials";
+import { Home2Vision } from "@/components/home2/sections/Home2Vision";
+import {
+  home2Catalog,
+  home2Closing,
+  home2Hero,
+  home2Industries,
+  home2Marquee,
+  home2Pillars,
+  home2Process,
+  home2Testimonials,
+  home2Vision,
+} from "@/lib/home2/content";
 
 export const metadata: Metadata = {
   title: "Custom Packaging That Sells Itself",
@@ -16,13 +34,14 @@ export default function Home2Page() {
   return (
     <div className="route-enter">
       <Home2Hero content={home2Hero} />
-      <section className="bg-background px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-sm text-muted-foreground">
-            More sections coming next — hero + navbar are live on /home2 only.
-          </p>
-        </div>
-      </section>
+      <Home2Marquee content={home2Marquee} />
+      <Home2Catalog content={home2Catalog} />
+      <Home2Pillars content={home2Pillars} />
+      <Home2Vision content={home2Vision} />
+      <Home2Industries content={home2Industries} />
+      <Home2Process content={home2Process} />
+      <Home2Testimonials content={home2Testimonials} />
+      <Home2Closing content={home2Closing} />
     </div>
   );
 }

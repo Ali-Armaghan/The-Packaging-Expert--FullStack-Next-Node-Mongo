@@ -14,7 +14,7 @@ type Home2HeaderProps = {
 
 /**
  * Premium header used only on `/home2`.
- * Floating glass bar over the dark stage; solidifies on scroll.
+ * Floating glass pill at top; animates flush + full-width on scroll.
  */
 export function Home2Header({ menuLinks }: Home2HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
@@ -22,7 +22,7 @@ export function Home2Header({ menuLinks }: Home2HeaderProps) {
   const [menuPresent, setMenuPresent] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => setScrolled(window.scrollY > 16);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);

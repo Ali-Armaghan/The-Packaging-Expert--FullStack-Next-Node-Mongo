@@ -13,11 +13,23 @@ html.home2-route {
   z-index: 60;
   padding: 0.85rem 1rem 0;
   pointer-events: none;
+  transition: padding 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (min-width: 640px) {
   .home2-nav {
     padding: 1.1rem 1.25rem 0;
+  }
+}
+
+/* Scrolled: dock flush to the top edge, full-bleed */
+.home2-nav--solid {
+  padding: 0;
+}
+
+@media (min-width: 640px) {
+  .home2-nav--solid {
+    padding: 0;
   }
 }
 
@@ -27,6 +39,13 @@ html.home2-route {
   margin: 0 auto;
   max-width: 72rem;
   width: 100%;
+  transition:
+    max-width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.home2-nav--solid .home2-nav__shell {
+  max-width: none;
 }
 
 .home2-nav__bar {
@@ -46,23 +65,46 @@ html.home2-route {
     0 1px 0 rgba(255, 255, 255, 0.06) inset,
     0 18px 40px -28px rgba(0, 0, 0, 0.7);
   transition:
-    background-color 0.35s ease,
-    border-color 0.35s ease,
-    box-shadow 0.35s ease;
+    background-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .home2-nav--solid .home2-nav__bar {
-  background: rgba(10, 13, 18, 0.88);
-  border-color: rgba(255, 255, 255, 0.16);
+  border-radius: 0;
+  border-color: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(10, 13, 18, 0.92);
+  padding: 0.7rem 1rem 0.7rem 1.15rem;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.08) inset,
-    0 22px 50px -24px rgba(0, 0, 0, 0.85);
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 16px 40px -20px rgba(0, 0, 0, 0.75);
+}
+
+@media (min-width: 640px) {
+  .home2-nav--solid .home2-nav__bar {
+    padding: 0.75rem 1.5rem 0.75rem 1.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home2-nav--solid .home2-nav__bar {
+    padding-left: clamp(1.5rem, 4vw, 3rem);
+    padding-right: clamp(1.5rem, 4vw, 3rem);
+  }
 }
 
 /* Color-only — never change padding/size/position when menu opens */
 .home2-nav--menu-open .home2-nav__bar {
   background: rgba(10, 13, 18, 0.95);
   border-color: rgba(52, 173, 120, 0.4);
+}
+
+.home2-nav--solid.home2-nav--menu-open .home2-nav__bar {
+  border-color: transparent;
+  border-bottom-color: rgba(52, 173, 120, 0.4);
 }
 
 .home2-nav__brand {
@@ -766,6 +808,8 @@ html.home2-route {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .home2-nav,
+  .home2-nav__shell,
   .home2-nav__bar,
   .home2-nav__link > span:first-child::after,
   .home2-nav__cta,

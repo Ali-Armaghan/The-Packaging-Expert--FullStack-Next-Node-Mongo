@@ -4,6 +4,7 @@
 @import "./boxes-loader.css";
 @import "./home2-nav.css";
 @import "./home2-hero.css";
+@import "./home2-sections.css";
 
 /* Full-screen splash — must paint with first HTML */
 .initial-site-loader {
