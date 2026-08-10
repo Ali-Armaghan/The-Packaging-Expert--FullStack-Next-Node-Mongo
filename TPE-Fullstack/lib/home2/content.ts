@@ -213,6 +213,244 @@ export const home2Marquee: Home2MarqueeContent = {
   ],
 };
 
+export type Home2ExploreItem = {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  href: string;
+};
+
+export type Home2ExploreTabId =
+  | "industry"
+  | "style"
+  | "category"
+  | "product";
+
+export type Home2ExploreTab = {
+  id: Home2ExploreTabId;
+  label: string;
+  description: string;
+  cta: Home2Cta;
+  items: Home2ExploreItem[];
+};
+
+export type Home2ExploreContent = {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  tabs: Home2ExploreTab[];
+};
+
+export const home2Explore: Home2ExploreContent = {
+  eyebrow: "Explore",
+  title: "Browse by how you shop.",
+  subtitle:
+    "Jump into industries, styles, categories, or products — pick a tab and find your next format.",
+  tabs: [
+    {
+      id: "industry",
+      label: "Industry",
+      description: "Packaging tailored to the category you sell in.",
+      cta: { label: "All industries", href: "/industries" },
+      items: [
+        {
+          id: "cosmetics",
+          title: "Cosmetics",
+          description: "Premium unboxing for beauty brands.",
+          image: H2_MEDIA.shoppingBags,
+          href: "/industries/cosmetics",
+        },
+        {
+          id: "food",
+          title: "Food & bakery",
+          description: "Shelf-ready packs built for freshness.",
+          image: H2_MEDIA.folding,
+          href: "/industries/bakery",
+        },
+        {
+          id: "apparel",
+          title: "Apparel",
+          description: "Fashion boxes that feel intentional.",
+          image: H2_MEDIA.reusableBags,
+          href: "/industries/apparel",
+        },
+        {
+          id: "candle",
+          title: "Candles",
+          description: "Gift-ready structures for candle brands.",
+          image: H2_MEDIA.rigid,
+          href: "/industries/candle",
+        },
+        {
+          id: "coffee",
+          title: "Coffee & tea",
+          description: "Bags and boxes with natural appeal.",
+          image: H2_MEDIA.pouches,
+          href: "/industries/coffee-tea",
+        },
+        {
+          id: "beverage",
+          title: "Beverage",
+          description: "Creative packs that build excitement.",
+          image: H2_MEDIA.mailerBags,
+          href: "/industries/beverage",
+        },
+      ],
+    },
+    {
+      id: "style",
+      label: "Style",
+      description: "Built around how your product shows up.",
+      cta: { label: "Browse styles", href: "/style" },
+      items: [
+        {
+          id: "apparel-boxes",
+          title: "Apparel Boxes",
+          description: "Premium boxes for clothing brands.",
+          image: H2_MEDIA.rigid,
+          href: "/style",
+        },
+        {
+          id: "food-boxes",
+          title: "Food Boxes",
+          description: "Safe, compliant food packaging.",
+          image: H2_MEDIA.folding,
+          href: "/style",
+        },
+        {
+          id: "bakery-boxes",
+          title: "Bakery Boxes",
+          description: "Cakes, pastries, and baked goods.",
+          image: H2_MEDIA.corrugated,
+          href: "/style",
+        },
+        {
+          id: "jewellery-boxes",
+          title: "Jewellery Boxes",
+          description: "Elegant boxes for accessories.",
+          image: H2_MEDIA.rigid,
+          href: "/style",
+        },
+        {
+          id: "shopping-style",
+          title: "Shopping Bags",
+          description: "Branded bags for retail moments.",
+          image: H2_MEDIA.shoppingBags,
+          href: "/style",
+        },
+        {
+          id: "mailer-style",
+          title: "Mailer Bags",
+          description: "Flexible shipping-ready mailers.",
+          image: H2_MEDIA.mailerBags,
+          href: "/style",
+        },
+      ],
+    },
+    {
+      id: "category",
+      label: "Category",
+      description: "Core formats from cartons to displays.",
+      cta: { label: "Browse categories", href: "/category" },
+      items: [
+        {
+          id: "folding",
+          title: "Folding Carton",
+          description: "Versatile everyday retail packaging.",
+          image: H2_MEDIA.folding,
+          href: "/category",
+        },
+        {
+          id: "corrugated",
+          title: "Corrugated",
+          description: "Durable shipping and retail strength.",
+          image: H2_MEDIA.corrugated,
+          href: "/category",
+        },
+        {
+          id: "rigid",
+          title: "Rigid",
+          description: "Luxury chipboard presentation.",
+          image: H2_MEDIA.rigid,
+          href: "/category",
+        },
+        {
+          id: "display",
+          title: "POP Displays",
+          description: "Counter and floor retail impact.",
+          image: H2_MEDIA.displays,
+          href: "/category",
+        },
+        {
+          id: "inserts",
+          title: "Box Inserts",
+          description: "Hold and protect loose products.",
+          image: H2_MEDIA.inserts,
+          href: "/category",
+        },
+        {
+          id: "labels",
+          title: "Stickers & Labels",
+          description: "Add personality to every pack.",
+          image: H2_MEDIA.labels,
+          href: "/category",
+        },
+      ],
+    },
+    {
+      id: "product",
+      label: "Product",
+      description: "Specific SKUs ready to customize.",
+      cta: { label: "Browse products", href: "/products" },
+      items: [
+        {
+          id: "paper-bags",
+          title: "Paper Shopping Bags",
+          description: "Eco-friendly retail carriers.",
+          image: H2_MEDIA.shoppingBags,
+          href: "/products",
+        },
+        {
+          id: "reusable",
+          title: "Reusable Bags",
+          description: "Sturdy fabric tote options.",
+          image: H2_MEDIA.reusableBags,
+          href: "/products",
+        },
+        {
+          id: "mailers",
+          title: "Mailer Bags",
+          description: "Flexible shipping mailers.",
+          image: H2_MEDIA.mailerBags,
+          href: "/products",
+        },
+        {
+          id: "pouches",
+          title: "Flexible Pouches",
+          description: "Stand-up packs for food & beauty.",
+          image: H2_MEDIA.pouches,
+          href: "/products",
+        },
+        {
+          id: "tins",
+          title: "Tin Containers",
+          description: "Reusable tins with shelf presence.",
+          image: H2_MEDIA.tins,
+          href: "/products",
+        },
+        {
+          id: "tape",
+          title: "Packing Tape",
+          description: "Logo tape that carries the brand.",
+          image: H2_MEDIA.tape,
+          href: "/products",
+        },
+      ],
+    },
+  ],
+};
+
 export const home2Pillars: Home2PillarsContent = {
   eyebrow: "Why brands choose us",
   title: "Everything between your idea and the unboxing.",

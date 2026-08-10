@@ -303,6 +303,322 @@
   }
 }
 
+/* ——— Explore tabs (Industry / Style / Category / Product) ——— */
+
+.home2-explore {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 55% 45% at 0% 0%, rgba(52, 173, 120, 0.09), transparent 55%),
+    linear-gradient(180deg, #f7f8fa 0%, #eef1f4 100%);
+  color: #12151a;
+  padding: 3.75rem 0 4.25rem;
+  border-bottom: 1px solid rgba(18, 21, 26, 0.06);
+}
+
+@media (min-width: 768px) {
+  .home2-explore {
+    padding: 4.75rem 0 5.25rem;
+  }
+}
+
+.home2-explore__inner {
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .home2-explore__inner {
+    padding: 0 1.25rem;
+  }
+}
+
+.home2-explore__header {
+  max-width: 36rem;
+  margin: 0 auto 1.5rem;
+  text-align: center;
+}
+
+.home2-explore__header .home2-vision__eyebrow {
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .home2-explore__header {
+    margin-bottom: 1.85rem;
+  }
+}
+
+.home2-explore__title {
+  margin: 0;
+  font-size: clamp(1.75rem, 3.6vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+
+.home2-explore__subtitle {
+  margin: 0.8rem auto 0;
+  max-width: 34rem;
+  font-size: 0.96rem;
+  line-height: 1.6;
+  color: rgba(18, 21, 26, 0.55);
+}
+
+.home2-explore__tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.45rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.3rem;
+  margin: 0 auto 1.5rem;
+  border: 1px solid rgba(18, 21, 26, 0.08);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.65);
+  width: 100%;
+  max-width: 42rem;
+}
+
+@media (min-width: 768px) {
+  .home2-explore__tabs {
+    max-width: 52rem;
+    gap: 0.5rem;
+    padding: 0.35rem;
+    margin-bottom: 1.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home2-explore__tabs {
+    max-width: 58rem;
+  }
+}
+
+.home2-explore__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.home2-explore__tab {
+  flex: 1 1 0;
+  min-width: 5.5rem;
+  min-height: 2.65rem;
+  padding: 0.65rem 1rem;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: rgba(18, 21, 26, 0.58);
+  font-size: 0.88rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+@media (min-width: 768px) {
+  .home2-explore__tab {
+    min-height: 2.85rem;
+    padding: 0.7rem 1.25rem;
+    font-size: 0.95rem;
+  }
+}
+
+.home2-explore__tab:hover {
+  color: #12151a;
+  background: rgba(18, 21, 26, 0.04);
+}
+
+.home2-explore__tab--active {
+  background: #0a0d12;
+  color: #fff;
+  box-shadow: 0 10px 22px -16px rgba(10, 13, 18, 0.75);
+}
+
+.home2-explore__tab--active:hover {
+  background: #0a0d12;
+  color: #fff;
+}
+
+.home2-explore__panel {
+  animation: home2-explore-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home2-explore__panel-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.15rem;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .home2-explore__panel-head {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    text-align: left;
+  }
+}
+
+.home2-explore__panel-desc {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: rgba(18, 21, 26, 0.55);
+}
+
+.home2-explore__panel-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: #1f8a5a;
+  text-decoration: none;
+  transition: gap 0.25s ease, color 0.2s ease;
+}
+
+.home2-explore__panel-cta:hover {
+  gap: 0.65rem;
+  color: #167a4d;
+}
+
+.home2-explore__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 560px) {
+  .home2-explore__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .home2-explore__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.95rem;
+  }
+}
+
+.home2-explore__card {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: center;
+  height: 100%;
+  padding: 0.7rem;
+  border: 1px solid rgba(18, 21, 26, 0.08);
+  border-radius: 0.95rem;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color 0.22s ease,
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+@media (min-width: 900px) {
+  .home2-explore__card {
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    padding: 0.8rem;
+  }
+}
+
+.home2-explore__card:hover {
+  border-color: rgba(52, 173, 120, 0.4);
+  box-shadow: 0 16px 30px -24px rgba(18, 21, 26, 0.4);
+  transform: translateY(-2px);
+}
+
+.home2-explore__media {
+  display: block;
+  overflow: hidden;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 0.7rem;
+  background: #e5e9ee;
+}
+
+@media (min-width: 900px) {
+  .home2-explore__media {
+    width: 5.5rem;
+    height: 5.5rem;
+  }
+}
+
+.home2-explore__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.home2-explore__card:hover .home2-explore__media img {
+  transform: scale(1.06);
+}
+
+.home2-explore__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.home2-explore__name {
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: #12151a;
+}
+
+.home2-explore__text {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: rgba(18, 21, 26, 0.52);
+}
+
+@keyframes home2-explore-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home2-explore__panel {
+    animation: none;
+  }
+
+  .home2-explore__tab,
+  .home2-explore__card,
+  .home2-explore__media img,
+  .home2-explore__panel-cta {
+    transition: none;
+  }
+}
+
 /* ——— Hero marquee (slow infinite) ——— */
 
 .home2-marquee {
