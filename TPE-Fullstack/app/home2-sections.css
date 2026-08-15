@@ -437,14 +437,98 @@
 }
 
 .home2-explore__tab--active {
-  background: #0a0d12;
   color: #fff;
-  box-shadow: 0 10px 22px -16px rgba(10, 13, 18, 0.75);
+  box-shadow: 0 10px 22px -14px rgba(10, 13, 18, 0.55);
 }
 
 .home2-explore__tab--active:hover {
-  background: #0a0d12;
   color: #fff;
+}
+
+/* Bright theme-aligned active colors per tab (no repeated hues) */
+.home2-explore__tab--industry.home2-explore__tab--active {
+  background: #34ad78;
+  box-shadow: 0 12px 26px -12px rgba(52, 173, 120, 0.7);
+}
+
+.home2-explore__tab--industry.home2-explore__tab--active:hover {
+  background: #2fbf82;
+}
+
+.home2-explore__tab--style.home2-explore__tab--active {
+  background: #4f8fe8;
+  box-shadow: 0 12px 26px -12px rgba(79, 143, 232, 0.7);
+}
+
+.home2-explore__tab--style.home2-explore__tab--active:hover {
+  background: #3d7fd9;
+}
+
+.home2-explore__tab--category.home2-explore__tab--active {
+  background: #20c4b0;
+  box-shadow: 0 12px 26px -12px rgba(32, 196, 176, 0.7);
+}
+
+.home2-explore__tab--category.home2-explore__tab--active:hover {
+  background: #14b39f;
+}
+
+.home2-explore__tab--product.home2-explore__tab--active {
+  background: #6d7ff2;
+  box-shadow: 0 12px 26px -12px rgba(109, 127, 242, 0.7);
+}
+
+.home2-explore__tab--product.home2-explore__tab--active:hover {
+  background: #5b6de6;
+}
+
+/* Panel accents follow the active tab */
+.home2-explore--industry .home2-vision__eyebrow-dot {
+  background: #34ad78;
+}
+
+.home2-explore--industry .home2-explore__panel-cta {
+  color: #1f9a66;
+}
+
+.home2-explore--industry .home2-explore__card:hover {
+  border-color: rgba(52, 173, 120, 0.5);
+}
+
+.home2-explore--style .home2-vision__eyebrow-dot {
+  background: #4f8fe8;
+}
+
+.home2-explore--style .home2-explore__panel-cta {
+  color: #3d7fd9;
+}
+
+.home2-explore--style .home2-explore__card:hover {
+  border-color: rgba(79, 143, 232, 0.5);
+}
+
+.home2-explore--category .home2-vision__eyebrow-dot {
+  background: #20c4b0;
+}
+
+.home2-explore--category .home2-explore__panel-cta {
+  color: #14b39f;
+}
+
+.home2-explore--category .home2-explore__card:hover {
+  border-color: rgba(32, 196, 176, 0.5);
+}
+
+.home2-explore--product .home2-vision__eyebrow-dot {
+  background: #6d7ff2;
+}
+
+.home2-explore--product .home2-explore__panel-cta {
+  color: #5b6de6;
+}
+
+.home2-explore--product .home2-explore__card:hover {
+  border-color: rgba(109, 127, 242, 0.5);
 }
 
 .home2-explore__panel {
@@ -696,12 +780,12 @@
   align-items: center;
   gap: 0.4rem;
   flex: 0 0 auto;
-  width: 5.5rem;
+  width: 6.75rem;
 }
 
 @media (min-width: 768px) {
   .home2-marquee__item {
-    width: 6.25rem;
+    width: 7.75rem;
   }
 }
 

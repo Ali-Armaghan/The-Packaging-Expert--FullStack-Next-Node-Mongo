@@ -39,8 +39,8 @@ export default function Home2Page() {
     <div className="route-enter">
       <Home2Hero content={home2Hero} />
       <Home2Marquee content={home2Marquee} />
-      <Home2Catalog content={home2Catalog} />
       <Home2ExploreTabs content={home2Explore} />
+      <Home2Catalog content={home2Catalog} />
       <Home2Pillars content={home2Pillars} />
       <Home2Vision content={home2Vision} />
       <Home2Industries content={home2Industries} />

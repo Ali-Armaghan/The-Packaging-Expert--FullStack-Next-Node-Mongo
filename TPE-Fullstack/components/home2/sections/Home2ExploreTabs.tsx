@@ -28,7 +28,11 @@ export function Home2ExploreTabs({ content }: Home2ExploreTabsProps) {
   if (!activeTab) return null;
 
   return (
-    <section className="home2-explore" aria-label="Browse packaging">
+    <section
+      className={`home2-explore home2-explore--${activeId}`}
+      aria-label="Browse packaging"
+      data-tab={activeId}
+    >
       <div className="home2-explore__inner">
         <header className="home2-explore__header">
           <p className="home2-vision__eyebrow">
@@ -55,11 +59,13 @@ export function Home2ExploreTabs({ content }: Home2ExploreTabsProps) {
                 aria-selected={selected}
                 aria-controls={`${tabsId}-panel-${tab.id}`}
                 tabIndex={selected ? 0 : -1}
-                className={
-                  selected
-                    ? "home2-explore__tab home2-explore__tab--active"
-                    : "home2-explore__tab"
-                }
+                className={[
+                  "home2-explore__tab",
+                  `home2-explore__tab--${tab.id}`,
+                  selected ? "home2-explore__tab--active" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
                 onClick={() =>
                   startTransition(() => {
                     setActiveId(tab.id);
