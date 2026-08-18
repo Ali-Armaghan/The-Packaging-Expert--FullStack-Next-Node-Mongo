@@ -72,7 +72,15 @@ export function Home2ExploreTabs({ content }: Home2ExploreTabsProps) {
                   })
                 }
               >
-                {tab.label}
+                <span className="home2-explore__tab-inner">
+                  {selected && (
+                    <span className="home2-explore__tab-pulse" aria-hidden="true">
+                      <span className="home2-explore__tab-pulse-ring" />
+                      <span className="home2-explore__tab-pulse-dot" />
+                    </span>
+                  )}
+                  <span className="home2-explore__tab-label">{tab.label}</span>
+                </span>
               </button>
             );
           })}
