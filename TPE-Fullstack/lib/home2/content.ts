@@ -496,10 +496,10 @@ export const home2Catalog: Home2CatalogContent = {
     "Browse formats, styles, and product types — jump straight into the category that fits your brand.",
   cta: { label: "Browse full catalog", href: "/category" },
   hubs: [
-    { label: "Styles", href: "/style" },
-    { label: "Categories", href: "/category" },
-    { label: "Industries", href: "/industries" },
-    { label: "Products", href: "/products" },
+    // { label: "Styles", href: "/style" },
+    // { label: "Categories", href: "/category" },
+    // { label: "Industries", href: "/industries" },
+    // { label: "Products", href: "/products" },
   ],
   categories: [
     {
