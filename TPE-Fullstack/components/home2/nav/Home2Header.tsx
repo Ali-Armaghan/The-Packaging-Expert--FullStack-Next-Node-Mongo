@@ -72,7 +72,7 @@ export function Home2Header({ menuLinks }: Home2HeaderProps) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/logo/TPE-PNG-LOGO.png"
+                src="/images/logo/logo-white.png"
                 alt={siteConfig.name}
                 width={220}
                 height={50}

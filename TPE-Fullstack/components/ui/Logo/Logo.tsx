@@ -8,9 +8,12 @@ type LogoProps = {
   variant?: "default" | "light";
 };
 
-const logoSrc = "/images/logo/TPE-PNG-LS.png";
+const defaultLogoSrc = "/images/logo/TPE-PNG-LS.png";
+const lightLogoSrc = "/images/logo/logo-white.png";
 
 export function Logo({ className, variant = "default" }: LogoProps) {
+  const src = variant === "light" ? lightLogoSrc : defaultLogoSrc;
+
   return (
     <Link
       href="/"
@@ -21,7 +24,7 @@ export function Logo({ className, variant = "default" }: LogoProps) {
       aria-label={`${siteConfig.name} — Home`}
     >
       <Image
-        src={logoSrc}
+        src={src}
         alt={siteConfig.name}
         width={320}
         height={74}
@@ -29,7 +32,6 @@ export function Logo({ className, variant = "default" }: LogoProps) {
         fetchPriority="high"
         className={cn(
           "h-11 w-auto object-contain object-left sm:h-12 lg:h-14",
-          variant === "light" && "brightness-110",
         )}
       />
     </Link>
