@@ -853,38 +853,66 @@ export const home2Industries: Home2IndustriesContent = {
 };
 
 export const home2Process: Home2ProcessContent = {
-  eyebrow: "How it works",
-  title: "From blank page to branded box.",
+  eyebrow: "Why Choose Us",
+  title: "Your Trusted Custom Packaging Boxes Manufacturers",
   subtitle:
-    "A clear path with specialists at every step — no guessing, no hidden fees.",
+    "Custom Boxes Market is a trusted brand with transparency at all steps. Neither do we ask for plate charges, nor do you have to pay for shipping. Get high-quality printed custom boxes at the fastest rate with a minimum order quantity of 100 boxes. Select your box style and enjoy competitive prices with free design support.",
   steps: [
     {
-      id: "choose",
+      id: "no-die-plate",
       index: "01",
-      title: "Choose your style",
+      title: "No die & Plate Charge",
       description:
-        "Browse formats, materials, and finishes that fit your product and budget.",
+        "No hidden fees or extra plate charges across all custom box orders.",
     },
     {
-      id: "design",
+      id: "offset-printing",
       index: "02",
-      title: "Design & proof",
+      title: "High-quality offset printing",
       description:
-        "Upload artwork, review mockups, and lock color before anything goes to press.",
+        "Vibrant, sharp colors and precision detail for every packaging run.",
     },
     {
-      id: "produce",
+      id: "turnaround",
       index: "03",
-      title: "We produce",
+      title: "12 Days Turnaround",
       description:
-        "In-house manufacturing with the structure, print, and finish you approved.",
+        "Fast, reliable production delivered right on schedule.",
     },
     {
-      id: "deliver",
+      id: "moq",
       index: "04",
-      title: "Ship & reorder",
+      title: "Starting from 100 boxes",
       description:
-        "Receive packaging ready to pack — then reorder the same spec anytime.",
+        "Low minimum order quantities to launch, test, and scale with ease.",
+    },
+    {
+      id: "style",
+      index: "05",
+      title: "Style",
+      description:
+        "Extensive range of box structures, materials, and custom formats.",
+    },
+    {
+      id: "competitive-price",
+      index: "06",
+      title: "Competitive price",
+      description:
+        "Direct-from-manufacturer wholesale rates without cutting quality.",
+    },
+    {
+      id: "design-support",
+      index: "07",
+      title: "Free Design Support",
+      description:
+        "Expert dieline guidance, artwork setup, and 3D digital proofing.",
+    },
+    {
+      id: "free-shipping",
+      index: "08",
+      title: "Free Shipping",
+      description:
+        "Doorstep delivery with zero shipping charges on every order.",
     },
   ],
 };
