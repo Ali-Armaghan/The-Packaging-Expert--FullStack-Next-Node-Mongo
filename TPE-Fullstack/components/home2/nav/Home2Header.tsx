@@ -122,6 +122,7 @@ export function Home2Header({ menuLinks }: Home2HeaderProps) {
           open={menuOpen}
           onClose={closeMenu}
           onExited={onMenuExited}
+          menuLinks={menuLinks}
         />
       ) : null}
     </>
