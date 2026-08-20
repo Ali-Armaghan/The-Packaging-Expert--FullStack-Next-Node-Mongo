@@ -57,4 +57,12 @@ export const socialLinks = [
   { label: "LinkedIn", href: "https://linkedin.com", icon: "linkedin" as const },
 ] as const;
 
-export const paymentMethods = ["Visa", "Mastercard", "Amex", "PayPal", "Apple Pay"] as const;
+export const paymentMethods = [
+  { id: "visa", label: "Visa" },
+  { id: "mastercard", label: "Mastercard" },
+  { id: "amex", label: "Amex" },
+  { id: "paypal", label: "PayPal" },
+  { id: "apple-pay", label: "Apple Pay" },
+] as const;
+
+export type PaymentMethodId = (typeof paymentMethods)[number]["id"];
