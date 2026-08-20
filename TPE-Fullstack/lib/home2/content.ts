@@ -1027,6 +1027,126 @@ export const home2Faq: Home2FaqContent = {
   ],
 };
 
+export type Home2OrderStep = {
+  id: string;
+  title: string;
+  description: string;
+};
+
+export type Home2QuoteTopic = {
+  id: string;
+  label: string;
+};
+
+export type Home2QuoteSelectOption = {
+  value: string;
+  label: string;
+};
+
+export type Home2QuoteContent = {
+  processTitle: string;
+  steps: Home2OrderStep[];
+  queriesTitle: string;
+  queriesText: string;
+  topics: Home2QuoteTopic[];
+  formTitle: string;
+  submitLabel: string;
+  successTitle: string;
+  successDescription: string;
+  materials: Home2QuoteSelectOption[];
+  colors: Home2QuoteSelectOption[];
+  printing: Home2QuoteSelectOption[];
+  coatings: Home2QuoteSelectOption[];
+  thicknesses: Home2QuoteSelectOption[];
+  units: Home2QuoteSelectOption[];
+};
+
+export const home2Quote: Home2QuoteContent = {
+  processTitle: "Our 5-step order process",
+  steps: [
+    {
+      id: "order",
+      title: "Order",
+      description:
+        "You can place the custom order directly through our website.",
+    },
+    {
+      id: "design",
+      title: "Design",
+      description:
+        "Choose from our portfolio of custom designs or provide a layout, pattern, logo, or artwork.",
+    },
+    {
+      id: "approve",
+      title: "Approve",
+      description:
+        "You’ll get an email confirmation once you finalise the custom design.",
+    },
+    {
+      id: "production",
+      title: "Production",
+      description:
+        "Our team develops custom packaging tailor-made to your approved designs.",
+    },
+    {
+      id: "delivery",
+      title: "Delivery",
+      description:
+        "Orders typically deliver within about two weeks after confirmation.",
+    },
+  ],
+  queriesTitle: "Have more queries?",
+  queriesText:
+    "To know more about our order process, 24/7 customer support is available to handle queries related to:",
+  topics: [
+    { id: "delivery", label: "Delivery Time" },
+    { id: "customization", label: "Customization" },
+    { id: "order-size", label: "Order Size" },
+    { id: "price", label: "Price Comparison" },
+  ],
+  formTitle: "Get custom quote",
+  submitLabel: "Submit",
+  successTitle: "Quote request received",
+  successDescription:
+    "Thanks — our team will review your specs and follow up shortly.",
+  materials: [
+    { value: "cardstock", label: "Cardstock" },
+    { value: "corrugated", label: "Corrugated" },
+    { value: "rigid", label: "Rigid / chipboard" },
+    { value: "kraft", label: "Kraft" },
+    { value: "other", label: "Other / not sure" },
+  ],
+  colors: [
+    { value: "cmyk", label: "CMYK full color" },
+    { value: "spot", label: "Spot color" },
+    { value: "one-color", label: "One color" },
+    { value: "unprinted", label: "Unprinted" },
+  ],
+  printing: [
+    { value: "outside", label: "Outside only" },
+    { value: "inside-outside", label: "Inside + outside" },
+    { value: "none", label: "No printing" },
+  ],
+  coatings: [
+    { value: "matte", label: "Matte lamination" },
+    { value: "gloss", label: "Gloss lamination" },
+    { value: "soft-touch", label: "Soft-touch" },
+    { value: "none", label: "No coating" },
+  ],
+  thicknesses: [
+    { value: "14pt", label: "14pt" },
+    { value: "16pt", label: "16pt" },
+    { value: "18pt", label: "18pt" },
+    { value: "24pt", label: "24pt / rigid" },
+    { value: "other", label: "Other / not sure" },
+  ],
+  units: [
+    { value: "in", label: "in" },
+    { value: "cm", label: "cm" },
+    { value: "mm", label: "mm" },
+  ],
+};
+
 export const home2Closing: Home2ClosingContent = {
   eyebrow: "Ready when you are",
   title: "Let’s build packaging worth opening.",
