@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import {
   BoxIcon,
@@ -8,6 +7,7 @@ import {
   ShieldCheckIcon,
   type LucideIcon,
 } from "lucide-react";
+import { H2_MEDIA } from "@/lib/home2/content";
 import { Home2ProductGallery } from "./Home2ProductGallery";
 import { Home2ProductPurchasePanel } from "./Home2ProductPurchasePanel";
 import { Home2ProductTabs } from "./Home2ProductTabs";
@@ -26,6 +26,29 @@ const HIGHLIGHT_ICONS: Record<ProductHighlightIcon, LucideIcon> = {
   clock: ClockIcon,
 };
 
+/** Same PakFactory assets as the home page hero / marquee. */
+const DEFAULT_GALLERY = [
+  H2_MEDIA.folding,
+  H2_MEDIA.rigid,
+  H2_MEDIA.corrugated,
+  H2_MEDIA.inserts,
+] as const;
+
+function resolveProductImages(product: SerializedProduct): string[] {
+  const fromProduct = [
+    product.image,
+    ...product.images,
+    ...product.detail.gallery,
+  ].filter((url) => typeof url === "string" && url.trim() !== "");
+
+  const unique = Array.from(new Set(fromProduct));
+  return unique.length > 0 ? unique : [...DEFAULT_GALLERY];
+}
+
+function resolveImage(url: string | undefined, fallback: string): string {
+  return url?.trim() ? url.trim() : fallback;
+}
+
 type Home2ProductDetailViewProps = {
   product: SerializedProduct;
   related: ProductCardItem[];
@@ -36,11 +59,8 @@ export function Home2ProductDetailView({
   related,
 }: Home2ProductDetailViewProps) {
   const { detail } = product;
-  const images = Array.from(
-    new Set(
-      [product.image, ...product.images, ...detail.gallery].filter(Boolean),
-    ),
-  );
+  const images = resolveProductImages(product);
+  const bannerImage = resolveImage(detail.banner.image, H2_MEDIA.corrugated);
 
   return (
     <div className="home2-pdp route-enter">
@@ -104,18 +124,15 @@ export function Home2ProductDetailView({
                 </Link>
               ) : null}
             </div>
-            {detail.banner.image ? (
-              <div className="home2-pdp__promo-media">
-                <Image
-                  src={detail.banner.image}
-                  alt=""
-                  fill
-                  loading="lazy"
-                  sizes="(max-width: 1024px) 100vw, 46vw"
-                  className="home2-pdp__promo-img"
-                />
-              </div>
-            ) : null}
+            <div className="home2-pdp__promo-media">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={bannerImage}
+                alt=""
+                className="home2-pdp__promo-img"
+                loading="lazy"
+              />
+            </div>
           </div>
         </section>
       ) : null}
@@ -125,22 +142,23 @@ export function Home2ProductDetailView({
           <div className="home2-pdp__features-inner">
             {detail.featureSections.map((section, index) => {
               const imageRight = section.imageSide === "right";
+              const featureImage = resolveImage(
+                section.image,
+                index === 0 ? H2_MEDIA.folding : H2_MEDIA.rigid,
+              );
               return (
                 <article
                   key={`${section.title}-${index}`}
                   className={`home2-pdp__feature ${imageRight ? "home2-pdp__feature--flip" : ""}`}
                 >
                   <div className="home2-pdp__feature-media">
-                    {section.image ? (
-                      <Image
-                        src={section.image}
-                        alt=""
-                        fill
-                        loading="lazy"
-                        sizes="(max-width: 1024px) 100vw, 46vw"
-                        className="home2-pdp__feature-img"
-                      />
-                    ) : null}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={featureImage}
+                      alt=""
+                      className="home2-pdp__feature-img"
+                      loading="lazy"
+                    />
                   </div>
                   <div className="home2-pdp__feature-copy">
                     <h2>{section.title}</h2>
@@ -168,28 +186,37 @@ export function Home2ProductDetailView({
             </p>
             <h2>{detail.relatedTitle || "Related products"}</h2>
             <div className="home2-pdp__related-grid">
-              {related.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/products/${item.slug}`}
-                  className="home2-pdp__related-card"
-                >
-                  <div className="home2-pdp__related-img">
-                    {item.image ? (
-                      <Image
-                        src={item.image}
+              {related.map((item, index) => {
+                const relatedImage = resolveImage(
+                  item.image,
+                  [
+                    H2_MEDIA.corrugated,
+                    H2_MEDIA.rigid,
+                    H2_MEDIA.inserts,
+                    H2_MEDIA.shoppingBags,
+                    H2_MEDIA.labels,
+                  ][index] ?? H2_MEDIA.folding,
+                );
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/products/${item.slug}`}
+                    className="home2-pdp__related-card"
+                  >
+                    <div className="home2-pdp__related-img">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={relatedImage}
                         alt={item.name}
-                        fill
+                        className="home2-pdp__related-photo"
                         loading="lazy"
-                        sizes="(max-width: 640px) 50vw, 20vw"
-                        className="object-cover"
                       />
-                    ) : null}
-                  </div>
-                  <h3>{item.name}</h3>
-                  {item.price ? <span>{item.price}</span> : null}
-                </Link>
-              ))}
+                    </div>
+                    <h3>{item.name}</h3>
+                    {item.price ? <span>{item.price}</span> : null}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>

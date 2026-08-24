@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -17,13 +16,11 @@ export function Home2ProductGallery({ name, images }: Home2ProductGalleryProps) 
     <div className="home2-pdp__gallery">
       <div className="home2-pdp__stage">
         {current ? (
-          <Image
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
             key={current}
             src={current}
             alt={name}
-            fill
-            priority
-            sizes="(max-width: 1024px) 100vw, 52vw"
             className="home2-pdp__stage-img"
           />
         ) : (
@@ -44,14 +41,8 @@ export function Home2ProductGallery({ name, images }: Home2ProductGalleryProps) 
                 aria-current={isActive}
                 className={cn("home2-pdp__thumb", isActive && "home2-pdp__thumb--active")}
               >
-                <Image
-                  src={src}
-                  alt=""
-                  fill
-                  loading="lazy"
-                  sizes="72px"
-                  className="home2-pdp__thumb-img"
-                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={src} alt="" className="home2-pdp__thumb-img" loading="lazy" />
               </button>
             );
           })}

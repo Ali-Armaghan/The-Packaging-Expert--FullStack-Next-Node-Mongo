@@ -102,6 +102,8 @@
 }
 
 .home2-pdp__stage-img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -147,6 +149,8 @@
 }
 
 .home2-pdp__thumb-img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -715,6 +719,8 @@
 }
 
 .home2-pdp__promo-img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -774,6 +780,8 @@
 }
 
 .home2-pdp__feature-img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -871,6 +879,13 @@
   transition:
     border-color 0.2s ease,
     transform 0.2s ease;
+}
+
+.home2-pdp__related-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .home2-pdp__related-card:hover .home2-pdp__related-img {
