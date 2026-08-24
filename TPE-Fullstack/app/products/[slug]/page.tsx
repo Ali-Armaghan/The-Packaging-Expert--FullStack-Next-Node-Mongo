@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ProductDetailView } from "@/components/product/ProductDetailView";
+import { Home2ProductDetailView } from "@/components/home2/product/Home2ProductDetailView";
 import {
   getProductPage,
   listProductSlugsForStaticParams,
@@ -44,6 +44,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
   if (!data) notFound();
 
   return (
-    <ProductDetailView product={data.product} related={data.related} />
+    <Home2ProductDetailView product={data.product} related={data.related} />
   );
 }

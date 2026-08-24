@@ -13,7 +13,7 @@ type Home2HeaderProps = {
 };
 
 /**
- * Premium header used only on `/home2`.
+ * Premium glass studio header for the home2 experience (/, /products/*).
  * Floating glass pill at top; animates flush + full-width on scroll.
  */
 export function Home2Header({ menuLinks }: Home2HeaderProps) {
@@ -66,7 +66,7 @@ export function Home2Header({ menuLinks }: Home2HeaderProps) {
         <div className="home2-nav__shell">
           <div className="home2-nav__bar">
             <Link
-              href="/home2"
+              href="/"
               className="home2-nav__brand"
               aria-label={`${siteConfig.name} — Home`}
             >
