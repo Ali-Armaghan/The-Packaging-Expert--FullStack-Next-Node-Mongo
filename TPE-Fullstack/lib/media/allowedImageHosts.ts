@@ -6,6 +6,7 @@ export function isAllowedImageHost(hostname: string): boolean {
     host === "packaging-expert-media.s3.amazonaws.com" ||
     host.endsWith(".amazonaws.com") ||
     host === "images.unsplash.com" ||
-    host === "picsum.photos"
+    host === "picsum.photos" ||
+    host === "media.pakfactory.com"
   );
 }

@@ -1,5 +1,5 @@
 /** Shared PakFactory coding-guide assets for /home2 visuals */
-const H2_MEDIA = {
+export const H2_MEDIA = {
   folding:
     "https://media.pakfactory.com/media_upload/coding_guide/folding-carton-boxes.webp",
   corrugated:
