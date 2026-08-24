@@ -26,7 +26,6 @@ const HIGHLIGHT_ICONS: Record<ProductHighlightIcon, LucideIcon> = {
   clock: ClockIcon,
 };
 
-/** Same PakFactory assets as the home page hero / marquee. */
 const DEFAULT_GALLERY = [
   H2_MEDIA.folding,
   H2_MEDIA.rigid,
@@ -66,17 +65,23 @@ export function Home2ProductDetailView({
     <div className="home2-pdp route-enter">
       <section className="home2-pdp__hero">
         <div className="home2-pdp__hero-mesh" aria-hidden="true" />
+        <div className="home2-pdp__hero-grid-bg" aria-hidden="true" />
+
         <div className="home2-pdp__hero-inner">
           <nav aria-label="Breadcrumb" className="home2-pdp__crumb">
             <ol>
               <li>
                 <Link href="/">Home</Link>
               </li>
-              <li aria-hidden>/</li>
+              <li aria-hidden className="home2-pdp__crumb-sep">
+                /
+              </li>
               <li>
                 <Link href="/category">Category</Link>
               </li>
-              <li aria-hidden>/</li>
+              <li aria-hidden className="home2-pdp__crumb-sep">
+                /
+              </li>
               <li aria-current="page">{detail.breadcrumbLabel || product.name}</li>
             </ol>
           </nav>
@@ -84,7 +89,11 @@ export function Home2ProductDetailView({
           <div className="home2-pdp__hero-grid">
             <Home2ProductGallery name={product.name} images={images} />
             <div className="home2-pdp__hero-aside">
-              <Home2ProductPurchasePanel name={product.name} detail={detail} />
+              <Home2ProductPurchasePanel
+                name={product.name}
+                price={product.price}
+                detail={detail}
+              />
             </div>
           </div>
         </div>
@@ -93,11 +102,21 @@ export function Home2ProductDetailView({
       <section className="home2-pdp__info">
         <div className="home2-pdp__info-inner">
           <Home2ProductTabs tabs={detail.tabs} orderProcess={detail.orderProcess} />
+
           {detail.highlights.length > 0 ? (
-            <div className="home2-pdp__highlights">
-              {detail.highlights.map((highlight) => (
-                <HighlightItem key={highlight.title} highlight={highlight} />
-              ))}
+            <div className="home2-pdp__highlights-wrap">
+              <header className="home2-pdp__highlights-head">
+                <p className="home2-pdp__eyebrow home2-pdp__eyebrow--dark">
+                  <span className="home2-pdp__eyebrow-dot" aria-hidden />
+                  Why choose this
+                </p>
+                <h2 className="home2-pdp__highlights-title">Built for brand impact</h2>
+              </header>
+              <div className="home2-pdp__highlights">
+                {detail.highlights.map((highlight) => (
+                  <HighlightItem key={highlight.title} highlight={highlight} />
+                ))}
+              </div>
             </div>
           ) : null}
         </div>
@@ -140,6 +159,14 @@ export function Home2ProductDetailView({
       {detail.featureSections.length > 0 ? (
         <section className="home2-pdp__features">
           <div className="home2-pdp__features-inner">
+            <header className="home2-pdp__features-head">
+              <p className="home2-pdp__eyebrow home2-pdp__eyebrow--dark">
+                <span className="home2-pdp__eyebrow-dot" aria-hidden />
+                Capabilities
+              </p>
+              <h2 className="home2-pdp__features-title">More ways we can help</h2>
+            </header>
+
             {detail.featureSections.map((section, index) => {
               const imageRight = section.imageSide === "right";
               const featureImage = resolveImage(
@@ -161,7 +188,10 @@ export function Home2ProductDetailView({
                     />
                   </div>
                   <div className="home2-pdp__feature-copy">
-                    <h2>{section.title}</h2>
+                    <span className="home2-pdp__feature-index">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <h3>{section.title}</h3>
                     {section.description ? <p>{section.description}</p> : null}
                     {section.linkLabel ? (
                       <Link href={section.linkHref || "/quote"}>
@@ -180,12 +210,20 @@ export function Home2ProductDetailView({
       {related.length > 0 ? (
         <section className="home2-pdp__related">
           <div className="home2-pdp__related-inner">
-            <p className="home2-pdp__eyebrow home2-pdp__eyebrow--light">
-              <span className="home2-pdp__eyebrow-dot" aria-hidden />
-              You may also like
-            </p>
-            <h2>{detail.relatedTitle || "Related products"}</h2>
-            <div className="home2-pdp__related-grid">
+            <header className="home2-pdp__related-head">
+              <div>
+                <p className="home2-pdp__eyebrow">
+                  <span className="home2-pdp__eyebrow-dot" aria-hidden />
+                  You may also like
+                </p>
+                <h2>{detail.relatedTitle || "Related products"}</h2>
+              </div>
+              <Link href="/category" className="home2-pdp__related-all">
+                View all
+              </Link>
+            </header>
+
+            <div className="home2-pdp__related-rail">
               {related.map((item, index) => {
                 const relatedImage = resolveImage(
                   item.image,
@@ -212,8 +250,10 @@ export function Home2ProductDetailView({
                         loading="lazy"
                       />
                     </div>
-                    <h3>{item.name}</h3>
-                    {item.price ? <span>{item.price}</span> : null}
+                    <div className="home2-pdp__related-body">
+                      <h3>{item.name}</h3>
+                      {item.price ? <span>{item.price}</span> : null}
+                    </div>
                   </Link>
                 );
               })}
@@ -228,7 +268,7 @@ export function Home2ProductDetailView({
 function HighlightItem({ highlight }: { highlight: ProductHighlight }) {
   const Icon = HIGHLIGHT_ICONS[highlight.icon] ?? BoxIcon;
   return (
-    <div className="home2-pdp__highlight">
+    <article className="home2-pdp__highlight">
       <span className="home2-pdp__highlight-icon">
         <Icon aria-hidden />
       </span>
@@ -236,6 +276,6 @@ function HighlightItem({ highlight }: { highlight: ProductHighlight }) {
         <h3>{highlight.title}</h3>
         <p>{highlight.text}</p>
       </div>
-    </div>
+    </article>
   );
 }

@@ -7,6 +7,7 @@ import type { ProductDetailContent } from "@/types/product";
 
 type Home2ProductPurchasePanelProps = {
   name: string;
+  price?: string;
   detail: ProductDetailContent;
 };
 
@@ -62,8 +63,15 @@ function SelectField({
   );
 }
 
+const TRUST_ITEMS = [
+  "Free design proof",
+  "Low MOQ",
+  "8–12 day turnaround",
+] as const;
+
 export function Home2ProductPurchasePanel({
   name,
+  price,
   detail,
 }: Home2ProductPurchasePanelProps) {
   const dimensionFields = detail.dimensionFields ?? [];
@@ -90,56 +98,73 @@ export function Home2ProductPurchasePanel({
 
   return (
     <div className="home2-pdp__panel">
-      {detail.sku ? <p className="home2-pdp__sku">{detail.sku}</p> : null}
+      <div className="home2-pdp__panel-head">
+        <div className="home2-pdp__meta">
+          {detail.sku ? <span className="home2-pdp__sku">{detail.sku}</span> : null}
+          {price ? <span className="home2-pdp__price">{price}</span> : null}
+        </div>
 
-      <h1 className="home2-pdp__title">{name}</h1>
+        <h1 className="home2-pdp__title">{name}</h1>
 
-      {(detail.summary || "").trim() ? (
-        <p className="home2-pdp__summary">{detail.summary}</p>
-      ) : null}
+        {(detail.summary || "").trim() ? (
+          <p className="home2-pdp__summary">{detail.summary}</p>
+        ) : null}
+
+        <ul className="home2-pdp__trust" aria-label="Product benefits">
+          {TRUST_ITEMS.map((item) => (
+            <li key={item}>
+              <span className="home2-pdp__trust-dot" aria-hidden="true" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
 
       <div className="home2-pdp__config">
+        <p className="home2-pdp__config-label">Configure your order</p>
+
         {dimensionFields.length > 0 ? (
-          <div className="home2-pdp__dims">
-            {dimensionFields.map((field) => (
-              <label key={field.id} className="home2-pdp__field">
-                <FieldLabel required={field.required !== false}>
-                  {field.label}
-                </FieldLabel>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  name={field.id}
-                  required={field.required !== false}
-                  autoComplete="off"
-                  placeholder="0"
-                />
-              </label>
-            ))}
+          <div className="home2-pdp__config-block">
+            <p className="home2-pdp__block-title">Dimensions</p>
+            <div className="home2-pdp__dims">
+              {dimensionFields.map((field) => (
+                <label key={field.id} className="home2-pdp__field">
+                  <FieldLabel required={field.required !== false}>
+                    {field.label}
+                  </FieldLabel>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    name={field.id}
+                    required={field.required !== false}
+                    autoComplete="off"
+                    placeholder="0"
+                  />
+                </label>
+              ))}
+            </div>
           </div>
         ) : null}
 
         {selectors.length > 0 ? (
-          <div
-            className={cn(
-              "home2-pdp__selectors",
-              dimensionFields.length > 0 && "home2-pdp__selectors--spaced",
-            )}
-          >
-            {selectors.map((selector) => (
-              <SelectField
-                key={selector.id}
-                label={selector.label}
-                required
-                options={selector.options}
-              />
-            ))}
+          <div className="home2-pdp__config-block">
+            <p className="home2-pdp__block-title">Material & finish</p>
+            <div className="home2-pdp__selectors">
+              {selectors.map((selector) => (
+                <SelectField
+                  key={selector.id}
+                  label={selector.label}
+                  required
+                  options={selector.options}
+                />
+              ))}
+            </div>
           </div>
         ) : null}
 
         {optionGroups.map((group) => (
-          <div key={group.id} className="home2-pdp__chips">
-            <p className="home2-pdp__chips-label">{group.label}</p>
+          <div key={group.id} className="home2-pdp__config-block">
+            <p className="home2-pdp__block-title">{group.label}</p>
             <div className="home2-pdp__chips-row">
               {group.options.map((option) => {
                 const isActive = picked[group.id]?.has(option);
@@ -162,38 +187,40 @@ export function Home2ProductPurchasePanel({
           </div>
         ))}
 
-        {detail.priceNoteLabel ? (
-          <p className="home2-pdp__price-note">
-            <Link href={detail.priceNoteHref || "/contact"}>
-              {detail.priceNoteLabel}
-            </Link>
-          </p>
-        ) : null}
-
-        <div className="home2-pdp__actions">
-          {quantityOptions.length > 0 ? (
-            <div className="home2-pdp__qty">
-              <SelectField
-                ariaLabel="Quantity"
-                options={quantityOptions}
-                defaultValue={
-                  quantityOptions.includes("1000")
-                    ? "1000"
-                    : quantityOptions[0]
-                }
-              />
-            </div>
+        <div className="home2-pdp__config-block home2-pdp__config-block--cta">
+          {detail.priceNoteLabel ? (
+            <p className="home2-pdp__price-note">
+              <Link href={detail.priceNoteHref || "/contact"}>
+                {detail.priceNoteLabel}
+              </Link>
+            </p>
           ) : null}
 
-          <Link
-            href={detail.ctaHref || "/quote"}
-            className="home2-pdp__cta"
-          >
-            <span className="home2-pdp__cta-icon" aria-hidden>
-              $
-            </span>
-            {detail.ctaLabel || "Add to quote"}
-          </Link>
+          <div className="home2-pdp__actions">
+            {quantityOptions.length > 0 ? (
+              <div className="home2-pdp__qty">
+                <FieldLabel>Qty</FieldLabel>
+                <SelectField
+                  ariaLabel="Quantity"
+                  options={quantityOptions}
+                  defaultValue={
+                    quantityOptions.includes("1000")
+                      ? "1000"
+                      : quantityOptions[0]
+                  }
+                />
+              </div>
+            ) : null}
+
+            <Link href={detail.ctaHref || "/quote"} className="home2-pdp__cta">
+              {detail.ctaLabel || "Add to quote"}
+            </Link>
+          </div>
+
+          <p className="home2-pdp__panel-note">
+            Need help choosing specs?{" "}
+            <Link href="/contact">Talk to a packaging specialist</Link>
+          </p>
         </div>
       </div>
     </div>

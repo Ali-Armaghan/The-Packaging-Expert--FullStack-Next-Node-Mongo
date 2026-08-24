@@ -38,6 +38,14 @@ export function Home2ProductTabs({ tabs, orderProcess }: Home2ProductTabsProps) 
 
   return (
     <div className="home2-pdp__tabs">
+      <header className="home2-pdp__tabs-head">
+        <p className="home2-pdp__eyebrow home2-pdp__eyebrow--dark">
+          <span className="home2-pdp__eyebrow-dot" aria-hidden />
+          Product information
+        </p>
+        <h2 className="home2-pdp__tabs-title">Everything you need to know</h2>
+      </header>
+
       <div
         role="tablist"
         aria-label="Product information"
@@ -92,7 +100,7 @@ function OrderProcessPanel({ content }: { content: ProductOrderProcess }) {
   return (
     <div className="home2-pdp__process">
       {content.title ? (
-        <h2 className="home2-pdp__process-title">{content.title}</h2>
+        <h3 className="home2-pdp__process-title">{content.title}</h3>
       ) : null}
       {content.description ? (
         <p className="home2-pdp__process-desc">{content.description}</p>
@@ -108,7 +116,7 @@ function OrderProcessPanel({ content }: { content: ProductOrderProcess }) {
                 <span className="home2-pdp__process-icon">
                   <Icon aria-hidden />
                 </span>
-                <h3>{step.title}</h3>
+                <h4>{step.title}</h4>
                 <p>{step.text}</p>
               </article>
             );
