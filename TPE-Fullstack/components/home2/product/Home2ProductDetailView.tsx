@@ -33,6 +33,14 @@ const DEFAULT_GALLERY = [
   H2_MEDIA.inserts,
 ] as const;
 
+const RELATED_FALLBACKS = [
+  H2_MEDIA.corrugated,
+  H2_MEDIA.rigid,
+  H2_MEDIA.inserts,
+  H2_MEDIA.shoppingBags,
+  H2_MEDIA.labels,
+] as const;
+
 function resolveProductImages(product: SerializedProduct): string[] {
   const fromProduct = [
     product.image,
@@ -65,8 +73,6 @@ export function Home2ProductDetailView({
     <div className="home2-pdp route-enter">
       <section className="home2-pdp__hero">
         <div className="home2-pdp__hero-mesh" aria-hidden="true" />
-        <div className="home2-pdp__hero-grid-bg" aria-hidden="true" />
-
         <div className="home2-pdp__hero-inner">
           <nav aria-label="Breadcrumb" className="home2-pdp__crumb">
             <ol>
@@ -82,7 +88,9 @@ export function Home2ProductDetailView({
               <li aria-hidden className="home2-pdp__crumb-sep">
                 /
               </li>
-              <li aria-current="page">{detail.breadcrumbLabel || product.name}</li>
+              <li aria-current="page">
+                {detail.breadcrumbLabel || product.name}
+              </li>
             </ol>
           </nav>
 
@@ -101,16 +109,27 @@ export function Home2ProductDetailView({
 
       <section className="home2-pdp__info">
         <div className="home2-pdp__info-inner">
-          <Home2ProductTabs tabs={detail.tabs} orderProcess={detail.orderProcess} />
+          <header className="home2-pdp__section-head">
+            <p className="home2-pdp__eyebrow home2-pdp__eyebrow--dark">
+              <span className="home2-pdp__eyebrow-dot" aria-hidden />
+              Details
+            </p>
+            <h2>Product information</h2>
+          </header>
+
+          <Home2ProductTabs
+            tabs={detail.tabs}
+            orderProcess={detail.orderProcess}
+          />
 
           {detail.highlights.length > 0 ? (
             <div className="home2-pdp__highlights-wrap">
-              <header className="home2-pdp__highlights-head">
+              <header className="home2-pdp__section-head">
                 <p className="home2-pdp__eyebrow home2-pdp__eyebrow--dark">
                   <span className="home2-pdp__eyebrow-dot" aria-hidden />
-                  Why choose this
+                  Advantages
                 </p>
-                <h2 className="home2-pdp__highlights-title">Built for brand impact</h2>
+                <h2>Why brands choose this</h2>
               </header>
               <div className="home2-pdp__highlights">
                 {detail.highlights.map((highlight) => (
@@ -133,13 +152,16 @@ export function Home2ProductDetailView({
                 </p>
               ) : null}
               <h2>{detail.banner.title}</h2>
-              {detail.banner.description ? <p>{detail.banner.description}</p> : null}
+              {detail.banner.description ? (
+                <p>{detail.banner.description}</p>
+              ) : null}
               {detail.banner.buttonLabel ? (
                 <Link
                   href={detail.banner.buttonHref || "/category"}
                   className="home2-pdp__promo-btn"
                 >
                   {detail.banner.buttonLabel}
+                  <span aria-hidden>→</span>
                 </Link>
               ) : null}
             </div>
@@ -159,12 +181,12 @@ export function Home2ProductDetailView({
       {detail.featureSections.length > 0 ? (
         <section className="home2-pdp__features">
           <div className="home2-pdp__features-inner">
-            <header className="home2-pdp__features-head">
+            <header className="home2-pdp__section-head">
               <p className="home2-pdp__eyebrow home2-pdp__eyebrow--dark">
                 <span className="home2-pdp__eyebrow-dot" aria-hidden />
                 Capabilities
               </p>
-              <h2 className="home2-pdp__features-title">More ways we can help</h2>
+              <h2>Designed for every brand moment</h2>
             </header>
 
             {detail.featureSections.map((section, index) => {
@@ -214,26 +236,21 @@ export function Home2ProductDetailView({
               <div>
                 <p className="home2-pdp__eyebrow">
                   <span className="home2-pdp__eyebrow-dot" aria-hidden />
-                  You may also like
+                  Explore more
                 </p>
                 <h2>{detail.relatedTitle || "Related products"}</h2>
               </div>
               <Link href="/category" className="home2-pdp__related-all">
-                View all
+                View catalog
+                <span aria-hidden>→</span>
               </Link>
             </header>
 
-            <div className="home2-pdp__related-rail">
+            <div className="home2-pdp__related-grid">
               {related.map((item, index) => {
                 const relatedImage = resolveImage(
                   item.image,
-                  [
-                    H2_MEDIA.corrugated,
-                    H2_MEDIA.rigid,
-                    H2_MEDIA.inserts,
-                    H2_MEDIA.shoppingBags,
-                    H2_MEDIA.labels,
-                  ][index] ?? H2_MEDIA.folding,
+                  RELATED_FALLBACKS[index] ?? H2_MEDIA.folding,
                 );
                 return (
                   <Link

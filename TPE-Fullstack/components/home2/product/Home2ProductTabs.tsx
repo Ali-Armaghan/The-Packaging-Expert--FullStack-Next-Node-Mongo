@@ -38,14 +38,6 @@ export function Home2ProductTabs({ tabs, orderProcess }: Home2ProductTabsProps) 
 
   return (
     <div className="home2-pdp__tabs">
-      <header className="home2-pdp__tabs-head">
-        <p className="home2-pdp__eyebrow home2-pdp__eyebrow--dark">
-          <span className="home2-pdp__eyebrow-dot" aria-hidden />
-          Product information
-        </p>
-        <h2 className="home2-pdp__tabs-title">Everything you need to know</h2>
-      </header>
-
       <div
         role="tablist"
         aria-label="Product information"
@@ -62,7 +54,10 @@ export function Home2ProductTabs({ tabs, orderProcess }: Home2ProductTabsProps) 
               aria-selected={isActive}
               aria-controls={`home2-product-panel-${tab.id}`}
               onClick={() => setActive(index)}
-              className={cn("home2-pdp__tab", isActive && "home2-pdp__tab--active")}
+              className={cn(
+                "home2-pdp__tab",
+                isActive && "home2-pdp__tab--active",
+              )}
             >
               {tab.label}
             </button>
@@ -99,29 +94,35 @@ function OrderProcessPanel({ content }: { content: ProductOrderProcess }) {
 
   return (
     <div className="home2-pdp__process">
-      {content.title ? (
-        <h3 className="home2-pdp__process-title">{content.title}</h3>
-      ) : null}
-      {content.description ? (
-        <p className="home2-pdp__process-desc">{content.description}</p>
-      ) : null}
+      <div className="home2-pdp__process-intro">
+        {content.title ? (
+          <h3 className="home2-pdp__process-title">{content.title}</h3>
+        ) : null}
+        {content.description ? (
+          <p className="home2-pdp__process-desc">{content.description}</p>
+        ) : null}
+      </div>
 
       {steps.length > 0 ? (
-        <div className="home2-pdp__process-grid">
+        <ol className="home2-pdp__process-grid">
           {steps.map((step, index) => {
             const Icon = ORDER_ICONS[step.icon] ?? GiftIcon;
             return (
-              <article key={step.title} className="home2-pdp__process-card">
-                <span className="home2-pdp__process-num">{index + 1}</span>
-                <span className="home2-pdp__process-icon">
-                  <Icon aria-hidden />
-                </span>
+              <li key={step.title} className="home2-pdp__process-card">
+                <div className="home2-pdp__process-top">
+                  <span className="home2-pdp__process-icon">
+                    <Icon aria-hidden />
+                  </span>
+                  <span className="home2-pdp__process-num">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </div>
                 <h4>{step.title}</h4>
                 <p>{step.text}</p>
-              </article>
+              </li>
             );
           })}
-        </div>
+        </ol>
       ) : null}
     </div>
   );

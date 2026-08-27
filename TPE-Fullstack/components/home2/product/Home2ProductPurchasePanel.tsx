@@ -63,12 +63,6 @@ function SelectField({
   );
 }
 
-const TRUST_ITEMS = [
-  "Free design proof",
-  "Low MOQ",
-  "8–12 day turnaround",
-] as const;
-
 export function Home2ProductPurchasePanel({
   name,
   price,
@@ -100,7 +94,9 @@ export function Home2ProductPurchasePanel({
     <div className="home2-pdp__panel">
       <div className="home2-pdp__panel-head">
         <div className="home2-pdp__meta">
-          {detail.sku ? <span className="home2-pdp__sku">{detail.sku}</span> : null}
+          {detail.sku ? (
+            <span className="home2-pdp__sku">SKU {detail.sku}</span>
+          ) : null}
           {price ? <span className="home2-pdp__price">{price}</span> : null}
         </div>
 
@@ -110,22 +106,29 @@ export function Home2ProductPurchasePanel({
           <p className="home2-pdp__summary">{detail.summary}</p>
         ) : null}
 
-        <ul className="home2-pdp__trust" aria-label="Product benefits">
-          {TRUST_ITEMS.map((item) => (
-            <li key={item}>
-              <span className="home2-pdp__trust-dot" aria-hidden="true" />
-              {item}
-            </li>
-          ))}
-        </ul>
+        <div className="home2-pdp__stats" aria-label="Product benefits">
+          <div className="home2-pdp__stat">
+            <strong>Free</strong>
+            <span>Design proof</span>
+          </div>
+          <div className="home2-pdp__stat">
+            <strong>Low</strong>
+            <span>MOQ available</span>
+          </div>
+          <div className="home2-pdp__stat">
+            <strong>8–12</strong>
+            <span>Day turnaround</span>
+          </div>
+        </div>
       </div>
 
       <div className="home2-pdp__config">
-        <p className="home2-pdp__config-label">Configure your order</p>
-
         {dimensionFields.length > 0 ? (
           <div className="home2-pdp__config-block">
-            <p className="home2-pdp__block-title">Dimensions</p>
+            <div className="home2-pdp__block-head">
+              <span className="home2-pdp__block-num">01</span>
+              <p className="home2-pdp__block-title">Dimensions</p>
+            </div>
             <div className="home2-pdp__dims">
               {dimensionFields.map((field) => (
                 <label key={field.id} className="home2-pdp__field">
@@ -148,7 +151,10 @@ export function Home2ProductPurchasePanel({
 
         {selectors.length > 0 ? (
           <div className="home2-pdp__config-block">
-            <p className="home2-pdp__block-title">Material & finish</p>
+            <div className="home2-pdp__block-head">
+              <span className="home2-pdp__block-num">02</span>
+              <p className="home2-pdp__block-title">Material & finish</p>
+            </div>
             <div className="home2-pdp__selectors">
               {selectors.map((selector) => (
                 <SelectField
@@ -162,9 +168,14 @@ export function Home2ProductPurchasePanel({
           </div>
         ) : null}
 
-        {optionGroups.map((group) => (
+        {optionGroups.map((group, groupIndex) => (
           <div key={group.id} className="home2-pdp__config-block">
-            <p className="home2-pdp__block-title">{group.label}</p>
+            <div className="home2-pdp__block-head">
+              <span className="home2-pdp__block-num">
+                {String(groupIndex + 3).padStart(2, "0")}
+              </span>
+              <p className="home2-pdp__block-title">{group.label}</p>
+            </div>
             <div className="home2-pdp__chips-row">
               {group.options.map((option) => {
                 const isActive = picked[group.id]?.has(option);
@@ -187,40 +198,50 @@ export function Home2ProductPurchasePanel({
           </div>
         ))}
 
-        <div className="home2-pdp__config-block home2-pdp__config-block--cta">
-          {detail.priceNoteLabel ? (
-            <p className="home2-pdp__price-note">
-              <Link href={detail.priceNoteHref || "/contact"}>
-                {detail.priceNoteLabel}
-              </Link>
-            </p>
+        <div className="home2-pdp__cta-bar">
+          {quantityOptions.length > 0 ? (
+            <div className="home2-pdp__qty">
+              <FieldLabel>Qty</FieldLabel>
+              <SelectField
+                ariaLabel="Quantity"
+                options={quantityOptions}
+                defaultValue={
+                  quantityOptions.includes("1000")
+                    ? "1000"
+                    : quantityOptions[0]
+                }
+              />
+            </div>
           ) : null}
 
-          <div className="home2-pdp__actions">
-            {quantityOptions.length > 0 ? (
-              <div className="home2-pdp__qty">
-                <FieldLabel>Qty</FieldLabel>
-                <SelectField
-                  ariaLabel="Quantity"
-                  options={quantityOptions}
-                  defaultValue={
-                    quantityOptions.includes("1000")
-                      ? "1000"
-                      : quantityOptions[0]
-                  }
-                />
-              </div>
-            ) : null}
+          <Link href={detail.ctaHref || "/quote"} className="home2-pdp__cta">
+            <span>{detail.ctaLabel || "Add to quote"}</span>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M5 12h14M13 6l6 6-6 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </Link>
+        </div>
 
-            <Link href={detail.ctaHref || "/quote"} className="home2-pdp__cta">
-              {detail.ctaLabel || "Add to quote"}
+        <div className="home2-pdp__cta-foot">
+          {detail.priceNoteLabel ? (
+            <Link
+              href={detail.priceNoteHref || "/contact"}
+              className="home2-pdp__price-note"
+            >
+              {detail.priceNoteLabel}
             </Link>
-          </div>
-
-          <p className="home2-pdp__panel-note">
-            Need help choosing specs?{" "}
-            <Link href="/contact">Talk to a packaging specialist</Link>
-          </p>
+          ) : (
+            <span />
+          )}
+          <Link href="/contact" className="home2-pdp__help">
+            Need help? Talk to us
+          </Link>
         </div>
       </div>
     </div>
