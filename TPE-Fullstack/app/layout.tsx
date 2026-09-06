@@ -41,7 +41,11 @@ export default function RootLayout({
       <head>
         <GoogleTagManagerScript />
       </head>
-      <body className="initial-loader-active flex min-h-dvh flex-col bg-background text-foreground">
+        <body
+          className={`${
+            process.env.NODE_ENV === "development" ? "" : "initial-loader-active "
+          }flex min-h-dvh flex-col bg-background text-foreground`}
+        >
         <GoogleTagManagerNoScript />
         <InitialSiteLoaderMarkup />
         <InitialSiteLoader />

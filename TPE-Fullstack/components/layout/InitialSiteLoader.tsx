@@ -2,8 +2,9 @@
 
 import { useEffect } from "react";
 
-const MIN_VISIBLE_MS = 2200;
-const MAX_WAIT_MS = 5000;
+const IS_DEV = process.env.NODE_ENV === "development";
+const MIN_VISIBLE_MS = IS_DEV ? 0 : 500;
+const MAX_WAIT_MS = IS_DEV ? 0 : 2500;
 const LOADER_ID = "initial-site-loader";
 
 function wait(ms: number) {
@@ -69,6 +70,11 @@ function hideLoader() {
  */
 export function InitialSiteLoader() {
   useEffect(() => {
+    if (IS_DEV) {
+      hideLoader();
+      return;
+    }
+
     document.body.classList.add("initial-loader-active");
 
     let cancelled = false;

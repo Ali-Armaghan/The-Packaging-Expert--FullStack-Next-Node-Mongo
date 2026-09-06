@@ -87,9 +87,12 @@ export async function GET(request: Request) {
         withoutEnlargement: true,
       });
 
+    const isDev = process.env.NODE_ENV === "development";
+    const effort = isDev ? 1 : preferAvif ? 3 : 4;
+
     const { data, info } = preferAvif
-      ? await pipeline.avif({ quality, effort: 3 }).toBuffer({ resolveWithObject: true })
-      : await pipeline.webp({ quality, effort: 4 }).toBuffer({ resolveWithObject: true });
+      ? await pipeline.avif({ quality, effort }).toBuffer({ resolveWithObject: true })
+      : await pipeline.webp({ quality, effort }).toBuffer({ resolveWithObject: true });
 
     return new Response(new Uint8Array(data), {
       status: 200,

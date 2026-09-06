@@ -1,5 +1,9 @@
 /** Server-rendered splash — visible on first HTML paint, before JS hydrates. */
 export function InitialSiteLoaderMarkup() {
+  if (process.env.NODE_ENV === "development") {
+    return null;
+  }
+
   return (
     <div
       id="initial-site-loader"
