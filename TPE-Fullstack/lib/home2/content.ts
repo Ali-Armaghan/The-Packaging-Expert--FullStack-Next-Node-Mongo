@@ -1103,7 +1103,7 @@ export const home2Quote: Home2QuoteContent = {
     { id: "delivery", label: "Delivery Time" },
     { id: "customization", label: "Customization" },
     { id: "order-size", label: "Order Size" },
-    { id: "price", label: "Price Comparison" },
+    // { id: "price", label: "Price Comparison" },
   ],
   formTitle: "Get custom quote",
   submitLabel: "Submit",

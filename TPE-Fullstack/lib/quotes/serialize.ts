@@ -12,6 +12,7 @@ export function serializeQuote(doc: QuoteLean) {
     lastName: doc.lastName,
     email: doc.email,
     phone: doc.phone ?? "",
+    company: doc.company ?? "",
     productType: doc.productType ?? "",
     quantity: doc.quantity ?? null,
     dimensions: doc.dimensions

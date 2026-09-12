@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Trash2Icon } from "lucide-react";
+import { FileDownIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AgenticLoader } from "@/components/ui/AgenticLoader";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -28,40 +35,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  displayValue,
+  formatQuoteDate,
+  formatQuoteDims,
+  quoteFullName,
+  quoteOptionLabel,
+  quoteRef,
+  quoteStatusLabel,
+  QUOTE_STATUS_OPTIONS,
+  type QuoteStatus,
+} from "@/lib/quotes/format";
+import { downloadQuotePdf, downloadQuotesListPdf } from "@/lib/quotes/pdf";
 import type { SerializedQuote } from "@/lib/quotes/serialize";
 import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog";
-
-const STATUS_OPTIONS = [
-  { value: "draft", label: "In progress" },
-  { value: "new", label: "New" },
-  { value: "contacted", label: "Contacted" },
-  { value: "quoted", label: "Quoted" },
-  { value: "closed", label: "Closed" },
-] as const;
-
-type QuoteStatus = (typeof STATUS_OPTIONS)[number]["value"];
-
-function statusLabel(status: string) {
-  return STATUS_OPTIONS.find((item) => item.value === status)?.label ?? status;
-}
-
-function formatDate(value: string | null) {
-  if (!value) return "—";
-  return new Date(value).toLocaleString();
-}
-
-function formatDims(quote: SerializedQuote) {
-  const d = quote.dimensions;
-  if (!d || (d.length == null && d.width == null && d.height == null)) {
-    return "—";
-  }
-  const unit = d.unit || "in";
-  return `${d.width ?? "—"} × ${d.height ?? "—"} × ${d.length ?? "—"} ${unit}`;
-}
-
-function fullName(quote: SerializedQuote) {
-  return `${quote.firstName} ${quote.lastName}`.trim() || "—";
-}
 
 export function AdminQuotesManager() {
   const [quotes, setQuotes] = useState<SerializedQuote[]>([]);
@@ -71,6 +58,7 @@ export function AdminQuotesManager() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<SerializedQuote | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState<string | null>(null);
 
   const loadQuotes = useCallback(async () => {
     setLoading(true);
@@ -151,6 +139,30 @@ export function AdminQuotesManager() {
     }
   };
 
+  const downloadOne = async (quote: SerializedQuote) => {
+    setPdfBusy(quote.id);
+    setError(null);
+    try {
+      await downloadQuotePdf(quote);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to download PDF");
+    } finally {
+      setPdfBusy(null);
+    }
+  };
+
+  const downloadList = async () => {
+    setPdfBusy("list");
+    setError(null);
+    try {
+      await downloadQuotesListPdf(visible);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to download PDF");
+    } finally {
+      setPdfBusy(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card className="border-border/70 shadow-sm">
@@ -158,24 +170,36 @@ export function AdminQuotesManager() {
           <div>
             <CardTitle className="text-xl sm:text-2xl">Quotes</CardTitle>
             <CardDescription>
-              Homepage stepper submissions — drafts and completed requests.
+              Click a row to view the full request. Download one quote or the
+              whole list as PDF.
             </CardDescription>
           </div>
-          <Select
-            value={filter}
-            onValueChange={(value) =>
-              setFilter(value as "all" | "submitted" | "draft")
-            }
-          >
-            <SelectTrigger className="w-full sm:w-44">
-              <SelectValue placeholder="Filter" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All quotes</SelectItem>
-              <SelectItem value="submitted">Submitted</SelectItem>
-              <SelectItem value="draft">In progress</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <Select
+              value={filter}
+              onValueChange={(value) =>
+                setFilter(value as "all" | "submitted" | "draft")
+              }
+            >
+              <SelectTrigger className="w-full sm:w-44">
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All quotes</SelectItem>
+                <SelectItem value="submitted">Submitted</SelectItem>
+                <SelectItem value="draft">In progress</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={loading || visible.length === 0 || pdfBusy === "list"}
+              onClick={() => void downloadList()}
+            >
+              <FileDownIcon />
+              {pdfBusy === "list" ? "Preparing…" : "Download list PDF"}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {error ? (
@@ -203,24 +227,18 @@ export function AdminQuotesManager() {
                     <TableHead>Status</TableHead>
                     <TableHead>Step</TableHead>
                     <TableHead>Received</TableHead>
-                    <TableHead className="w-12" />
+                    <TableHead className="w-[5.5rem] text-right">PDF</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {visible.map((quote) => (
                     <TableRow
                       key={quote.id}
-                      className={
-                        selectedId === quote.id ? "bg-muted/50" : "cursor-pointer"
-                      }
-                      onClick={() =>
-                        setSelectedId((id) =>
-                          id === quote.id ? null : quote.id,
-                        )
-                      }
+                      className="cursor-pointer"
+                      onClick={() => setSelectedId(quote.id)}
                     >
                       <TableCell>
-                        <div className="font-medium">{fullName(quote)}</div>
+                        <div className="font-medium">{quoteFullName(quote)}</div>
                         <div className="text-xs text-muted-foreground">
                           {quote.email}
                           {quote.phone ? ` · ${quote.phone}` : ""}
@@ -233,7 +251,7 @@ export function AdminQuotesManager() {
                             quote.status === "draft" ? "secondary" : "default"
                           }
                         >
-                          {statusLabel(quote.status)}
+                          {quoteStatusLabel(quote.status)}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -242,9 +260,22 @@ export function AdminQuotesManager() {
                           : "Done"}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                        {formatDate(quote.createdAt)}
+                        {formatQuoteDate(quote.createdAt)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          aria-label="Download quote PDF"
+                          disabled={pdfBusy === quote.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void downloadOne(quote);
+                          }}
+                        >
+                          <FileDownIcon className="size-4" />
+                        </Button>
                         <Button
                           type="button"
                           size="icon"
@@ -267,62 +298,152 @@ export function AdminQuotesManager() {
         </CardContent>
       </Card>
 
-      {selected ? (
-        <Card className="border-border/70 shadow-sm">
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <CardTitle>{fullName(selected)}</CardTitle>
-              <CardDescription>
-                {selected.email}
-                {selected.phone ? ` · ${selected.phone}` : ""}
-              </CardDescription>
-            </div>
-            <Select
-              value={selected.status}
-              onValueChange={(value) =>
-                void updateStatus(selected.id, value as QuoteStatus)
-              }
-            >
-              <SelectTrigger className="w-full sm:w-44">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </CardHeader>
-          <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
-            <Detail label="Product" value={selected.productType} />
-            <Detail label="Quantity" value={selected.quantity?.toString()} />
-            <Detail label="Dimensions" value={formatDims(selected)} />
-            <Detail label="Zip" value={selected.zip} />
-            <Detail label="Material" value={selected.material} />
-            <Detail label="Color" value={selected.color} />
-            <Detail label="Printing" value={selected.printing} />
-            <Detail label="Coating" value={selected.coating} />
-            <Detail label="Thickness" value={selected.thickness} />
-            <Detail label="Add-on" value={selected.addOn} />
-            <div className="sm:col-span-2">
-              <Detail label="Project details" value={selected.notes} />
-            </div>
-            <Detail label="Updated" value={formatDate(selected.updatedAt)} />
-          </CardContent>
-        </Card>
-      ) : null}
+      <Dialog
+        open={Boolean(selected)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedId(null);
+        }}
+      >
+        <DialogContent className="relative max-h-[90vh] max-w-2xl gap-0 overflow-hidden p-0">
+          {selected ? (
+            <>
+              <DialogHeader className="border-b border-border/60 px-5 py-4 pr-12">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <DialogTitle className="truncate text-lg">
+                      {quoteFullName(selected)}
+                    </DialogTitle>
+                    <DialogDescription className="mt-1">
+                      {quoteRef(selected)}
+                      {selected.email ? ` · ${selected.email}` : ""}
+                      {selected.phone ? ` · ${selected.phone}` : ""}
+                    </DialogDescription>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-3 right-3"
+                    aria-label="Close"
+                    onClick={() => setSelectedId(null)}
+                  >
+                    <XIcon />
+                  </Button>
+                </div>
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <Select
+                    value={selected.status}
+                    onValueChange={(value) =>
+                      void updateStatus(selected.id, value as QuoteStatus)
+                    }
+                  >
+                    <SelectTrigger className="w-full sm:w-44">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {QUOTE_STATUS_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    onClick={() => void downloadOne(selected)}
+                    disabled={pdfBusy === selected.id}
+                  >
+                    <FileDownIcon />
+                    {pdfBusy === selected.id ? "Preparing…" : "Download PDF"}
+                  </Button>
+                </div>
+              </DialogHeader>
+
+              <div className="grid max-h-[min(70vh,32rem)] gap-0 overflow-y-auto sm:grid-cols-2">
+                <section className="border-border/60 p-4 sm:border-r">
+                  <h3 className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                    Customer
+                  </h3>
+                  <dl className="grid grid-cols-[6.5rem_1fr] gap-x-3 gap-y-1.5 text-sm">
+                    <Detail label="Name" value={quoteFullName(selected)} />
+                    <Detail label="Email" value={selected.email} />
+                    <Detail label="Phone" value={selected.phone} />
+                    <Detail label="Company" value={selected.company} />
+                    <Detail
+                      label="Step"
+                      value={
+                        selected.status === "draft"
+                          ? `${selected.currentStep}/4`
+                          : "Complete"
+                      }
+                    />
+                    <Detail
+                      label="Received"
+                      value={formatQuoteDate(selected.createdAt)}
+                    />
+                  </dl>
+                </section>
+                <section className="border-t border-border/60 p-4 sm:border-t-0">
+                  <h3 className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                    Specifications
+                  </h3>
+                  <dl className="grid grid-cols-[6.5rem_1fr] gap-x-3 gap-y-1.5 text-sm">
+                    <Detail label="Product" value={selected.productType} />
+                    <Detail
+                      label="Quantity"
+                      value={selected.quantity?.toString()}
+                    />
+                    <Detail label="Size" value={formatQuoteDims(selected)} />
+                    <Detail label="Zip" value={selected.zip} />
+                    <Detail
+                      label="Material"
+                      value={quoteOptionLabel("material", selected.material)}
+                    />
+                    <Detail
+                      label="Color"
+                      value={quoteOptionLabel("color", selected.color)}
+                    />
+                    <Detail
+                      label="Printing"
+                      value={quoteOptionLabel("printing", selected.printing)}
+                    />
+                    <Detail
+                      label="Coating"
+                      value={quoteOptionLabel("coating", selected.coating)}
+                    />
+                    <Detail
+                      label="Thickness"
+                      value={quoteOptionLabel("thickness", selected.thickness)}
+                    />
+                    <Detail
+                      label="Add-on"
+                      value={quoteOptionLabel("addOn", selected.addOn)}
+                    />
+                  </dl>
+                </section>
+                <section className="border-t border-border/60 p-4 sm:col-span-2">
+                  <h3 className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                    Project details
+                  </h3>
+                  <p className="whitespace-pre-wrap text-sm">
+                    {displayValue(selected.notes)}
+                  </p>
+                </section>
+              </div>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
 
       <ConfirmDeleteDialog
         open={Boolean(deleteTarget)}
         onOpenChange={(open) => {
           if (!open) setDeleteTarget(null);
         }}
-        itemLabel={deleteTarget ? fullName(deleteTarget) : undefined}
+        itemLabel={deleteTarget ? quoteFullName(deleteTarget) : undefined}
         description={
           deleteTarget
-            ? `Delete the quote from ${fullName(deleteTarget)}? This cannot be undone.`
+            ? `Delete the quote from ${quoteFullName(deleteTarget)}? This cannot be undone.`
             : undefined
         }
         loading={deleting}
@@ -334,11 +455,9 @@ export function AdminQuotesManager() {
 
 function Detail({ label, value }: { label: string; value?: string | null }) {
   return (
-    <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-0.5 whitespace-pre-wrap">{value?.trim() || "—"}</p>
-    </div>
+    <>
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="min-w-0 break-words">{displayValue(value)}</dd>
+    </>
   );
 }

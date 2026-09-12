@@ -300,33 +300,30 @@ export function Home2QuoteSection({ content }: Home2QuoteSectionProps) {
   return (
     <section className="home2-quote" aria-label="Order process and custom quote">
       <div className="home2-quote__shell">
-        <div className="home2-quote__layout">
-          <aside className="home2-quote__aside">
-            <header className="home2-quote__intro">
-              <p className="home2-quote__eyebrow">
-                <span className="home2-quote__eyebrow-dot" />
-                How it works
-              </p>
-              <h2 className="home2-quote__process-title">{content.processTitle}</h2>
-            </header>
+        <header className="home2-quote__intro">
+          <p className="home2-quote__eyebrow">
+            <span className="home2-quote__eyebrow-dot" />
+            How it works
+          </p>
+          <h2 className="home2-quote__process-title">{content.processTitle}</h2>
+        </header>
 
-            <ol className="home2-quote__timeline">
-              {content.steps.map((item, index) => (
-                <li key={item.id} className="home2-quote__timeline-item">
-                  <span className="home2-quote__timeline-node" aria-hidden="true">
-                    {index + 1}
-                  </span>
-                  <div className="home2-quote__timeline-copy">
-                    <h3 className="home2-quote__timeline-title">{item.title}</h3>
-                    <p className="home2-quote__timeline-text">{item.description}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </aside>
+        <ol className="home2-quote__timeline">
+          {content.steps.map((item, index) => (
+            <li key={item.id} className="home2-quote__timeline-item">
+              <span className="home2-quote__timeline-node" aria-hidden="true">
+                {index + 1}
+              </span>
+              <div className="home2-quote__timeline-copy">
+                <h3 className="home2-quote__timeline-title">{item.title}</h3>
+                <p className="home2-quote__timeline-text">{item.description}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
 
-          <div className="home2-quote__panel">
-            <div className="home2-quote__panel-head">
+        <div className="home2-quote__panel">
+          <div className="home2-quote__panel-head">
             <div>
               <h3>{content.formTitle}</h3>
               <p>Share your specs — we’ll reply with a tailored quote.</p>
@@ -732,7 +729,6 @@ export function Home2QuoteSection({ content }: Home2QuoteSectionProps) {
               </div>
             </form>
           )}
-        </div>
         </div>
 
         <div className="home2-quote__queries">
