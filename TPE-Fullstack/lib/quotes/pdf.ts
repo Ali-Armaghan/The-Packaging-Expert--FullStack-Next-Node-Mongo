@@ -25,9 +25,28 @@ const LOGO_SRC = "/images/logo/logo-white.png";
 const HEADER_H = 20;
 const MARGIN = 10;
 
-type LogoImage = HTMLImageElement;
+type LogoAsset = { dataUrl: string; width: number; height: number };
 
-let logoPromise: Promise<LogoImage | null> | null = null;
+let logoPromise: Promise<LogoAsset | null> | null = null;
+
+function blobToDataUrl(blob: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+function imageSize(dataUrl: string) {
+  return new Promise<{ width: number; height: number }>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () =>
+      resolve({ width: image.naturalWidth, height: image.naturalHeight });
+    image.onerror = () => reject(new Error("logo"));
+    image.src = dataUrl;
+  });
+}
 
 function loadLogo() {
   if (!logoPromise) {
@@ -35,18 +54,9 @@ function loadLogo() {
       try {
         const res = await fetch(LOGO_SRC);
         if (!res.ok) return null;
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        try {
-          return await new Promise<LogoImage>((resolve, reject) => {
-            const image = new Image();
-            image.onload = () => resolve(image);
-            image.onerror = () => reject(new Error("logo"));
-            image.src = url;
-          });
-        } finally {
-          URL.revokeObjectURL(url);
-        }
+        const dataUrl = await blobToDataUrl(await res.blob());
+        const size = await imageSize(dataUrl);
+        return { dataUrl, ...size };
       } catch {
         return null;
       }
@@ -64,7 +74,7 @@ function pageSize(doc: jsPDF) {
 
 function drawHeader(
   doc: jsPDF,
-  logo: LogoImage | null,
+  logo: LogoAsset | null,
   title: string,
   subtitle: string,
 ) {
@@ -76,8 +86,15 @@ function drawHeader(
 
   if (logo) {
     const height = 9.5;
-    const width = (logo.naturalWidth / logo.naturalHeight) * height;
-    doc.addImage(logo, "PNG", MARGIN, (HEADER_H - height) / 2, width, height);
+    const width = (logo.width / logo.height) * height;
+    doc.addImage(
+      logo.dataUrl,
+      "PNG",
+      MARGIN,
+      (HEADER_H - height) / 2,
+      width,
+      height,
+    );
   } else {
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
@@ -188,7 +205,7 @@ function quoteCustomerRows(quote: SerializedQuote): Array<[string, string]> {
 
 const kvColumnStyles = {
   0: {
-    cellWidth: 32,
+    cellWidth: 38,
     fontStyle: "bold" as const,
     textColor: MUTED,
     fillColor: LABEL_BG,
@@ -201,58 +218,63 @@ export async function downloadQuotePdf(quote: SerializedQuote) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const ref = quoteRef(quote);
   const subtitle = `${ref}  ·  ${formatQuoteDate(quote.createdAt, true)}`;
-
   const paintChrome = () => drawHeader(doc, logo, "Quote request", subtitle);
-  const startY = HEADER_H + 6;
-  const gap = 3;
-  const tableWidth = (pageSize(doc).w - MARGIN * 2 - gap) / 2;
+  const pageMargins = {
+    left: MARGIN,
+    right: MARGIN,
+    top: HEADER_H + 5,
+    bottom: 12,
+  };
   const customer = quoteCustomerRows(quote);
   const specs = quoteSpecRows(quote);
 
-  const leftY = drawTable(
+  let y = drawTable(
     doc,
     compactTable({
-      startY,
-      margin: { left: MARGIN, right: MARGIN + tableWidth + gap, top: HEADER_H + 5, bottom: 12 },
-      tableWidth,
+      startY: HEADER_H + 6,
+      margin: pageMargins,
       showHead: "everyPage",
       head: [["Customer", ""]],
       body: customer,
       columnStyles: kvColumnStyles,
-      didDrawPage: paintChrome,
+      willDrawPage: paintChrome,
     }),
   );
 
-  const rightY = drawTable(
+  y = drawTable(
     doc,
     compactTable({
-      startY,
-      margin: { left: MARGIN + tableWidth + gap, right: MARGIN, top: HEADER_H + 5, bottom: 12 },
-      tableWidth,
+      startY: y + 3.5,
+      margin: pageMargins,
       showHead: "everyPage",
       head: [["Specifications", ""]],
       body: specs.length ? specs : [["Details", "—"]],
       columnStyles: kvColumnStyles,
-      didDrawPage: paintChrome,
+      willDrawPage: paintChrome,
     }),
   );
 
-  let y = Math.max(leftY, rightY) + 4;
   const notes = quote.notes?.trim();
   if (notes) {
-    y = drawTable(
+    drawTable(
       doc,
       compactTable({
-        startY: y,
-        margin: { left: MARGIN, right: MARGIN, top: HEADER_H + 5, bottom: 12 },
+        startY: y + 3.5,
+        margin: pageMargins,
         head: [["Project details"]],
         body: [[notes]],
         alternateRowStyles: { fillColor: [255, 255, 255] },
         styles: {
+          font: "helvetica",
           fontSize: 8,
+          textColor: INK,
+          lineColor: LINE,
+          lineWidth: 0.15,
           cellPadding: { top: 2.2, bottom: 2.2, left: 2.4, right: 2.4 },
+          overflow: "linebreak",
           valign: "top",
         },
+        willDrawPage: paintChrome,
       }),
     );
   }
@@ -266,7 +288,6 @@ export async function downloadQuotesListPdf(quotes: SerializedQuote[]) {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const generated = formatQuoteDate(new Date().toISOString(), true);
   const subtitle = `${quotes.length} record${quotes.length === 1 ? "" : "s"}  ·  ${generated}`;
-
   const paintChrome = () => drawHeader(doc, logo, "Quote requests", subtitle);
 
   drawTable(
@@ -325,7 +346,7 @@ export async function downloadQuotesListPdf(quotes: SerializedQuote[]) {
         7: { cellWidth: 24 },
         8: { cellWidth: "auto" },
       },
-      didDrawPage: paintChrome,
+      willDrawPage: paintChrome,
     }),
   );
 
