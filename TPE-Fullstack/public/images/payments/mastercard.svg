@@ -1,7 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" fill="none">
-  <rect width="48" height="32" rx="6" fill="#111"/>
-  <circle cx="13.6" cy="16" r="6.4" fill="#EB001B"/>
-  <circle cx="20.8" cy="16" r="6.4" fill="#F79E1B"/>
-  <path fill="#FF5F00" d="M17.2 11.15a6.4 6.4 0 0 0 0 9.7 6.4 6.4 0 0 0 0-9.7Z"/>
-  <text x="35.4" y="18.4" text-anchor="middle" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="6.2" font-weight="700">mastercard</text>
+  <defs>
+    <clipPath id="mc-card">
+      <rect width="48" height="32" rx="5.5"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#mc-card)">
+    <rect width="48" height="32" fill="#000"/>
+    <g transform="translate(4.6 4) scale(0.0388)">
+      <path fill="#EB001B" d="m308 0a309 309 0 1 0 2 0z"/>
+      <path fill="#F79E1B" d="m690 0a309 309 0 1 0 2 0z"/>
+      <path fill="#FF5F00" d="m500 66a309 309 0 0 0 0 486 309 309 0 0 0 0-486"/>
+    </g>
+  </g>
 </svg>
