@@ -9,7 +9,6 @@ import {
   footerLinkGroups,
   paymentMethods,
   socialLinks,
-  type PaymentMethodId,
 } from "@/constants/footer";
 
 function SocialIcon({ icon }: { icon: (typeof socialLinks)[number]["icon"] }) {
@@ -38,95 +37,6 @@ function SocialIcon({ icon }: { icon: (typeof socialLinks)[number]["icon"] }) {
       return (
         <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.062 2.062 0 114.127 0 2.062 2.062 0 01-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-        </svg>
-      );
-  }
-}
-
-function PaymentIcon({ id }: { id: PaymentMethodId }) {
-  switch (id) {
-    case "visa":
-      return (
-        <svg viewBox="0 0 48 32" className="h-5 w-8" aria-hidden="true">
-          <rect width="48" height="32" rx="4" fill="#1A1F71" />
-          <text
-            x="24"
-            y="20.5"
-            textAnchor="middle"
-            fill="#fff"
-            fontSize="11"
-            fontWeight="700"
-            fontStyle="italic"
-            fontFamily="Arial, Helvetica, sans-serif"
-            letterSpacing="1"
-          >
-            VISA
-          </text>
-        </svg>
-      );
-    case "mastercard":
-      return (
-        <svg viewBox="0 0 48 32" className="h-5 w-8" aria-hidden="true">
-          <rect width="48" height="32" rx="4" fill="#fff" />
-          <circle cx="19.5" cy="16" r="7.2" fill="#EB001B" />
-          <circle cx="28.5" cy="16" r="7.2" fill="#F79E1B" />
-          <path
-            fill="#FF5F00"
-            d="M24 10.7a7.18 7.18 0 0 0-2.5 5.3A7.18 7.18 0 0 0 24 21.3a7.18 7.18 0 0 0 2.5-5.3A7.18 7.18 0 0 0 24 10.7z"
-          />
-        </svg>
-      );
-    case "amex":
-      return (
-        <svg viewBox="0 0 48 32" className="h-5 w-8" aria-hidden="true">
-          <rect width="48" height="32" rx="4" fill="#2E77BC" />
-          <text
-            x="24"
-            y="20.5"
-            textAnchor="middle"
-            fill="#fff"
-            fontSize="9"
-            fontWeight="700"
-            fontFamily="Arial, Helvetica, sans-serif"
-            letterSpacing="0.5"
-          >
-            AMEX
-          </text>
-        </svg>
-      );
-    case "paypal":
-      return (
-        <svg viewBox="0 0 48 32" className="h-5 w-8" aria-hidden="true">
-          <rect width="48" height="32" rx="4" fill="#fff" />
-          <path
-            fill="#003087"
-            d="M19.1 8.2h-5.2c-.35 0-.65.25-.7.6L11 22.4c-.03.2.12.38.33.38h2.55c.35 0 .65-.25.7-.6l.55-3.5c.05-.35.35-.6.7-.6h1.85c3.7 0 5.85-1.8 6.4-5.35.3-1.9-.05-3.2-.95-4.05-.85-.85-2.2-1.28-3.83-1.28zm.55 5.25c-.3 2-1.85 2-3.35 2h-.85l.6-3.75c.03-.2.2-.35.4-.35h.55c1 0 1.95 0 2.45.55.3.35.35.9.2 1.55z"
-          />
-          <path
-            fill="#009CDE"
-            d="M33.1 13.5h-2.4c-.2 0-.38.15-.4.35l-.1.55-.15-.25c-.55-.8-1.8-1.05-3-1.05-2.25 0-4.15 1.7-4.5 4.05-.2 1.2.05 2.3.7 3.15.6.8 1.5 1.1 2.5 1.1 1.8 0 2.8-1.15 2.8-1.15l-.1.55c-.03.2.12.4.33.4h2.2c.35 0 .65-.25.7-.6l1.15-6.85c.03-.2-.12-.35-.33-.35zm-3.4 4.7c-.2 1.15-1.15 1.95-2.3 1.95-.6 0-1.05-.2-1.35-.55-.3-.4-.4-.9-.3-1.45.2-1.15 1.15-1.95 2.3-1.95.6 0 1.05.2 1.35.55.3.35.4.9.3 1.45z"
-          />
-        </svg>
-      );
-    case "apple-pay":
-      return (
-        <svg viewBox="0 0 48 32" className="h-5 w-8" aria-hidden="true">
-          <rect width="48" height="32" rx="4" fill="#fff" />
-          <path
-            fill="#111"
-            d="M14.85 10.55c.4-.5.7-1.15.6-1.85-.65.05-1.4.4-1.85.95-.4.45-.8 1.2-.7 1.9.7.05 1.4-.4 1.95-.999zm.55.95c-1.05-.05-1.95.6-2.45.6s-1.25-.55-2.1-.55c-1.1 0-2.1.65-2.65 1.65-1.15 2-.3 4.9.8 6.5.55.8 1.15 1.65 1.95 1.6.8-.05 1.1-.5 2.05-.5s1.2.5 2.05.5c.85 0 1.4-.8 1.95-1.55.6-.9.85-1.75.85-1.8 0 0-1.65-.65-1.65-2.5 0-1.55 1.3-2.3 1.35-2.35-.75-1.1-1.9-1.2-2.15-1.2z"
-          />
-          <text
-            x="32"
-            y="20.5"
-            textAnchor="middle"
-            fill="#111"
-            fontSize="10"
-            fontWeight="600"
-            fontFamily="Arial, Helvetica, sans-serif"
-          >
-            Pay
-          </text>
         </svg>
       );
   }
@@ -212,15 +122,17 @@ export function Footer() {
             reserved.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5">
+          <div className="flex flex-wrap items-center justify-center gap-2">
             {paymentMethods.map((method) => (
-              <span
-                key={method.id}
-                title={method.label}
-                aria-label={method.label}
-                className="inline-flex h-8 items-center justify-center overflow-hidden rounded-md border border-white/15 bg-white shadow-sm"
-              >
-                <PaymentIcon id={method.id} />
+              <span key={method.id} title={method.label}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={method.src}
+                  alt={method.label}
+                  width={48}
+                  height={32}
+                  className="h-8 w-auto"
+                />
               </span>
             ))}
           </div>

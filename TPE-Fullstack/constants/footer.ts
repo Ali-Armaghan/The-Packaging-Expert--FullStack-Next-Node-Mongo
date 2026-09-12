@@ -58,11 +58,11 @@ export const socialLinks = [
 ] as const;
 
 export const paymentMethods = [
-  { id: "visa", label: "Visa" },
-  { id: "mastercard", label: "Mastercard" },
-  { id: "amex", label: "Amex" },
-  { id: "paypal", label: "PayPal" },
-  { id: "apple-pay", label: "Apple Pay" },
+  { id: "visa", label: "Visa", src: "/images/payments/visa.svg" },
+  { id: "mastercard", label: "Mastercard", src: "/images/payments/mastercard.svg" },
+  { id: "amex", label: "Amex", src: "/images/payments/amex.svg" },
+  { id: "paypal", label: "PayPal", src: "/images/payments/paypal.svg" },
+  { id: "apple-pay", label: "Apple Pay", src: "/images/payments/apple-pay.svg" },
 ] as const;
 
 export type PaymentMethodId = (typeof paymentMethods)[number]["id"];
