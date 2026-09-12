@@ -130,10 +130,14 @@ function Home2Rail({
     const el = scrollerRef.current;
     if (!el) return;
     const item = el.querySelector<HTMLElement>(itemSelector);
-    const gap = 16;
-    const amount = (item?.offsetWidth ?? 280) + gap;
+    const styles = getComputedStyle(el);
+    const gap =
+      Number.parseFloat(styles.columnGap || styles.gap || "0") || 16;
+    const itemWidth = item?.offsetWidth ?? 280;
+    const stride = itemWidth + gap;
+    const visible = Math.max(1, Math.floor((el.clientWidth + gap) / stride));
     el.scrollBy({
-      left: dir === "next" ? amount : -amount,
+      left: dir === "next" ? stride * visible : -stride * visible,
       behavior: "smooth",
     });
   };
@@ -303,6 +307,7 @@ export function Home2Catalog({ content }: Home2CatalogProps) {
           <Home2Rail
             label="Styles"
             itemSelector="[data-style-slide]"
+            className="home2-rail--styles"
             leading={
               <>
                 <p className="home2-vision__eyebrow">

@@ -1502,8 +1502,13 @@
 }
 
 @media (min-width: 1024px) {
+  .home2-rail--categories .home2-rail__track {
+    scroll-padding-inline: 0;
+  }
+
   .home2-catalog__slide {
-    flex-basis: calc((100% - 2.7rem) / 3.35);
+    flex: 0 0 calc((100% - 2.7rem) / 4);
+    max-width: calc((100% - 2.7rem) / 4);
   }
 }
 
@@ -1582,8 +1587,24 @@
 }
 
 @media (min-width: 1024px) {
+  .home2-rail--styles .home2-rail__track {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.9rem;
+    overflow: visible;
+    scroll-snap-type: none;
+    padding-bottom: 0.15rem;
+  }
+
+  .home2-rail--styles .home2-rail__nav,
+  .home2-rail--styles .home2-rail__dots {
+    display: none;
+  }
+
   .home2-catalog__style-slide {
-    flex-basis: calc((100% - 2.7rem) / 3.2);
+    flex: none;
+    width: auto;
+    min-width: 0;
   }
 }
 
