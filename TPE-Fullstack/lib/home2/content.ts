@@ -917,55 +917,55 @@ export const home2Process: Home2ProcessContent = {
   ],
 };
 
-export const home2Testimonials: Home2TestimonialsContent = {
-  eyebrow: "Social proof",
-  title: "Brands that unbox with confidence.",
-  subtitle: "Real teams shipping real product — and reordering when it works.",
-  items: [
-    {
-      id: "sarah",
-      quote:
-        "Packaging Expert made our launch packaging effortless. The quality exceeded expectations and our customers love the unboxing experience.",
-      name: "Sarah Mitchell",
-      role: "Founder, Glow Cosmetics",
-    },
-    {
-      id: "james",
-      quote:
-        "From design proofs to delivery, the team was responsive and professional. We reordered three times already.",
-      name: "James Chen",
-      role: "Operations, Bean & Brew Co.",
-    },
-    {
-      id: "emily",
-      quote:
-        "Custom sizing and low minimums made it easy for our small business to get premium packaging without breaking the budget.",
-      name: "Emily Rodriguez",
-      role: "CEO, Sweet Crumb Bakery",
-    },
-    {
-      id: "david",
-      quote:
-        "The sustainability options were a big win for our brand. Great print quality and fast turnaround every time.",
-      name: "David Park",
-      role: "Brand Manager, Native Goods",
-    },
-    {
-      id: "aisha",
-      quote:
-        "Our rigid boxes looked exactly like the proof. Unboxing photos from customers basically became our ads.",
-      name: "Aisha Khan",
-      role: "Creative Lead, Lumen Beauty",
-    },
-    {
-      id: "marcus",
-      quote:
-        "Clear pricing, quick samples, and a specialist who actually understood food packaging requirements.",
-      name: "Marcus Lee",
-      role: "Owner, Hearth & Crumb",
-    },
-  ],
-};
+// export const home2Testimonials: Home2TestimonialsContent = {
+//   eyebrow: "Social proof",
+//   title: "Brands that unbox with confidence.",
+//   subtitle: "Real teams shipping real product — and reordering when it works.",
+//   items: [
+//     {
+//       id: "sarah",
+//       quote:
+//         "Packaging Expert made our launch packaging effortless. The quality exceeded expectations and our customers love the unboxing experience.",
+//       name: "Sarah Mitchell",
+//       role: "Founder, Glow Cosmetics",
+//     },
+//     {
+//       id: "james",
+//       quote:
+//         "From design proofs to delivery, the team was responsive and professional. We reordered three times already.",
+//       name: "James Chen",
+//       role: "Operations, Bean & Brew Co.",
+//     },
+//     {
+//       id: "emily",
+//       quote:
+//         "Custom sizing and low minimums made it easy for our small business to get premium packaging without breaking the budget.",
+//       name: "Emily Rodriguez",
+//       role: "CEO, Sweet Crumb Bakery",
+//     },
+//     {
+//       id: "david",
+//       quote:
+//         "The sustainability options were a big win for our brand. Great print quality and fast turnaround every time.",
+//       name: "David Park",
+//       role: "Brand Manager, Native Goods",
+//     },
+//     {
+//       id: "aisha",
+//       quote:
+//         "Our rigid boxes looked exactly like the proof. Unboxing photos from customers basically became our ads.",
+//       name: "Aisha Khan",
+//       role: "Creative Lead, Lumen Beauty",
+//     },
+//     {
+//       id: "marcus",
+//       quote:
+//         "Clear pricing, quick samples, and a specialist who actually understood food packaging requirements.",
+//       name: "Marcus Lee",
+//       role: "Owner, Hearth & Crumb",
+//     },
+//   ],
+// };
 
 export type Home2FaqItem = {
   id: string;

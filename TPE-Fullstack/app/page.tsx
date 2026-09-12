@@ -9,7 +9,7 @@ import { Home2Marquee } from "@/components/home2/sections/Home2Marquee";
 import { Home2Pillars } from "@/components/home2/sections/Home2Pillars";
 import { Home2Process } from "@/components/home2/sections/Home2Process";
 import { Home2QuoteSection } from "@/components/home2/sections/Home2QuoteSection";
-import { Home2Testimonials } from "@/components/home2/sections/Home2Testimonials";
+// import { Home2Testimonials } from "@/components/home2/sections/Home2Testimonials";
 import { Home2Vision } from "@/components/home2/sections/Home2Vision";
 import {
   home2Catalog,
@@ -22,7 +22,7 @@ import {
   home2Pillars,
   home2Process,
   home2Quote,
-  home2Testimonials,
+  // home2Testimonials,
   home2Vision,
 } from "@/lib/home2/content";
 
@@ -44,7 +44,7 @@ export default function HomePage() {
       <Home2Industries content={home2Industries} />
       <Home2Process content={home2Process} />
       <Home2QuoteSection content={home2Quote} />
-      <Home2Testimonials content={home2Testimonials} />
+      {/* <Home2Testimonials content={home2Testimonials} /> */}
       <Home2Faq content={home2Faq} />
       <Home2Closing content={home2Closing} />
     </div>
