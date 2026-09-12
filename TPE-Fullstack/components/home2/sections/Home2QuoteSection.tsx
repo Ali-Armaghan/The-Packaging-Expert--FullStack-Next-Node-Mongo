@@ -353,8 +353,17 @@ export function Home2QuoteSection({ content }: Home2QuoteSectionProps) {
             </div>
           ) : (
             <form className="home2-quote__form" onSubmit={handleSubmit} noValidate>
-              <ol className="home2-quote__stepper" aria-label="Quote form steps">
-                {FORM_STEPS.map((item, index) => {
+              <ol
+                className="home2-quote__stepper"
+                aria-label="Quote form steps"
+                style={{
+                  ["--quote-progress" as string]:
+                    FORM_STEPS.length > 1
+                      ? (step - 1) / (FORM_STEPS.length - 1)
+                      : 0,
+                }}
+              >
+                {FORM_STEPS.map((item) => {
                   const state =
                     item.id === step
                       ? "active"
@@ -363,16 +372,6 @@ export function Home2QuoteSection({ content }: Home2QuoteSectionProps) {
                         : "todo";
                   return (
                     <li key={item.id} className="home2-quote__stepper-item">
-                      {index > 0 ? (
-                        <span
-                          className={
-                            item.id <= step
-                              ? "home2-quote__stepper-line home2-quote__stepper-line--on"
-                              : "home2-quote__stepper-line"
-                          }
-                          aria-hidden="true"
-                        />
-                      ) : null}
                       <button
                         type="button"
                         className={`home2-quote__stepper-btn home2-quote__stepper-btn--${state}`}
@@ -398,18 +397,8 @@ export function Home2QuoteSection({ content }: Home2QuoteSectionProps) {
                 })}
               </ol>
 
-              <div
-                className="home2-quote__progress"
-                aria-hidden="true"
-              >
-                <span style={{ width: `${(step / FORM_STEPS.length) * 100}%` }} />
-              </div>
-
               <div key={step} className="home2-quote__body">
               <div className="home2-quote__step-head">
-                <p className="home2-quote__step-kicker">
-                  Step {step} of {FORM_STEPS.length}
-                </p>
                 <h4 className="home2-quote__step-title">{activeMeta.title}</h4>
                 <p className="home2-quote__step-hint">{activeMeta.hint}</p>
               </div>

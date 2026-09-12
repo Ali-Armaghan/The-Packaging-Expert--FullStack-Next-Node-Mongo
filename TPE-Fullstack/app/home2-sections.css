@@ -3307,14 +3307,8 @@
   margin: 0;
   padding: 0;
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.home2-quote__timeline::-webkit-scrollbar {
-  display: none;
 }
 
 .home2-quote__timeline-item {
@@ -3490,51 +3484,57 @@
 }
 
 .home2-quote__stepper {
-  display: flex;
-  align-items: center;
+  --step-dot: 2.05rem;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  position: relative;
+  isolation: isolate;
   list-style: none;
   margin: 0;
-  padding: 0 0 0.95rem;
-  border-bottom: 1px solid rgba(18, 21, 26, 0.07);
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+  padding: 0.1rem 0 0.15rem;
 }
 
-.home2-quote__stepper::-webkit-scrollbar {
-  display: none;
+.home2-quote__stepper::before,
+.home2-quote__stepper::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--step-dot) / 2);
+  left: 12.5%;
+  height: 2px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.home2-quote__stepper::before {
+  right: 12.5%;
+  background: rgba(18, 21, 26, 0.1);
+}
+
+.home2-quote__stepper::after {
+  width: calc(75% * var(--quote-progress, 0));
+  background: #34ad78;
+  transition: width 0.3s ease;
 }
 
 .home2-quote__stepper-item {
+  position: relative;
+  z-index: 1;
   display: flex;
-  align-items: center;
-  flex: 1 1 0;
-  min-width: 3.6rem;
-}
-
-.home2-quote__stepper-line {
-  flex: 1 1 auto;
-  height: 2px;
-  min-width: 0.55rem;
-  margin: 0 0.25rem 1.05rem;
-  background: rgba(18, 21, 26, 0.1);
-  border-radius: 9999px;
-}
-
-.home2-quote__stepper-line--on {
-  background: #34ad78;
+  justify-content: center;
+  min-width: 0;
 }
 
 .home2-quote__stepper-btn {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.28rem;
-  flex-shrink: 0;
+  gap: 0.4rem;
+  width: 100%;
   padding: 0;
   border: none;
   background: none;
-  color: rgba(18, 21, 26, 0.45);
+  color: rgba(18, 21, 26, 0.42);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -3547,19 +3547,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.85rem;
-  height: 1.85rem;
+  width: var(--step-dot);
+  height: var(--step-dot);
   border-radius: 9999px;
-  background: rgba(18, 21, 26, 0.06);
-  font-size: 0.75rem;
+  background: #fff;
+  border: 2px solid rgba(18, 21, 26, 0.1);
+  font-size: 0.78rem;
   font-weight: 750;
   line-height: 1;
+  box-shadow: 0 0 0 4px #fff;
 }
 
 .home2-quote__stepper-label {
   font-size: 0.68rem;
   font-weight: 650;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -3570,8 +3572,8 @@
 
 .home2-quote__stepper-btn--active .home2-quote__stepper-num {
   background: #34ad78;
+  border-color: #34ad78;
   color: #06110c;
-  box-shadow: 0 0 0 4px rgba(52, 173, 120, 0.16);
 }
 
 .home2-quote__stepper-btn--done {
@@ -3580,23 +3582,8 @@
 
 .home2-quote__stepper-btn--done .home2-quote__stepper-num {
   background: #34ad78;
+  border-color: #34ad78;
   color: #06110c;
-}
-
-.home2-quote__progress {
-  height: 3px;
-  margin: 0.15rem 0 0.15rem;
-  overflow: hidden;
-  border-radius: 9999px;
-  background: rgba(18, 21, 26, 0.06);
-}
-
-.home2-quote__progress span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: #34ad78;
-  transition: width 0.28s ease;
 }
 
 .home2-quote__body {
@@ -3619,7 +3606,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .home2-quote__body,
-  .home2-quote__progress span {
+  .home2-quote__stepper::after {
     animation: none;
     transition: none;
   }
@@ -3654,13 +3641,6 @@
   color: rgba(18, 21, 26, 0.52);
 }
 
-.home2-quote__actions {
-  display: flex;
-  align-items: center;
-  justify-content: stretch;
-  gap: 0.6rem;
-}
-
 .home2-quote__back {
   display: inline-flex;
   align-items: center;
@@ -3689,29 +3669,18 @@
   cursor: default;
 }
 
-@media (min-width: 640px) {
-  .home2-quote__actions {
-    justify-content: flex-end;
-  }
-
-  .home2-quote__back,
-  .home2-quote__submit {
-    min-width: 8.5rem;
-  }
-}
-
 .home2-quote__form {
   display: flex;
   flex-direction: column;
-  gap: 0.95rem;
-  padding: 1.05rem 1.15rem 1.15rem;
+  gap: 1.15rem;
+  padding: 1.15rem 1.15rem 1.2rem;
   box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
   .home2-quote__form {
-    padding: 1.15rem 1.5rem 1.4rem;
-    gap: 1.05rem;
+    padding: 1.25rem 1.5rem 1.4rem;
+    gap: 1.25rem;
   }
 }
 
@@ -3869,17 +3838,38 @@
 
 .home2-quote__footer {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
-  padding-top: 0.95rem;
-  margin-top: auto;
+  padding-top: 1rem;
+  margin-top: 0.35rem;
   border-top: 1px solid rgba(18, 21, 26, 0.06);
+}
+
+.home2-quote__hint,
+.home2-quote__error {
+  flex: 1 1 12rem;
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.home2-quote__hint {
+  color: rgba(18, 21, 26, 0.45);
+}
+
+.home2-quote__error {
+  color: #b42318;
 }
 
 .home2-quote__actions {
   display: flex;
   align-items: center;
+  justify-content: stretch;
   gap: 0.6rem;
+  margin-left: auto;
+  width: 100%;
 }
 
 .home2-quote__actions .home2-quote__back,
@@ -3888,25 +3878,18 @@
 }
 
 @media (min-width: 640px) {
-  .home2-quote__footer {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 0.85rem 1rem;
-  }
-
-  .home2-quote__captcha {
-    grid-column: 1 / -1;
-  }
-
   .home2-quote__actions {
     width: auto;
-    justify-content: flex-end;
   }
 
   .home2-quote__actions .home2-quote__back,
   .home2-quote__actions .home2-quote__submit {
     flex: none;
+  }
+
+  .home2-quote__back,
+  .home2-quote__submit {
+    min-width: 8.5rem;
   }
 }
 
@@ -3914,6 +3897,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
+  flex: 1 1 100%;
   font-size: 0.9rem;
   font-weight: 650;
   color: rgba(18, 21, 26, 0.7);
@@ -3947,31 +3931,6 @@
   box-shadow: 0 0 0 3px rgba(52, 173, 120, 0.15);
 }
 
-.home2-quote__hint {
-  margin: 0;
-  font-size: 0.84rem;
-  color: rgba(18, 21, 26, 0.45);
-}
-
-@media (min-width: 720px) {
-  .home2-quote__hint {
-    text-align: center;
-  }
-}
-
-.home2-quote__error {
-  margin: 0;
-  font-size: 0.86rem;
-  line-height: 1.4;
-  color: #b42318;
-}
-
-@media (min-width: 720px) {
-  .home2-quote__error {
-    text-align: center;
-  }
-}
-
 .home2-quote__submit {
   display: inline-flex;
   align-items: center;
@@ -3994,7 +3953,7 @@
 
 @media (max-width: 719px) {
   .home2-quote__submit {
-    width: 100%;
+    min-width: 0;
   }
 }
 
@@ -4044,9 +4003,9 @@
 }
 
 .home2-quote__queries {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
   padding: 1.15rem 1.2rem;
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.7);
@@ -4055,11 +4014,17 @@
 
 @media (min-width: 900px) {
   .home2-quote__queries {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+    flex-direction: row;
     align-items: center;
+    justify-content: space-between;
     gap: 1.5rem;
-    padding: 1.25rem 1.5rem;
+    padding: 1.2rem 1.5rem;
   }
+}
+
+.home2-quote__queries-copy {
+  min-width: 0;
+  max-width: 28rem;
 }
 
 .home2-quote__queries-title {
@@ -4077,35 +4042,28 @@
 }
 
 .home2-quote__topics {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-@media (max-width: 480px) {
+@media (min-width: 900px) {
   .home2-quote__topics {
-    grid-template-columns: 1fr;
-    gap: 0.45rem;
-  }
-}
-
-@media (min-width: 640px) {
-  .home2-quote__topics {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    justify-content: flex-end;
+    flex: 1 1 auto;
   }
 }
 
 .home2-quote__topic {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  width: 100%;
-  min-height: 2.55rem;
-  padding: 0.5rem 0.65rem;
+  min-height: 2.4rem;
+  padding: 0.45rem 0.85rem;
   border: 1px solid rgba(52, 173, 120, 0.35);
   border-radius: 9999px;
   background: #fff;
@@ -4114,8 +4072,8 @@
   font-weight: 650;
   text-decoration: none;
   text-align: center;
+  white-space: nowrap;
   box-sizing: border-box;
-  word-break: break-word;
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
