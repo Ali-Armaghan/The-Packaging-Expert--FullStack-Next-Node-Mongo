@@ -5,6 +5,7 @@ export { AdminPlaceholder } from "./AdminPlaceholder";
 export { AdminProviders } from "./AdminProviders";
 export { AdminLoginForm } from "./AdminLoginForm";
 export { AdminUsersManager } from "./AdminUsersManager";
+export { AdminQuotesManager } from "./AdminQuotesManager";
 export { AdminIndustriesManager } from "./AdminIndustriesManager";
 export { AdminGroupByManager } from "./AdminGroupByManager";
 export { AdminGroupByEditor } from "./AdminGroupByEditor";

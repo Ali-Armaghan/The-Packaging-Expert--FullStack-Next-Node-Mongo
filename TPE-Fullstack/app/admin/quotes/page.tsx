@@ -1,10 +1,5 @@
-import { AdminPlaceholder } from "@/components/admin";
+import { AdminQuotesManager } from "@/components/admin/AdminQuotesManager";
 
 export default function AdminQuotesPage() {
-  return (
-    <AdminPlaceholder
-      title="Quotes"
-      description="Review and update custom packaging quote requests."
-    />
-  );
+  return <AdminQuotesManager />;
 }

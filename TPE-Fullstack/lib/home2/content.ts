@@ -1059,6 +1059,7 @@ export type Home2QuoteContent = {
   coatings: Home2QuoteSelectOption[];
   thicknesses: Home2QuoteSelectOption[];
   units: Home2QuoteSelectOption[];
+  addOns: Home2QuoteSelectOption[];
 };
 
 export const home2Quote: Home2QuoteContent = {
@@ -1145,6 +1146,8 @@ export const home2Quote: Home2QuoteContent = {
     { value: "cm", label: "cm" },
     { value: "mm", label: "mm" },
   ],
+  // Options will be filled in next — dropdown already wired up.
+  addOns: [],
 };
 
 export const home2Closing: Home2ClosingContent = {

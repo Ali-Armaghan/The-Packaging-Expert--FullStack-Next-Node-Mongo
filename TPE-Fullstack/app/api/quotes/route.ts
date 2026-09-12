@@ -1,5 +1,6 @@
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { apiError, apiFromUnknownError, apiSuccess } from "@/lib/api/response";
+import { applyQuotePayload } from "@/lib/quotes/persist";
 import { quoteRequestSchema } from "@/lib/validations/quote";
 import { QuoteRequest } from "@/models/QuoteRequest";
 
@@ -10,36 +11,34 @@ export async function POST(request: Request) {
 
     await connectToDatabase();
 
-    const hasDimensions =
-      payload.length !== undefined ||
-      payload.width !== undefined ||
-      payload.height !== undefined;
-
-    const doc = await QuoteRequest.create({
+    const doc = new QuoteRequest({
       firstName: payload.firstName,
       lastName: payload.lastName,
       email: payload.email,
-      phone: payload.phone,
-      company: payload.company,
-      productType: payload.productType,
-      industry: payload.industry,
-      quantity: payload.quantity,
-      dimensions: hasDimensions
-        ? {
-            length: payload.length,
-            width: payload.width,
-            height: payload.height,
-            unit: payload.unit ?? "in",
-          }
-        : undefined,
-      notes: payload.notes,
-      status: "new",
+      status: payload.complete ? "new" : "draft",
+      currentStep: payload.step ?? 1,
     });
+
+    applyQuotePayload(doc, payload);
+
+    if (payload.complete && !doc.productType) {
+      return apiError("Product name is required to submit a quote", 400);
+    }
+
+    if (payload.complete) {
+      doc.status = "new";
+    }
+
+    await doc.save();
 
     return apiSuccess(
       {
         id: String(doc._id),
-        message: "Quote request received",
+        status: doc.status,
+        step: doc.currentStep,
+        message: payload.complete
+          ? "Quote request received"
+          : "Quote draft saved",
       },
       201,
     );

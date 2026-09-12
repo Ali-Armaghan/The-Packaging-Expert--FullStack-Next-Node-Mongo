@@ -1,4 +1,4 @@
-import { Schema, models, model, type InferSchemaType, type Model } from "mongoose";
+import mongoose, { Schema, model, type InferSchemaType, type Model } from "mongoose";
 
 const quoteRequestSchema = new Schema(
   {
@@ -7,7 +7,7 @@ const quoteRequestSchema = new Schema(
     email: { type: String, required: true, trim: true, lowercase: true, maxlength: 160 },
     phone: { type: String, trim: true, maxlength: 40 },
     company: { type: String, trim: true, maxlength: 120 },
-    productType: { type: String, required: true, trim: true, maxlength: 120 },
+    productType: { type: String, trim: true, maxlength: 120, default: "" },
     industry: { type: String, trim: true, maxlength: 120 },
     quantity: { type: Number, min: 1 },
     dimensions: {
@@ -16,11 +16,19 @@ const quoteRequestSchema = new Schema(
       height: { type: Number, min: 0 },
       unit: { type: String, enum: ["in", "cm", "mm"], default: "in" },
     },
+    zip: { type: String, trim: true, maxlength: 20 },
+    material: { type: String, trim: true, maxlength: 120 },
+    color: { type: String, trim: true, maxlength: 120 },
+    printing: { type: String, trim: true, maxlength: 120 },
+    coating: { type: String, trim: true, maxlength: 120 },
+    thickness: { type: String, trim: true, maxlength: 80 },
+    addOn: { type: String, trim: true, maxlength: 160 },
     notes: { type: String, trim: true, maxlength: 5000 },
+    currentStep: { type: Number, min: 1, max: 4, default: 1 },
     status: {
       type: String,
-      enum: ["new", "contacted", "quoted", "closed"],
-      default: "new",
+      enum: ["draft", "new", "contacted", "quoted", "closed"],
+      default: "draft",
       index: true,
     },
   },
@@ -35,6 +43,9 @@ export type QuoteRequestDocument = InferSchemaType<typeof quoteRequestSchema> & 
   _id: Schema.Types.ObjectId;
 };
 
+if (mongoose.models.QuoteRequest) {
+  delete mongoose.models.QuoteRequest;
+}
+
 export const QuoteRequest: Model<QuoteRequestDocument> =
-  models.QuoteRequest ||
   model<QuoteRequestDocument>("QuoteRequest", quoteRequestSchema);
