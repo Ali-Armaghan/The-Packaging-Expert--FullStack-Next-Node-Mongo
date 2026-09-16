@@ -7,9 +7,9 @@ import {
   ShieldCheckIcon,
   type LucideIcon,
 } from "lucide-react";
-import { H2_MEDIA } from "@/lib/home2/content";
+import { Home2QuoteSection } from "@/components/home2/sections/Home2QuoteSection";
+import { H2_MEDIA, home2Quote } from "@/lib/home2/content";
 import { Home2ProductGallery } from "./Home2ProductGallery";
-import { Home2ProductPurchasePanel } from "./Home2ProductPurchasePanel";
 import { Home2ProductTabs } from "./Home2ProductTabs";
 import type {
   ProductCardItem,
@@ -97,15 +97,82 @@ export function Home2ProductDetailView({
           <div className="home2-pdp__hero-grid">
             <Home2ProductGallery name={product.name} images={images} />
             <div className="home2-pdp__hero-aside">
-              <Home2ProductPurchasePanel
-                name={product.name}
-                price={product.price}
-                detail={detail}
-              />
+              <div className="home2-pdp__panel">
+                <div className="home2-pdp__panel-head">
+                  <div className="home2-pdp__meta">
+                    {detail.sku ? (
+                      <span className="home2-pdp__sku">SKU {detail.sku}</span>
+                    ) : null}
+                    {product.price ? (
+                      <span className="home2-pdp__price">{product.price}</span>
+                    ) : null}
+                  </div>
+                  <h1 className="home2-pdp__title">{product.name}</h1>
+                  {(detail.summary || "").trim() ? (
+                    <p className="home2-pdp__summary">{detail.summary}</p>
+                  ) : null}
+                  {(product.description || "").trim() &&
+                  (product.description || "").trim() !==
+                    (detail.summary || "").trim() ? (
+                    <p className="home2-pdp__description">
+                      {product.description}
+                    </p>
+                  ) : null}
+
+                  <div className="home2-pdp__stats" aria-label="Product benefits">
+                    <div className="home2-pdp__stat">
+                      <strong>Free</strong>
+                      <span>Design proof</span>
+                    </div>
+                    <div className="home2-pdp__stat">
+                      <strong>Low</strong>
+                      <span>MOQ available</span>
+                    </div>
+                    <div className="home2-pdp__stat">
+                      <strong>8–12</strong>
+                      <span>Day turnaround</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="home2-pdp__info-actions">
+                  <a href="#product-quote" className="home2-pdp__cta">
+                    <span>Request a quote</span>
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M5 12h14M13 6l6 6-6 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </a>
+                  <Link href="/contact" className="home2-pdp__help">
+                    Need help? Talk to us
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      <div id="product-quote" className="home2-pdp__quote-band">
+        <Home2QuoteSection
+          content={home2Quote}
+          variant="section"
+          source={{
+            page: "product",
+            path: `/products/${product.slug}`,
+            product: {
+              id: product.id,
+              slug: product.slug,
+              name: product.name,
+            },
+          }}
+        />
+      </div>
 
       <section className="home2-pdp__info">
         <div className="home2-pdp__info-inner">

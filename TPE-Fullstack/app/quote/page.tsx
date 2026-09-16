@@ -32,7 +32,11 @@ export default function QuotePage() {
         </ul>
       </header>
 
-      <Home2QuoteSection content={home2Quote} variant="page" />
+      <Home2QuoteSection
+        content={home2Quote}
+        variant="page"
+        source={{ page: "quote", path: "/quote" }}
+      />
     </div>
   );
 }

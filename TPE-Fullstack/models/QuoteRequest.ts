@@ -24,6 +24,23 @@ const quoteRequestSchema = new Schema(
     thickness: { type: String, trim: true, maxlength: 80 },
     addOn: { type: String, trim: true, maxlength: 160 },
     notes: { type: String, trim: true, maxlength: 5000 },
+    sourcePage: {
+      type: String,
+      enum: ["home", "quote", "product"],
+    },
+    sourcePath: { type: String, trim: true, maxlength: 300 },
+    productId: { type: String, trim: true, maxlength: 40 },
+    productSlug: { type: String, trim: true, maxlength: 160 },
+    sourceProductName: { type: String, trim: true, maxlength: 160 },
+    journey: [
+      {
+        _id: false,
+        path: { type: String, trim: true, maxlength: 300 },
+        title: { type: String, trim: true, maxlength: 160 },
+        durationMs: { type: Number, min: 0, default: 0 },
+        visitedAt: { type: Date },
+      },
+    ],
     currentStep: { type: Number, min: 1, max: 4, default: 1 },
     status: {
       type: String,

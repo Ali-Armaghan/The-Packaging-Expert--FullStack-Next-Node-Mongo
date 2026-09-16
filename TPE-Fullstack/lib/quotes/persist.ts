@@ -28,6 +28,24 @@ export function applyQuotePayload(
   if (payload.thickness !== undefined) doc.thickness = payload.thickness;
   if (payload.addOn !== undefined) doc.addOn = payload.addOn;
   if (payload.notes !== undefined) doc.notes = payload.notes;
+  if (payload.sourcePage !== undefined) doc.sourcePage = payload.sourcePage;
+  if (payload.sourcePath !== undefined) doc.sourcePath = payload.sourcePath;
+  if (payload.productId !== undefined) doc.productId = payload.productId;
+  if (payload.productSlug !== undefined) doc.productSlug = payload.productSlug;
+  if (payload.sourceProductName !== undefined) {
+    doc.sourceProductName = payload.sourceProductName;
+  }
+  if (payload.journey !== undefined) {
+    doc.set(
+      "journey",
+      payload.journey.map((stop) => ({
+        path: stop.path,
+        title: stop.title || stop.path,
+        durationMs: stop.durationMs,
+        visitedAt: stop.visitedAt ? new Date(stop.visitedAt) : undefined,
+      })),
+    );
+  }
   if (payload.step !== undefined) doc.currentStep = payload.step;
 
   const touchesDimensions =

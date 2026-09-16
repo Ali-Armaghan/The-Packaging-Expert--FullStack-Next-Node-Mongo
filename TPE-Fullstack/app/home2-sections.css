@@ -4023,6 +4023,34 @@
   }
 }
 
+.home2-quote--pdp {
+  background: transparent;
+  padding: 0;
+  overflow: visible;
+  color: #12151a;
+}
+
+.home2-quote--pdp .home2-quote__shell {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+
+.home2-quote--pdp .home2-quote__panel-head {
+  padding: 1rem 1.1rem 0.9rem;
+}
+
+.home2-quote--pdp .home2-quote__form {
+  padding: 0.95rem 1.05rem 1.1rem;
+}
+
+.home2-quote__field input:read-only {
+  background: #f3f5f7;
+  color: #3a4148;
+  cursor: default;
+}
+
 .home2-quote__success {
   display: grid;
   justify-items: center;

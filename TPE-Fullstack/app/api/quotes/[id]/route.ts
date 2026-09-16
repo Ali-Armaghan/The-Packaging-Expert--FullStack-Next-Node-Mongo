@@ -31,6 +31,9 @@ export async function PATCH(request: Request, context: RouteContext) {
       if (!doc.productType) {
         return apiError("Product name is required to submit a quote", 400);
       }
+      if (!doc.quantity) {
+        return apiError("Quantity is required to submit a quote", 400);
+      }
       doc.status = "new";
     }
 

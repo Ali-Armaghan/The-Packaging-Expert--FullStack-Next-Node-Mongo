@@ -25,6 +25,10 @@ export async function POST(request: Request) {
       return apiError("Product name is required to submit a quote", 400);
     }
 
+    if (payload.complete && !doc.quantity) {
+      return apiError("Quantity is required to submit a quote", 400);
+    }
+
     if (payload.complete) {
       doc.status = "new";
     }

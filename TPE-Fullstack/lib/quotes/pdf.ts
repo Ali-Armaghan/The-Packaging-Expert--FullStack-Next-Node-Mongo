@@ -9,9 +9,11 @@ import {
   quoteFullName,
   quoteOptionLabel,
   quoteRef,
+  quoteSourceLabel,
   quoteStatusLabel,
   quoteStepProgress,
 } from "@/lib/quotes/format";
+import { formatVisitDuration } from "@/lib/quotes/journey";
 import type { SerializedQuote } from "@/lib/quotes/serialize";
 
 const GREEN: [number, number, number] = [52, 173, 120];
@@ -198,6 +200,9 @@ function quoteCustomerRows(quote: SerializedQuote): Array<[string, string]> {
     ["Step", quoteStepProgress(quote.status, quote.currentStep)],
     ["Received", formatQuoteDate(quote.createdAt, true)],
     ["Updated", formatQuoteDate(quote.updatedAt, true)],
+    ["Source", quoteSourceLabel(quote)],
+    ["Source page", displayValue(quote.sourcePath)],
+    ["Catalog product", displayValue(quote.sourceProductName)],
   ]);
 }
 
@@ -254,7 +259,7 @@ export async function downloadQuotePdf(quote: SerializedQuote) {
 
   const notes = quote.notes?.trim();
   if (notes) {
-    drawTable(
+    y = drawTable(
       doc,
       compactTable({
         startY: y + 3.5,
@@ -271,6 +276,28 @@ export async function downloadQuotePdf(quote: SerializedQuote) {
           cellPadding: { top: 2.2, bottom: 2.2, left: 2.4, right: 2.4 },
           overflow: "linebreak",
           valign: "top",
+        },
+        willDrawPage: paintChrome,
+      }),
+    );
+  }
+
+  const journey = quote.journey ?? [];
+  if (journey.length > 0) {
+    drawTable(
+      doc,
+      compactTable({
+        startY: y + 3.5,
+        margin: pageMargins,
+        showHead: "everyPage",
+        head: [["Pages visited", "Time"]],
+        body: journey.map((stop) => [
+          `${stop.title || stop.path}\n${stop.path}`,
+          formatVisitDuration(stop.durationMs),
+        ]),
+        columnStyles: {
+          0: { cellWidth: "auto" as const, fontStyle: "normal" as const },
+          1: { cellWidth: 28, fontStyle: "bold" as const, halign: "right" as const },
         },
         willDrawPage: paintChrome,
       }),
@@ -301,6 +328,7 @@ export async function downloadQuotesListPdf(quotes: SerializedQuote[]) {
         "Phone",
         "Product",
         "Qty",
+        "Source",
         "Size",
         "Status",
         "Received",
@@ -312,6 +340,7 @@ export async function downloadQuotesListPdf(quotes: SerializedQuote[]) {
         displayValue(quote.phone),
         displayValue(quote.productType),
         displayValue(quote.quantity),
+        quoteSourceLabel(quote),
         formatQuoteDims(quote),
         quoteStatusLabel(quote.status),
         formatQuoteDate(quote.createdAt, true),
@@ -334,15 +363,16 @@ export async function downloadQuotesListPdf(quotes: SerializedQuote[]) {
         cellPadding: { top: 1.6, bottom: 1.6, left: 1.8, right: 1.8 },
       },
       columnStyles: {
-        0: { cellWidth: 18, fontStyle: "bold" },
-        1: { cellWidth: 36 },
-        2: { cellWidth: 48 },
-        3: { cellWidth: 28 },
-        4: { cellWidth: 36 },
-        5: { cellWidth: 14, halign: "right" },
-        6: { cellWidth: 32 },
-        7: { cellWidth: 24 },
-        8: { cellWidth: "auto" },
+        0: { cellWidth: 16, fontStyle: "bold" },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 40 },
+        3: { cellWidth: 24 },
+        4: { cellWidth: 30 },
+        5: { cellWidth: 12, halign: "right" },
+        6: { cellWidth: 26 },
+        7: { cellWidth: 28 },
+        8: { cellWidth: 20 },
+        9: { cellWidth: "auto" },
       },
       willDrawPage: paintChrome,
     }),

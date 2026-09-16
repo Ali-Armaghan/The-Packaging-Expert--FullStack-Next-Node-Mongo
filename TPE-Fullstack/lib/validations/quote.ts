@@ -39,6 +39,22 @@ export const quoteRequestSchema = z.object({
   thickness: optionalText(80),
   addOn: optionalText(160),
   notes: optionalText(5000),
+  sourcePage: z.enum(["home", "quote", "product"]).optional(),
+  sourcePath: optionalText(300),
+  productId: optionalText(40),
+  productSlug: optionalText(160),
+  sourceProductName: optionalText(160),
+  journey: z
+    .array(
+      z.object({
+        path: z.string().trim().min(1).max(300),
+        title: z.string().trim().max(160).optional().default(""),
+        durationMs: z.coerce.number().int().min(0).max(86_400_000),
+        visitedAt: z.coerce.number().int().optional(),
+      }),
+    )
+    .max(30)
+    .optional(),
   step: z.coerce.number().int().min(1).max(3).optional().default(1),
   complete: z.boolean().optional().default(false),
 });

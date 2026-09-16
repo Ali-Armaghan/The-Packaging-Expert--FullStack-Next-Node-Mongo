@@ -16,12 +16,12 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  padding: 5.5rem 0 3.5rem;
+  padding: 5.5rem 0 2.25rem;
 }
 
 @media (min-width: 768px) {
   .home2-pdp__hero {
-    padding: 6.25rem 0 4.5rem;
+    padding: 6.25rem 0 2.75rem;
   }
 }
 
@@ -90,7 +90,7 @@
 
 @media (min-width: 1024px) {
   .home2-pdp__hero-grid {
-    grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
     gap: 2rem;
   }
 }
@@ -110,7 +110,7 @@
 
 .home2-pdp__stage {
   position: relative;
-  aspect-ratio: 1 / 1.02;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: 1.25rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -244,21 +244,16 @@
 
 .home2-pdp__thumbs {
   display: flex;
-  gap: 0.55rem;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   padding: 0.05rem;
-  scrollbar-width: none;
-}
-
-.home2-pdp__thumbs::-webkit-scrollbar {
-  display: none;
 }
 
 .home2-pdp__thumb {
   position: relative;
-  width: 4.35rem;
-  height: 4.35rem;
-  flex-shrink: 0;
+  width: 4.75rem;
+  height: 4.75rem;
+  flex: 0 0 4.75rem;
   overflow: hidden;
   border-radius: 0.75rem;
   border: 2px solid transparent;
@@ -297,8 +292,31 @@
 @media (min-width: 1024px) {
   .home2-pdp__hero-aside {
     position: sticky;
-    top: 6rem;
+    top: 5.5rem;
   }
+}
+
+.home2-pdp__description {
+  margin: 0.85rem 0 0;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.home2-pdp__info-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 0 1.35rem 1.35rem;
+}
+
+.home2-pdp__info-actions .home2-pdp__cta {
+  flex: none;
+  width: 100%;
+}
+
+.home2-pdp__quote-band {
+  scroll-margin-top: 4.5rem;
 }
 
 .home2-pdp__panel {

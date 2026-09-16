@@ -43,7 +43,7 @@ export default function HomePage() {
       <Home2Vision content={home2Vision} />
       <Home2Industries content={home2Industries} />
       <Home2Process content={home2Process} />
-      <Home2QuoteSection content={home2Quote} />
+      <Home2QuoteSection content={home2Quote} source={{ page: "home", path: "/" }} />
       {/* <Home2Testimonials content={home2Testimonials} /> */}
       <Home2Faq content={home2Faq} />
       <Home2Closing content={home2Closing} />

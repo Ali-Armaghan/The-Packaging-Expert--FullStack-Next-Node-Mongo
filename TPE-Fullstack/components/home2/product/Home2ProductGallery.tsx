@@ -46,6 +46,8 @@ export function Home2ProductGallery({ name, images }: Home2ProductGalleryProps) 
                   index === active && "home2-pdp__stage-img--active",
                 )}
                 draggable={false}
+                fetchPriority={index === 0 ? "high" : undefined}
+                loading={index === 0 ? "eager" : "lazy"}
               />
             ))
           ) : (

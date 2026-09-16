@@ -4,10 +4,16 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { siteConfig } from "@/config/site";
 import type { Home2QuoteContent } from "@/lib/home2/content";
+import {
+  quoteSourcePath,
+  snapshotQuoteJourney,
+  type QuoteFormSource,
+} from "@/lib/quotes/journey";
 
 type Home2QuoteSectionProps = {
   content: Home2QuoteContent;
-  variant?: "section" | "page";
+  variant?: "section" | "page" | "pdp";
+  source?: QuoteFormSource;
 };
 
 type FormStatus = "idle" | "saving" | "success" | "error";
@@ -132,12 +138,28 @@ async function saveQuote(
   return id;
 }
 
+function optionalInteger(value: string): number | undefined {
+  const n = optionalNumber(value);
+  if (n == null) return undefined;
+  const rounded = Math.round(n);
+  return rounded > 0 ? rounded : undefined;
+}
+
 function buildStepPayload(
   step: QuoteStepId,
   values: FormValues,
   complete: boolean,
+  source?: QuoteFormSource,
 ) {
   const { firstName, lastName } = splitName(values.name);
+  const attribution = {
+    sourcePage: source?.page,
+    sourcePath: quoteSourcePath(source),
+    productId: source?.product?.id,
+    productSlug: source?.product?.slug,
+    sourceProductName: source?.product?.name,
+    journey: snapshotQuoteJourney(),
+  };
   const base = {
     firstName,
     lastName,
@@ -145,6 +167,7 @@ function buildStepPayload(
     phone: values.phone.trim() || undefined,
     step,
     complete,
+    ...attribution,
   };
 
   if (step === 1 && !complete) return base;
@@ -157,7 +180,7 @@ function buildStepPayload(
     length: optionalNumber(values.length),
     unit: values.unit,
     zip: values.zip.trim() || undefined,
-    quantity: optionalNumber(values.quantity),
+    quantity: optionalInteger(values.quantity),
     material: values.material || undefined,
     printing: values.printing || undefined,
     coating: values.coating || undefined,
@@ -179,6 +202,7 @@ function validateStep(step: QuoteStepId, values: FormValues, captchaCode: string
     if (!optionalNumber(values.width)) return "Please enter width.";
     if (!optionalNumber(values.height)) return "Please enter height.";
     if (!optionalNumber(values.length)) return "Please enter length.";
+    if (!optionalInteger(values.quantity)) return "Please enter quantity.";
     return null;
   }
 
@@ -329,10 +353,16 @@ function QuoteCaptcha({
 export function Home2QuoteSection({
   content,
   variant = "section",
+  source,
 }: Home2QuoteSectionProps) {
+  const lockedProduct = source?.product?.name?.trim() ?? "";
+  const blankValues = (): FormValues => ({
+    ...INITIAL_VALUES,
+    productName: lockedProduct,
+  });
   const [captchaCode, setCaptchaCode] = useState(randomCaptchaCode);
   const [step, setStep] = useState<QuoteStepId>(1);
-  const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
+  const [values, setValues] = useState<FormValues>(blankValues);
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const quoteIdRef = useRef<string | null>(null);
@@ -377,9 +407,9 @@ export function Home2QuoteSection({
     if (step === 3) {
       setStatus("saving");
       try {
-        await enqueueSave(buildStepPayload(3, values, true));
+        await enqueueSave(buildStepPayload(3, values, true, source));
         quoteIdRef.current = null;
-        setValues(INITIAL_VALUES);
+        setValues(blankValues());
         setCaptchaCode(randomCaptchaCode());
         setStep(1);
         setStatus("success");
@@ -394,7 +424,7 @@ export function Home2QuoteSection({
       return;
     }
 
-    const payload = buildStepPayload(step, values, false);
+    const payload = buildStepPayload(step, values, false, source);
     setStep((step + 1) as QuoteStepId);
     setStatus("idle");
     void enqueueSave(payload).catch((saveError: unknown) => {
@@ -422,7 +452,7 @@ export function Home2QuoteSection({
   const resetForm = () => {
     quoteIdRef.current = null;
     saveChainRef.current = Promise.resolve();
-    setValues(INITIAL_VALUES);
+    setValues(blankValues());
     setCaptchaCode(randomCaptchaCode());
     setStep(1);
     setStatus("idle");
@@ -431,7 +461,7 @@ export function Home2QuoteSection({
 
   return (
     <section
-      className={`home2-quote${variant === "page" ? " home2-quote--page" : ""}`}
+      className={`home2-quote${variant === "page" ? " home2-quote--page" : ""}${variant === "pdp" ? " home2-quote--pdp" : ""}`}
       aria-label="Order process and custom quote"
     >
       <div className="home2-quote__shell">
@@ -445,26 +475,32 @@ export function Home2QuoteSection({
           </header>
         ) : null}
 
-        <ol className="home2-quote__timeline">
-          {content.steps.map((item, index) => (
-            <li key={item.id} className="home2-quote__timeline-item">
-              <span className="home2-quote__timeline-node" aria-hidden="true">
-                {index + 1}
-              </span>
-              <div className="home2-quote__timeline-copy">
-                <h3 className="home2-quote__timeline-title">{item.title}</h3>
-                <p className="home2-quote__timeline-text">{item.description}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
+        {variant !== "pdp" ? (
+          <ol className="home2-quote__timeline">
+            {content.steps.map((item, index) => (
+              <li key={item.id} className="home2-quote__timeline-item">
+                <span className="home2-quote__timeline-node" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <div className="home2-quote__timeline-copy">
+                  <h3 className="home2-quote__timeline-title">{item.title}</h3>
+                  <p className="home2-quote__timeline-text">{item.description}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        ) : null}
 
         <div className="home2-quote__panel">
           {status !== "success" ? (
             <div className="home2-quote__panel-head">
               <div>
-                <h3>{content.formTitle}</h3>
-                <p>Share your specs — we’ll reply with a tailored quote.</p>
+                <h3>{lockedProduct ? "Quote this product" : content.formTitle}</h3>
+                <p>
+                  {lockedProduct
+                    ? `${lockedProduct} will be attached to this request.`
+                    : "Share your specs — we’ll reply with a tailored quote."}
+                </p>
               </div>
               <span className="home2-quote__panel-count">
                 {step}/{FORM_STEPS.length}
@@ -513,7 +549,7 @@ export function Home2QuoteSection({
                 >
                   Send another request
                 </button>
-                {variant === "page" ? (
+                {variant !== "section" ? (
                   <Link href="/" className="home2-quote__back">
                     Back to home
                   </Link>
@@ -622,6 +658,7 @@ export function Home2QuoteSection({
                         name="productName"
                         type="text"
                         required
+                        readOnly={Boolean(lockedProduct)}
                         placeholder="e.g. Rigid gift box"
                         value={values.productName}
                         onChange={(e) => setField("productName", e.target.value)}
@@ -696,12 +733,13 @@ export function Home2QuoteSection({
                   </div>
                   <div className="home2-quote__grid home2-quote__grid--2">
                     <label className="home2-quote__field">
-                      <span>Quantity</span>
+                      <span>Quantity *</span>
                       <input
                         name="quantity"
                         type="number"
                         min="1"
                         step="1"
+                        required
                         placeholder="500"
                         inputMode="numeric"
                         value={values.quantity}
@@ -858,24 +896,26 @@ export function Home2QuoteSection({
           )}
         </div>
 
-        <div className="home2-quote__queries">
-          <div className="home2-quote__queries-copy">
-            <h3 className="home2-quote__queries-title">{content.queriesTitle}</h3>
-            <p className="home2-quote__queries-text">{content.queriesText}</p>
+        {variant !== "pdp" ? (
+          <div className="home2-quote__queries">
+            <div className="home2-quote__queries-copy">
+              <h3 className="home2-quote__queries-title">{content.queriesTitle}</h3>
+              <p className="home2-quote__queries-text">{content.queriesText}</p>
+            </div>
+            <ul className="home2-quote__topics">
+              {content.topics.map((topic) => (
+                <li key={topic.id}>
+                  <Link href="/contact" className="home2-quote__topic">
+                    <span className="home2-quote__check" aria-hidden="true">
+                      ✓
+                    </span>
+                    {topic.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
-          <ul className="home2-quote__topics">
-            {content.topics.map((topic) => (
-              <li key={topic.id}>
-                <Link href="/contact" className="home2-quote__topic">
-                  <span className="home2-quote__check" aria-hidden="true">
-                    ✓
-                  </span>
-                  {topic.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+        ) : null}
       </div>
     </section>
   );

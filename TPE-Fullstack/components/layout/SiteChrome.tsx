@@ -1,6 +1,7 @@
 import { Suspense, type ReactNode } from "react";
 import { ConditionalFooter } from "@/components/layout/Footer";
 import { ConditionalHeader } from "@/components/layout/Header";
+import { QuoteJourneyTracker } from "@/components/quotes/QuoteJourneyTracker";
 import { getCachedAllMenuGroupLinks } from "@/lib/menuLinks/cache";
 import type { PublicMenuLinks } from "@/lib/menuLinks/apply";
 
@@ -26,6 +27,7 @@ async function SiteHeader() {
 export function SiteChrome({ children }: { children: ReactNode }) {
   return (
     <>
+      <QuoteJourneyTracker />
       <Suspense fallback={<ConditionalHeader menuLinks={EMPTY_MENU_LINKS} />}>
         <SiteHeader />
       </Suspense>

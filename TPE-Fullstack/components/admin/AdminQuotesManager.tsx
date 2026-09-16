@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FileDownIcon, Trash2Icon, XIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -42,11 +43,13 @@ import {
   quoteFullName,
   quoteOptionLabel,
   quoteRef,
+  quoteSourceLabel,
   quoteStatusLabel,
   quoteStepProgress,
   QUOTE_STATUS_OPTIONS,
   type QuoteStatus,
 } from "@/lib/quotes/format";
+import { formatVisitDuration } from "@/lib/quotes/journey";
 import { downloadQuotePdf, downloadQuotesListPdf } from "@/lib/quotes/pdf";
 import type { SerializedQuote } from "@/lib/quotes/serialize";
 import { ConfirmDeleteDialog } from "./ConfirmDeleteDialog";
@@ -225,6 +228,7 @@ export function AdminQuotesManager() {
                   <TableRow>
                     <TableHead>Customer</TableHead>
                     <TableHead>Product</TableHead>
+                    <TableHead>Source</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Step</TableHead>
                     <TableHead>Received</TableHead>
@@ -246,6 +250,9 @@ export function AdminQuotesManager() {
                         </div>
                       </TableCell>
                       <TableCell>{quote.productType || "—"}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {quoteSourceLabel(quote)}
+                      </TableCell>
                       <TableCell>
                         <Badge
                           variant={
@@ -376,6 +383,21 @@ export function AdminQuotesManager() {
                       label="Received"
                       value={formatQuoteDate(selected.createdAt)}
                     />
+                    <Detail label="Source" value={quoteSourceLabel(selected)} />
+                    <Detail label="Page" value={selected.sourcePath} />
+                    {selected.productSlug ? (
+                      <>
+                        <dt className="text-muted-foreground">Product page</dt>
+                        <dd className="min-w-0 break-words">
+                          <Link
+                            href={`/products/${selected.productSlug}`}
+                            className="text-primary underline-offset-2 hover:underline"
+                          >
+                            {selected.sourceProductName || selected.productSlug}
+                          </Link>
+                        </dd>
+                      </>
+                    ) : null}
                   </dl>
                 </section>
                 <section className="border-t border-border/60 p-4 sm:border-t-0">
@@ -423,6 +445,41 @@ export function AdminQuotesManager() {
                   <p className="whitespace-pre-wrap text-sm">
                     {displayValue(selected.notes)}
                   </p>
+                </section>
+                <section className="border-t border-border/60 p-4 sm:col-span-2">
+                  <h3 className="mb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                    Pages visited
+                  </h3>
+                  {selected.journey.length > 0 ? (
+                    <ol className="space-y-2 text-sm">
+                      {selected.journey.map((stop, index) => (
+                        <li
+                          key={`${stop.path}-${stop.visitedAt ?? index}`}
+                          className="grid grid-cols-[1.5rem_1fr_auto] items-start gap-2"
+                        >
+                          <span className="text-muted-foreground">{index + 1}.</span>
+                          <div className="min-w-0">
+                            <p className="font-medium">
+                              {stop.title || stop.path}
+                            </p>
+                            <p className="text-xs text-muted-foreground break-all">
+                              {stop.path}
+                              {stop.visitedAt
+                                ? ` · ${formatQuoteDate(stop.visitedAt, true)}`
+                                : ""}
+                            </p>
+                          </div>
+                          <span className="whitespace-nowrap font-medium">
+                            {formatVisitDuration(stop.durationMs)}
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No page visits recorded for this quote.
+                    </p>
+                  )}
                 </section>
               </div>
             </>

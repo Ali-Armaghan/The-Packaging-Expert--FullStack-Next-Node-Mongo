@@ -78,3 +78,12 @@ export function displayValue(value?: string | number | null) {
   const text = String(value).trim();
   return text || "—";
 }
+
+export function quoteSourceLabel(quote: SerializedQuote) {
+  if (quote.sourcePage === "product") {
+    return quote.sourceProductName || quote.productType || "Product page";
+  }
+  if (quote.sourcePage === "quote") return "Quote page";
+  if (quote.sourcePage === "home") return "Homepage";
+  return quote.sourcePath || "—";
+}
