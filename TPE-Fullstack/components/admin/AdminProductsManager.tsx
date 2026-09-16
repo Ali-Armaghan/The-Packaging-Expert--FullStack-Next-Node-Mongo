@@ -105,14 +105,23 @@ export function AdminProductsManager() {
             content is stored in the database and served from cache.
           </p>
         </div>
-        <Button
-          nativeButton={false}
-          render={<Link href="/admin/products/new" />}
-          className="gap-1.5"
-        >
+        <div className="flex flex-wrap gap-2">
+          <Button
+            nativeButton={false}
+            variant="outline"
+            render={<Link href="/admin/products/content-tabs" />}
+          >
+            Product tabs
+          </Button>
+          <Button
+            nativeButton={false}
+            render={<Link href="/admin/products/new" />}
+            className="gap-1.5"
+          >
           <PlusIcon className="size-4" />
           Add product
-        </Button>
+          </Button>
+        </div>
       </div>
 
       {error ? (

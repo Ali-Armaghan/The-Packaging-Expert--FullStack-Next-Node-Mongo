@@ -1,40 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import {
-  GiftIcon,
-  HeadphonesIcon,
-  PackageOpenIcon,
-  TruckIcon,
-  type LucideIcon,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
-import type {
-  ProductOrderProcess,
-  ProductOrderProcessIcon,
-  ProductTab,
-} from "@/types/product";
-
-const ORDER_ICONS: Record<ProductOrderProcessIcon, LucideIcon> = {
-  customize: GiftIcon,
-  quote: PackageOpenIcon,
-  consult: HeadphonesIcon,
-  shipping: TruckIcon,
-};
+import type { ProductInfoTabView } from "@/types/product";
 
 type Home2ProductTabsProps = {
-  tabs: ProductTab[];
-  orderProcess?: ProductOrderProcess;
+  tabs: ProductInfoTabView[];
 };
 
-export function Home2ProductTabs({ tabs, orderProcess }: Home2ProductTabsProps) {
+export function Home2ProductTabs({ tabs }: Home2ProductTabsProps) {
   const [active, setActive] = useState(0);
   if (tabs.length === 0) return null;
 
   const current = tabs[Math.min(active, tabs.length - 1)];
-  const isOrderProcess =
-    current.id === "order-process" ||
-    current.label.toLowerCase().includes("order process");
 
   return (
     <div className="home2-pdp__tabs">
@@ -71,59 +50,47 @@ export function Home2ProductTabs({ tabs, orderProcess }: Home2ProductTabsProps) 
         aria-labelledby={`home2-product-tab-${current.id}`}
         className="home2-pdp__tabpanel"
       >
-        {isOrderProcess && orderProcess ? (
-          <OrderProcessPanel content={orderProcess} />
-        ) : (
-          <div className="home2-pdp__copy">
-            {current.body
-              .split("\n")
-              .filter(Boolean)
-              .map((line, index) => (
-                <p key={index}>{line}</p>
-              ))}
-          </div>
-        )}
+        <div className="home2-pdp__tab-sections">
+          {current.sections.map((section) => (
+            <section key={section.id} className="home2-pdp__tab-section">
+              <h3 className="home2-pdp__tab-section-title">{section.title}</h3>
+              <div className="home2-pdp__item-grid">
+                {section.items.map((item) => {
+                  const card = (
+                    <>
+                      <span className="home2-pdp__item-media">
+                        {item.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={item.image} alt="" />
+                        ) : (
+                          <span className="home2-pdp__item-placeholder" />
+                        )}
+                      </span>
+                      <span className="home2-pdp__item-name">{item.title}</span>
+                    </>
+                  );
+                  if (item.href) {
+                    return (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        className="home2-pdp__item-card"
+                      >
+                        {card}
+                      </Link>
+                    );
+                  }
+                  return (
+                    <div key={item.id} className="home2-pdp__item-card">
+                      {card}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
       </div>
-    </div>
-  );
-}
-
-function OrderProcessPanel({ content }: { content: ProductOrderProcess }) {
-  const steps = content.steps ?? [];
-  if (!content.title && steps.length === 0) return null;
-
-  return (
-    <div className="home2-pdp__process">
-      <div className="home2-pdp__process-intro">
-        {content.title ? (
-          <h3 className="home2-pdp__process-title">{content.title}</h3>
-        ) : null}
-        {content.description ? (
-          <p className="home2-pdp__process-desc">{content.description}</p>
-        ) : null}
-      </div>
-
-      {steps.length > 0 ? (
-        <ol className="home2-pdp__process-grid">
-          {steps.map((step, index) => {
-            const Icon = ORDER_ICONS[step.icon] ?? GiftIcon;
-            return (
-              <li key={step.title} className="home2-pdp__process-card">
-                <div className="home2-pdp__process-top">
-                  <span className="home2-pdp__process-icon">
-                    <Icon aria-hidden />
-                  </span>
-                  <span className="home2-pdp__process-num">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                </div>
-                <h4>{step.title}</h4>
-                <p>{step.text}</p>
-              </li>
-            );
-          })}
-        </ol>
-      ) : null}
     </div>
   );
 }

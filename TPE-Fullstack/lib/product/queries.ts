@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/db/mongoose";
 import { serializeProduct } from "@/lib/product/serialize";
+import { resolveProductInfoTabs } from "@/lib/productContentTab/resolve";
 import { Product } from "@/models/Product";
 import type { ProductCardItem, SerializedProduct } from "@/types/product";
 
@@ -51,7 +52,16 @@ export async function getPublicProductBySlug(
       detail: 1,
     })
     .lean();
-  return doc ? serializeProduct(doc) : null;
+  if (!doc) return null;
+  const product = serializeProduct(doc);
+  product.detail.infoTabs = await resolveProductInfoTabs(
+    product.detail.contentTabs,
+    {
+      tabs: product.detail.tabs,
+      orderProcess: product.detail.orderProcess,
+    },
+  );
+  return product;
 }
 
 /** Explicit picks first, then same-group fallbacks, capped at `limit`. */

@@ -10,6 +10,8 @@ export { AdminIndustriesManager } from "./AdminIndustriesManager";
 export { AdminGroupByManager } from "./AdminGroupByManager";
 export { AdminGroupByEditor } from "./AdminGroupByEditor";
 export { AdminGroupByForm } from "./AdminGroupByForm";
+export { AdminProductContentTabsManager } from "./AdminProductContentTabsManager";
+export { AdminProductInfoTabsPicker } from "./AdminProductInfoTabsPicker";
 export { AdminProductsManager } from "./AdminProductsManager";
 export { AdminBlogManager } from "./AdminBlogManager";
 export { AdminBlogEditor } from "./AdminBlogEditor";

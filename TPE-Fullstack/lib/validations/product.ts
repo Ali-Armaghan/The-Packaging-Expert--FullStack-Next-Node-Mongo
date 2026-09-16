@@ -42,6 +42,16 @@ export const productDetailSchema = z.object({
     .max(8)
     .optional()
     .default([]),
+  contentTabs: z
+    .array(
+      z.object({
+        tabId: z.string().trim().min(1).max(40),
+        itemIds: z.array(z.string().trim().min(1).max(40)).max(80),
+      }),
+    )
+    .max(12)
+    .optional()
+    .default([]),
   orderProcess: z
     .object({
       title: z.string().trim().max(160).optional().default(""),

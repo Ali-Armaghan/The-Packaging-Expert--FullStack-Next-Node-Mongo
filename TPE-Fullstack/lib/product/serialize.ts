@@ -12,6 +12,8 @@ import type {
   ProductOrderProcessStep,
   ProductSelector,
   ProductTab,
+  ProductContentTabSelection,
+  ProductInfoTabView,
   SerializedProduct,
 } from "@/types/product";
 
@@ -92,6 +94,23 @@ function normalizeTabs(raw: unknown, fallback: ProductTab[]): ProductTab[] {
       };
     })
     .filter((tab): tab is ProductTab => tab !== null);
+}
+
+function normalizeContentTabs(
+  raw: unknown,
+): ProductContentTabSelection[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((entry) => {
+      const row = asObject(entry);
+      const tabId = str(row.tabId).trim();
+      if (!tabId) return null;
+      return {
+        tabId,
+        itemIds: strList(row.itemIds),
+      };
+    })
+    .filter((item): item is ProductContentTabSelection => item !== null);
 }
 
 function normalizeHighlights(
@@ -237,6 +256,8 @@ export function normalizeProductDetail(
     priceNoteLabel: str(incoming.priceNoteLabel, defaults.priceNoteLabel),
     priceNoteHref: str(incoming.priceNoteHref, defaults.priceNoteHref),
     tabs: normalizeTabs(incoming.tabs, defaults.tabs),
+    contentTabs: normalizeContentTabs(incoming.contentTabs),
+    infoTabs: [] as ProductInfoTabView[],
     orderProcess: normalizeOrderProcess(
       incoming.orderProcess,
       defaults.orderProcess,

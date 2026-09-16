@@ -18,6 +18,31 @@ export type ProductTab = {
   body: string;
 };
 
+export type ProductContentTabSelection = {
+  tabId: string;
+  itemIds: string[];
+};
+
+export type ProductInfoItemView = {
+  id: string;
+  title: string;
+  slug: string;
+  image: string;
+  href: string;
+};
+
+export type ProductInfoSectionView = {
+  id: string;
+  title: string;
+  items: ProductInfoItemView[];
+};
+
+export type ProductInfoTabView = {
+  id: string;
+  label: string;
+  sections: ProductInfoSectionView[];
+};
+
 export type ProductHighlight = {
   icon: ProductHighlightIcon;
   title: string;
@@ -84,6 +109,10 @@ export type ProductDetailContent = {
   priceNoteLabel: string;
   priceNoteHref: string;
   tabs: ProductTab[];
+  /** Selected library tabs/sections for this product. */
+  contentTabs: ProductContentTabSelection[];
+  /** Resolved public tab content — filled at read time, not stored. */
+  infoTabs: ProductInfoTabView[];
   orderProcess: ProductOrderProcess;
   highlights: ProductHighlight[];
   banner: ProductBanner;

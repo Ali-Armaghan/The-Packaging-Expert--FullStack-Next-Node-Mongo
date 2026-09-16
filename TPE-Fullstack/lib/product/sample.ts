@@ -81,6 +81,8 @@ export function getSampleProductDetail(): ProductDetailContent {
         body: "",
       },
     ],
+    contentTabs: [],
+    infoTabs: [],
     orderProcess: {
       title: "Our Ordering Process",
       description:

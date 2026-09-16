@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { ISR_REVALIDATE_SECONDS } from "@/lib/cache/revalidate";
-import { PRODUCT_INDEX_TAG, productTag } from "@/lib/cache/tags";
+import { PRODUCT_INDEX_TAG, PRODUCT_INFO_TABS_TAG, productTag } from "@/lib/cache/tags";
 import {
   getActiveProductSlugs,
   getProductPageData,
@@ -16,9 +16,9 @@ export function getCachedProductBySlug(
   const normalized = slug.trim().toLowerCase();
   return unstable_cache(
     async () => getPublicProductBySlug(normalized),
-    ["product-by-slug-v6", normalized],
+    ["product-by-slug-v7", normalized],
     {
-      tags: [productTag(normalized), PRODUCT_INDEX_TAG],
+      tags: [productTag(normalized), PRODUCT_INDEX_TAG, PRODUCT_INFO_TABS_TAG],
       revalidate: ISR_REVALIDATE_SECONDS,
     },
   )();
@@ -43,9 +43,9 @@ export function getCachedProductPageData(slug: string) {
   const normalized = slug.trim().toLowerCase();
   return unstable_cache(
     async () => getProductPageData(normalized),
-    ["product-page-v1", normalized],
+    ["product-page-v2", normalized],
     {
-      tags: [productTag(normalized), PRODUCT_INDEX_TAG],
+      tags: [productTag(normalized), PRODUCT_INDEX_TAG, PRODUCT_INFO_TABS_TAG],
       revalidate: ISR_REVALIDATE_SECONDS,
     },
   )();

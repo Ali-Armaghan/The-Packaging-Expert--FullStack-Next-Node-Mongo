@@ -97,6 +97,13 @@ export function canAccessPath(access: AccessProfile, pathname: string) {
     return (access.permissions ?? []).length > 0;
   }
 
+  if (
+    pathname.startsWith("/admin/products") &&
+    hasPermission(access, "products")
+  ) {
+    return true;
+  }
+
   return hasPermission(access, permissionId);
 }
 

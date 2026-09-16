@@ -25,6 +25,7 @@ import type {
   SerializedProduct,
 } from "@/types/product";
 import { ImageUploadField } from "./ImageUploadField";
+import { AdminProductInfoTabsPicker } from "./AdminProductInfoTabsPicker";
 
 type GroupOption = { id: string; name: string; slug: string; isActive: boolean };
 type ProductOption = { id: string; name: string; slug: string };
@@ -782,195 +783,23 @@ export function AdminProductEditor(props: AdminProductEditorProps) {
       </SectionCard>
 
       <SectionCard
-        title="Tabs"
-        description="Details, Available Options, Inspiration, Order Process…"
+        title="Product information tabs"
+        description="Pick items from tabs and sections. Those items appear on the product page with name and image."
         action={
           <Button
-            type="button"
+            nativeButton={false}
             size="sm"
             variant="outline"
-            className="gap-1.5"
-            onClick={() =>
-              patchDetail("tabs", [
-                ...detail.tabs,
-                { id: `tab-${Date.now()}`, label: "", body: "" },
-              ])
-            }
+            render={<Link href="/admin/products/content-tabs" />}
           >
-            <PlusIcon className="size-3.5" />
-            Add tab
+            Manage library
           </Button>
         }
       >
-        {detail.tabs.map((tab, index) => (
-          <div
-            key={tab.id}
-            className="space-y-3 rounded-[3px] border border-border p-3"
-          >
-            <div className="flex items-center gap-3">
-              <Input
-                placeholder="Tab label"
-                value={tab.label}
-                onChange={(e) => {
-                  const next = [...detail.tabs];
-                  next[index] = { ...tab, label: e.target.value };
-                  patchDetail("tabs", next);
-                }}
-              />
-              <Button
-                type="button"
-                size="icon-sm"
-                variant="ghost"
-                onClick={() =>
-                  patchDetail(
-                    "tabs",
-                    detail.tabs.filter((_, i) => i !== index),
-                  )
-                }
-              >
-                <Trash2Icon className="size-3.5 text-destructive" />
-              </Button>
-            </div>
-            <textarea
-              rows={4}
-              className={textareaClass}
-              placeholder="Tab content (leave empty for Order Process cards)"
-              value={tab.body}
-              onChange={(e) => {
-                const next = [...detail.tabs];
-                next[index] = { ...tab, body: e.target.value };
-                patchDetail("tabs", next);
-              }}
-            />
-          </div>
-        ))}
-      </SectionCard>
-
-      <SectionCard
-        title="Order Process tab"
-        description="Rendered when the Order Process tab is selected."
-      >
-        <div className="space-y-2">
-          <Label>Section title</Label>
-          <Input
-            value={detail.orderProcess?.title ?? ""}
-            onChange={(e) =>
-              patchDetail("orderProcess", {
-                ...(detail.orderProcess ?? {
-                  title: "",
-                  description: "",
-                  steps: [],
-                }),
-                title: e.target.value,
-              })
-            }
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Description</Label>
-          <textarea
-            rows={3}
-            className={textareaClass}
-            value={detail.orderProcess?.description ?? ""}
-            onChange={(e) =>
-              patchDetail("orderProcess", {
-                ...(detail.orderProcess ?? {
-                  title: "",
-                  description: "",
-                  steps: [],
-                }),
-                description: e.target.value,
-              })
-            }
-          />
-        </div>
-        <div className="space-y-3">
-          {(detail.orderProcess?.steps ?? []).map((step, index) => {
-            const steps = detail.orderProcess?.steps ?? [];
-            const updateStep = (patchValue: Partial<typeof step>) => {
-              const next = [...steps];
-              next[index] = { ...step, ...patchValue };
-              patchDetail("orderProcess", {
-                ...(detail.orderProcess ?? {
-                  title: "",
-                  description: "",
-                  steps: [],
-                }),
-                steps: next,
-              });
-            };
-            return (
-              <div
-                key={index}
-                className="grid gap-3 rounded-[3px] border border-border p-3 sm:grid-cols-[auto_1fr_2fr_auto]"
-              >
-                <select
-                  value={step.icon}
-                  className="h-9 rounded-[3px] border border-input bg-transparent px-2 text-sm"
-                  onChange={(e) =>
-                    updateStep({
-                      icon: e.target.value as typeof step.icon,
-                    })
-                  }
-                >
-                  <option value="customize">customize</option>
-                  <option value="quote">quote</option>
-                  <option value="consult">consult</option>
-                  <option value="shipping">shipping</option>
-                </select>
-                <Input
-                  placeholder="Step title"
-                  value={step.title}
-                  onChange={(e) => updateStep({ title: e.target.value })}
-                />
-                <Input
-                  placeholder="Step text"
-                  value={step.text}
-                  onChange={(e) => updateStep({ text: e.target.value })}
-                />
-                <Button
-                  type="button"
-                  size="icon-sm"
-                  variant="ghost"
-                  onClick={() =>
-                    patchDetail("orderProcess", {
-                      ...(detail.orderProcess ?? {
-                        title: "",
-                        description: "",
-                        steps: [],
-                      }),
-                      steps: steps.filter((_, i) => i !== index),
-                    })
-                  }
-                >
-                  <Trash2Icon className="size-3.5 text-destructive" />
-                </Button>
-              </div>
-            );
-          })}
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="gap-1.5"
-            onClick={() =>
-              patchDetail("orderProcess", {
-                ...(detail.orderProcess ?? {
-                  title: "",
-                  description: "",
-                  steps: [],
-                }),
-                steps: [
-                  ...(detail.orderProcess?.steps ?? []),
-                  { icon: "customize", title: "", text: "" },
-                ],
-              })
-            }
-          >
-            <PlusIcon className="size-3.5" />
-            Add step
-          </Button>
-        </div>
+        <AdminProductInfoTabsPicker
+          value={detail.contentTabs ?? []}
+          onChange={(contentTabs) => patchDetail("contentTabs", contentTabs)}
+        />
       </SectionCard>
 
       <SectionCard

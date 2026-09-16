@@ -100,6 +100,12 @@ export const adminNavSections: AdminNavSection[] = [
             href: "/admin/products",
             icon: "products",
           },
+          {
+            id: "product-tabs",
+            label: "Product Tabs",
+            href: "/admin/products/content-tabs",
+            icon: "pages",
+          },
         ],
       },
       {

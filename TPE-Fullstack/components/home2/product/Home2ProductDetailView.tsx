@@ -184,10 +184,7 @@ export function Home2ProductDetailView({
             <h2>Product information</h2>
           </header>
 
-          <Home2ProductTabs
-            tabs={detail.tabs}
-            orderProcess={detail.orderProcess}
-          />
+          <Home2ProductTabs tabs={detail.infoTabs} />
 
           {detail.highlights.length > 0 ? (
             <div className="home2-pdp__highlights-wrap">

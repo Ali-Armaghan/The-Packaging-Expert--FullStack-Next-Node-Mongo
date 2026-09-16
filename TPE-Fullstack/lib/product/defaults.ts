@@ -78,6 +78,8 @@ export function getProductDetailDefaults(
         body: "",
       },
     ],
+    contentTabs: [],
+    infoTabs: [],
     orderProcess: {
       title: "Our Ordering Process",
       description:
