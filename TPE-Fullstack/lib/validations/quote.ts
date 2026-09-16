@@ -39,7 +39,7 @@ export const quoteRequestSchema = z.object({
   thickness: optionalText(80),
   addOn: optionalText(160),
   notes: optionalText(5000),
-  step: z.coerce.number().int().min(1).max(4).optional().default(1),
+  step: z.coerce.number().int().min(1).max(3).optional().default(1),
   complete: z.boolean().optional().default(false),
 });
 
@@ -48,7 +48,7 @@ export const quoteUpdateSchema = quoteRequestSchema
   .partial()
   .extend({
     unit: z.enum(["in", "cm", "mm"]).optional(),
-    step: z.coerce.number().int().min(1).max(4).optional(),
+    step: z.coerce.number().int().min(1).max(3).optional(),
     complete: z.boolean().optional(),
   });
 

@@ -43,6 +43,7 @@ import {
   quoteOptionLabel,
   quoteRef,
   quoteStatusLabel,
+  quoteStepProgress,
   QUOTE_STATUS_OPTIONS,
   type QuoteStatus,
 } from "@/lib/quotes/format";
@@ -255,9 +256,7 @@ export function AdminQuotesManager() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {quote.status === "draft"
-                          ? `${quote.currentStep}/4`
-                          : "Done"}
+                        {quoteStepProgress(quote.status, quote.currentStep)}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
                         {formatQuoteDate(quote.createdAt)}
@@ -371,11 +370,7 @@ export function AdminQuotesManager() {
                     <Detail label="Company" value={selected.company} />
                     <Detail
                       label="Step"
-                      value={
-                        selected.status === "draft"
-                          ? `${selected.currentStep}/4`
-                          : "Complete"
-                      }
+                      value={quoteStepProgress(selected.status, selected.currentStep)}
                     />
                     <Detail
                       label="Received"

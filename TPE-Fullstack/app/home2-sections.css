@@ -3491,7 +3491,7 @@
 .home2-quote__stepper {
   --step-dot: 2.05rem;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: start;
   position: relative;
   isolation: isolate;
@@ -3505,19 +3505,19 @@
   content: "";
   position: absolute;
   top: calc(var(--step-dot) / 2);
-  left: 12.5%;
+  left: 16.666%;
   height: 2px;
   z-index: 0;
   pointer-events: none;
 }
 
 .home2-quote__stepper::before {
-  right: 12.5%;
+  right: 16.666%;
   background: rgba(18, 21, 26, 0.1);
 }
 
 .home2-quote__stepper::after {
-  width: calc(75% * var(--quote-progress, 0));
+  width: calc(66.668% * var(--quote-progress, 0));
   background: #34ad78;
   transition: width 0.3s ease;
 }
@@ -3899,40 +3899,81 @@
 }
 
 .home2-quote__captcha {
-  display: inline-flex;
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.35rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid rgba(18, 21, 26, 0.08);
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, #f7faf8 0%, #f3f5f7 100%);
+}
+
+.home2-quote__captcha-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(18, 21, 26, 0.5);
+}
+
+.home2-quote__captcha-row {
+  display: flex;
   align-items: center;
   gap: 0.55rem;
-  flex: 1 1 100%;
-  font-size: 0.9rem;
-  font-weight: 650;
-  color: rgba(18, 21, 26, 0.7);
+}
+
+.home2-quote__captcha-art {
+  display: block;
+  width: 196px;
+  max-width: calc(100% - 3rem);
+  height: 58px;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(18, 21, 26, 0.08);
+  background: #eef3f0;
+}
+
+.home2-quote__captcha-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.55rem;
+  height: 2.55rem;
+  border: 1px solid rgba(18, 21, 26, 0.1);
+  border-radius: 0.7rem;
+  background: #fff;
+  color: #167a4d;
+  cursor: pointer;
+}
+
+.home2-quote__captcha-refresh svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.home2-quote__captcha-refresh:hover {
+  border-color: rgba(52, 173, 120, 0.55);
+  background: #f3fbf7;
 }
 
 .home2-quote__captcha input {
-  width: 4.1rem;
+  width: 100%;
   min-height: 2.65rem;
-  padding: 0.45rem 0.5rem;
+  padding: 0.5rem 0.75rem;
   border: 1px solid rgba(18, 21, 26, 0.11);
   border-radius: 0.7rem;
-  background: #f7f8fa;
+  background: #fff;
   color: #12151a;
   font: inherit;
-  font-size: 0.92rem;
-  text-align: center;
+  font-size: 0.95rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   outline: none;
   box-sizing: border-box;
-  -moz-appearance: textfield;
-}
-
-.home2-quote__captcha input::-webkit-outer-spin-button,
-.home2-quote__captcha input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
 }
 
 .home2-quote__captcha input:focus {
   border-color: rgba(52, 173, 120, 0.7);
-  background: #fff;
   box-shadow: 0 0 0 3px rgba(52, 173, 120, 0.15);
 }
 

@@ -10,6 +10,7 @@ import {
   quoteOptionLabel,
   quoteRef,
   quoteStatusLabel,
+  quoteStepProgress,
 } from "@/lib/quotes/format";
 import type { SerializedQuote } from "@/lib/quotes/serialize";
 
@@ -194,10 +195,7 @@ function quoteCustomerRows(quote: SerializedQuote): Array<[string, string]> {
     ["Phone", displayValue(quote.phone)],
     ["Company", displayValue(quote.company)],
     ["Status", quoteStatusLabel(quote.status)],
-    [
-      "Step",
-      quote.status === "draft" ? `${quote.currentStep}/4` : "Complete",
-    ],
+    ["Step", quoteStepProgress(quote.status, quote.currentStep)],
     ["Received", formatQuoteDate(quote.createdAt, true)],
     ["Updated", formatQuoteDate(quote.updatedAt, true)],
   ]);

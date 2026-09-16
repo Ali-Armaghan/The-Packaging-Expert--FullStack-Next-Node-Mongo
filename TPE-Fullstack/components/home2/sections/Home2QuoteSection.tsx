@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { Home2QuoteContent } from "@/lib/home2/content";
 
 type Home2QuoteSectionProps = {
@@ -10,7 +10,7 @@ type Home2QuoteSectionProps = {
 
 type FormStatus = "idle" | "saving" | "success" | "error";
 
-type QuoteStepId = 1 | 2 | 3 | 4;
+type QuoteStepId = 1 | 2 | 3;
 
 type FormValues = {
   name: string;
@@ -24,10 +24,8 @@ type FormValues = {
   zip: string;
   quantity: string;
   material: string;
-  color: string;
   printing: string;
   coating: string;
-  thickness: string;
   addOn: string;
   notes: string;
   captcha: string;
@@ -45,10 +43,8 @@ const INITIAL_VALUES: FormValues = {
   zip: "",
   quantity: "",
   material: "",
-  color: "",
   printing: "",
   coating: "",
-  thickness: "",
   addOn: "",
   notes: "",
   captcha: "",
@@ -75,14 +71,8 @@ const FORM_STEPS: {
   {
     id: 3,
     label: "Specs",
-    title: "Material & finish",
-    hint: "Optional — skip anything you’re unsure about.",
-  },
-  {
-    id: 4,
-    label: "Notes",
-    title: "Project details",
-    hint: "Anything else we should know before quoting.",
+    title: "Finish & details",
+    hint: "Optional specs, plus anything else we should know.",
   },
 ];
 
@@ -167,16 +157,14 @@ function buildStepPayload(
     zip: values.zip.trim() || undefined,
     quantity: optionalNumber(values.quantity),
     material: values.material || undefined,
-    color: values.color || undefined,
     printing: values.printing || undefined,
     coating: values.coating || undefined,
-    thickness: values.thickness || undefined,
     addOn: values.addOn || undefined,
     notes: values.notes.trim() || undefined,
   };
 }
 
-function validateStep(step: QuoteStepId, values: FormValues, captchaSum: number) {
+function validateStep(step: QuoteStepId, values: FormValues, captchaCode: string) {
   if (step === 1) {
     if (!values.name.trim()) return "Please enter your name.";
     if (!isValidEmail(values.email)) return "Enter a valid email address.";
@@ -192,24 +180,152 @@ function validateStep(step: QuoteStepId, values: FormValues, captchaSum: number)
     return null;
   }
 
-  if (step === 4) {
-    const answer = Number(values.captcha.trim());
-    if (answer !== captchaSum) return "Captcha answer is incorrect. Please try again.";
+  if (step === 3) {
+    const answer = values.captcha.trim().toUpperCase();
+    if (answer.length < 5 || answer !== captchaCode) {
+      return "Verification code is incorrect. Please try again.";
+    }
   }
 
   return null;
+}
+
+const CAPTCHA_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+function randomCaptchaCode() {
+  return Array.from({ length: 5 }, () =>
+    CAPTCHA_CHARS[Math.floor(Math.random() * CAPTCHA_CHARS.length)],
+  ).join("");
+}
+
+function drawCaptcha(canvas: HTMLCanvasElement, code: string) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const cssW = 196;
+  const cssH = 58;
+  const dpr = Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 2);
+  canvas.width = cssW * dpr;
+  canvas.height = cssH * dpr;
+  canvas.style.width = `${cssW}px`;
+  canvas.style.height = `${cssH}px`;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const bg = ctx.createLinearGradient(0, 0, cssW, cssH);
+  bg.addColorStop(0, "#e8f4ee");
+  bg.addColorStop(0.5, "#f3f6f8");
+  bg.addColorStop(1, "#e6eef8");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, cssW, cssH);
+
+  for (let i = 0; i < 7; i += 1) {
+    ctx.strokeStyle = `rgba(22, 122, 77, ${0.1 + Math.random() * 0.18})`;
+    ctx.lineWidth = 0.8 + Math.random() * 1.4;
+    ctx.beginPath();
+    ctx.moveTo(Math.random() * cssW, Math.random() * cssH);
+    ctx.bezierCurveTo(
+      Math.random() * cssW,
+      Math.random() * cssH,
+      Math.random() * cssW,
+      Math.random() * cssH,
+      Math.random() * cssW,
+      Math.random() * cssH,
+    );
+    ctx.stroke();
+  }
+
+  for (let i = 0; i < 36; i += 1) {
+    ctx.fillStyle = `rgba(18, 21, 26, ${0.06 + Math.random() * 0.16})`;
+    ctx.beginPath();
+    ctx.arc(Math.random() * cssW, Math.random() * cssH, 0.7 + Math.random() * 1.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  code.split("").forEach((char, index) => {
+    ctx.save();
+    ctx.translate(22 + index * 34, 36 + (Math.random() * 8 - 4));
+    ctx.rotate((Math.random() - 0.5) * 0.42);
+    ctx.font = `${index % 2 === 0 ? 700 : 600} 28px ui-sans-serif, system-ui, sans-serif`;
+    ctx.fillStyle = index % 2 === 0 ? "#146b45" : "#1a2433";
+    ctx.fillText(char, 0, 0);
+    ctx.restore();
+  });
+}
+
+function QuoteCaptcha({
+  code,
+  value,
+  onChange,
+  onRefresh,
+}: {
+  code: string;
+  value: string;
+  onChange: (value: string) => void;
+  onRefresh: () => void;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (canvas) drawCaptcha(canvas, code);
+  }, [code]);
+
+  return (
+    <div className="home2-quote__captcha">
+      <p className="home2-quote__captcha-label">Verification</p>
+      <div className="home2-quote__captcha-row">
+        <canvas
+          ref={canvasRef}
+          className="home2-quote__captcha-art"
+          width={196}
+          height={58}
+          aria-hidden="true"
+        />
+        <button
+          type="button"
+          className="home2-quote__captcha-refresh"
+          onClick={onRefresh}
+          aria-label="Generate a new code"
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M20 12a8 8 0 1 1-2.2-5.5"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+            <path
+              d="M20 5.5v4.2h-4.2"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
+      <input
+        name="captcha"
+        type="text"
+        inputMode="text"
+        autoComplete="off"
+        autoCapitalize="characters"
+        spellCheck={false}
+        maxLength={5}
+        placeholder="Enter the 5-character code"
+        aria-label="Enter the verification code from the image"
+        value={value}
+        onChange={(e) => onChange(e.target.value.toUpperCase())}
+      />
+    </div>
+  );
 }
 
 /**
  * Landscape quote section — process timeline + stepped quote form.
  */
 export function Home2QuoteSection({ content }: Home2QuoteSectionProps) {
-  const captcha = useMemo(() => {
-    const a = 2 + Math.floor(Math.random() * 7);
-    const b = 2 + Math.floor(Math.random() * 7);
-    return { a, b, sum: a + b };
-  }, []);
-
+  const [captchaCode, setCaptchaCode] = useState(randomCaptchaCode);
   const [step, setStep] = useState<QuoteStepId>(1);
   const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
   const [status, setStatus] = useState<FormStatus>("idle");
@@ -233,23 +349,33 @@ export function Home2QuoteSection({ content }: Home2QuoteSectionProps) {
     return run;
   };
 
+  const refreshCaptcha = () => {
+    setCaptchaCode(randomCaptchaCode());
+    setField("captcha", "");
+  };
+
   const handleContinue = async () => {
     if (saving) return;
-    const error = validateStep(step, values, captcha.sum);
+    const error = validateStep(step, values, captchaCode);
     if (error) {
       setStatus("error");
       setErrorMessage(error);
+      if (step === 3) {
+        setCaptchaCode(randomCaptchaCode());
+        setField("captcha", "");
+      }
       return;
     }
 
     setErrorMessage(null);
 
-    if (step === 4) {
+    if (step === 3) {
       setStatus("saving");
       try {
-        await enqueueSave(buildStepPayload(4, values, true));
+        await enqueueSave(buildStepPayload(3, values, true));
         quoteIdRef.current = null;
         setValues(INITIAL_VALUES);
+        setCaptchaCode(randomCaptchaCode());
         setStep(1);
         setStatus("success");
       } catch (saveError) {
@@ -292,6 +418,7 @@ export function Home2QuoteSection({ content }: Home2QuoteSectionProps) {
     quoteIdRef.current = null;
     saveChainRef.current = Promise.resolve();
     setValues(INITIAL_VALUES);
+    setCaptchaCode(randomCaptchaCode());
     setStep(1);
     setStatus("idle");
     setErrorMessage(null);
@@ -552,154 +679,109 @@ export function Home2QuoteSection({ content }: Home2QuoteSectionProps) {
               ) : null}
 
               {step === 3 ? (
-                <div className="home2-quote__grid home2-quote__grid--3">
-                  <label className="home2-quote__field">
-                    <span>Material</span>
-                    <span className="home2-quote__select">
-                      <select
-                        name="material"
-                        value={values.material}
-                        onChange={(e) => setField("material", e.target.value)}
-                      >
-                        <option value="">Select material</option>
-                        {content.materials.map((opt) => (
-                          <option key={opt.value} value={opt.label}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </span>
-                  </label>
-                  <label className="home2-quote__field">
-                    <span>Color</span>
-                    <span className="home2-quote__select">
-                      <select
-                        name="color"
-                        value={values.color}
-                        onChange={(e) => setField("color", e.target.value)}
-                      >
-                        <option value="">Select color</option>
-                        {content.colors.map((opt) => (
-                          <option key={opt.value} value={opt.label}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </span>
-                  </label>
-                  <label className="home2-quote__field">
-                    <span>Printing</span>
-                    <span className="home2-quote__select">
-                      <select
-                        name="printing"
-                        value={values.printing}
-                        onChange={(e) => setField("printing", e.target.value)}
-                      >
-                        <option value="">Select printing</option>
-                        {content.printing.map((opt) => (
-                          <option key={opt.value} value={opt.label}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </span>
-                  </label>
-                  <label className="home2-quote__field">
-                    <span>Coating</span>
-                    <span className="home2-quote__select">
-                      <select
-                        name="coating"
-                        value={values.coating}
-                        onChange={(e) => setField("coating", e.target.value)}
-                      >
-                        <option value="">Select coating</option>
-                        {content.coatings.map((opt) => (
-                          <option key={opt.value} value={opt.label}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </span>
-                  </label>
-                  <label className="home2-quote__field">
-                    <span>Card thickness</span>
-                    <span className="home2-quote__select">
-                      <select
-                        name="thickness"
-                        value={values.thickness}
-                        onChange={(e) => setField("thickness", e.target.value)}
-                      >
-                        <option value="">Select thickness</option>
-                        {content.thicknesses.map((opt) => (
-                          <option key={opt.value} value={opt.label}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </span>
-                  </label>
-                  <label className="home2-quote__field">
-                    <span>Add-on</span>
-                    <span className="home2-quote__select">
-                      <select
-                        name="addOn"
-                        value={values.addOn}
-                        onChange={(e) => setField("addOn", e.target.value)}
-                      >
-                        <option value="">None</option>
-                        {content.addOns.map((opt) => (
-                          <option key={opt.value} value={opt.label}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </span>
-                  </label>
-                </div>
-              ) : null}
-
-              {step === 4 ? (
-                <div className="home2-quote__grid">
-                  <label className="home2-quote__field">
-                    <span>Project details</span>
-                    <textarea
-                      name="notes"
-                      rows={5}
-                      placeholder="Artwork notes, deadline, special finishes…"
-                      value={values.notes}
-                      onChange={(e) => setField("notes", e.target.value)}
-                    />
-                  </label>
-                </div>
+                <>
+                  <div className="home2-quote__grid home2-quote__grid--3">
+                    <label className="home2-quote__field">
+                      <span>Material</span>
+                      <span className="home2-quote__select">
+                        <select
+                          name="material"
+                          value={values.material}
+                          onChange={(e) => setField("material", e.target.value)}
+                        >
+                          <option value="">Select material</option>
+                          {content.materials.map((opt) => (
+                            <option key={opt.value} value={opt.label}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </span>
+                    </label>
+                    <label className="home2-quote__field">
+                      <span>Printing</span>
+                      <span className="home2-quote__select">
+                        <select
+                          name="printing"
+                          value={values.printing}
+                          onChange={(e) => setField("printing", e.target.value)}
+                        >
+                          <option value="">Select printing</option>
+                          {content.printing.map((opt) => (
+                            <option key={opt.value} value={opt.label}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </span>
+                    </label>
+                    <label className="home2-quote__field">
+                      <span>Coating</span>
+                      <span className="home2-quote__select">
+                        <select
+                          name="coating"
+                          value={values.coating}
+                          onChange={(e) => setField("coating", e.target.value)}
+                        >
+                          <option value="">Select coating</option>
+                          {content.coatings.map((opt) => (
+                            <option key={opt.value} value={opt.label}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </span>
+                    </label>
+                    {content.addOns.length > 0 ? (
+                      <label className="home2-quote__field">
+                        <span>Add-on</span>
+                        <span className="home2-quote__select">
+                          <select
+                            name="addOn"
+                            value={values.addOn}
+                            onChange={(e) => setField("addOn", e.target.value)}
+                          >
+                            <option value="">None</option>
+                            {content.addOns.map((opt) => (
+                              <option key={opt.value} value={opt.label}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        </span>
+                      </label>
+                    ) : null}
+                  </div>
+                  <div className="home2-quote__grid">
+                    <label className="home2-quote__field">
+                      <span>Project details</span>
+                      <textarea
+                        name="notes"
+                        rows={4}
+                        placeholder="Artwork notes, deadline, special finishes…"
+                        value={values.notes}
+                        onChange={(e) => setField("notes", e.target.value)}
+                      />
+                    </label>
+                  </div>
+                  <QuoteCaptcha
+                    code={captchaCode}
+                    value={values.captcha}
+                    onChange={(value) => setField("captcha", value)}
+                    onRefresh={refreshCaptcha}
+                  />
+                </>
               ) : null}
               </div>
 
               <div className="home2-quote__footer">
-                {step === 4 ? (
-                  <label className="home2-quote__captcha">
-                    <span>
-                      {captcha.a} + {captcha.b} =
-                    </span>
-                    <input
-                      name="captcha"
-                      type="number"
-                      required
-                      inputMode="numeric"
-                      placeholder="?"
-                      aria-label="Captcha answer"
-                      value={values.captcha}
-                      onChange={(e) => setField("captcha", e.target.value)}
-                    />
-                  </label>
-                ) : null}
-
                 {errorMessage ? (
                   <p className="home2-quote__error" role="alert">
                     {errorMessage}
                   </p>
                 ) : (
                   <p className="home2-quote__hint">
-                    {step === 4
+                    {step === 3
                       ? "Typical reply within one business day."
                       : "Continue to save this step and move ahead."}
                   </p>
@@ -721,7 +803,7 @@ export function Home2QuoteSection({ content }: Home2QuoteSectionProps) {
                   >
                     {saving
                       ? "Saving…"
-                      : step === 4
+                      : step === 3
                         ? content.submitLabel
                         : "Continue"}
                   </button>

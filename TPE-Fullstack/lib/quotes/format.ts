@@ -20,8 +20,15 @@ const OPTION_LOOKUPS = {
   addOn: home2Quote.addOns,
 } as const;
 
+export const QUOTE_FORM_STEPS = 3;
+
 export function quoteStatusLabel(status: string) {
   return QUOTE_STATUS_OPTIONS.find((item) => item.value === status)?.label ?? status;
+}
+
+export function quoteStepProgress(status: string, currentStep: number) {
+  if (status !== "draft") return "Complete";
+  return `${Math.min(Math.max(currentStep, 1), QUOTE_FORM_STEPS)}/${QUOTE_FORM_STEPS}`;
 }
 
 export function quoteFullName(quote: SerializedQuote) {
