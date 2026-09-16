@@ -1,8 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronDownIcon, SearchIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import type { SerializedContentTab } from "@/lib/productContentTab/serialize";
 import type { ProductContentTabSelection } from "@/types/product";
 
@@ -32,6 +36,9 @@ export function AdminProductInfoTabsPicker({
   const [tabs, setTabs] = useState<SerializedContentTab[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [openTabs, setOpenTabs] = useState<string[]>([]);
+  const [openReady, setOpenReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,7 +55,10 @@ export function AdminProductInfoTabsPicker({
         if (!res.ok || !data.success) {
           throw new Error(data.error || "Failed to load tabs");
         }
-        if (!cancelled) setTabs((data.data ?? []).filter((tab) => tab.isActive));
+        if (!cancelled) {
+          const active = (data.data ?? []).filter((tab) => tab.isActive);
+          setTabs(active);
+        }
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Failed to load tabs");
@@ -63,7 +73,47 @@ export function AdminProductInfoTabsPicker({
     };
   }, []);
 
+  useEffect(() => {
+    if (openReady || tabs.length === 0) return;
+    const selectedIds = new Set(value.map((item) => item.tabId));
+    const initial = tabs
+      .filter((tab) => selectedIds.has(tab.id) || selectedIds.size === 0)
+      .map((tab) => tab.id);
+    setOpenTabs(initial.slice(0, selectedIds.size > 0 ? initial.length : 1));
+    setOpenReady(true);
+  }, [openReady, tabs, value]);
+
   const selected = new Map(value.map((item) => [item.tabId, item]));
+  const needle = query.trim().toLowerCase();
+
+  const visibleTabs = useMemo(() => {
+    if (!needle) return tabs;
+    return tabs
+      .map((tab) => {
+        const tabMatch = tab.name.toLowerCase().includes(needle);
+        const sections = tab.sections
+          .map((section) => {
+            const sectionMatch = section.title.toLowerCase().includes(needle);
+            const items = section.items.filter(
+              (item) =>
+                sectionMatch ||
+                tabMatch ||
+                item.title.toLowerCase().includes(needle),
+            );
+            if (!tabMatch && !sectionMatch && items.length === 0) return null;
+            return {
+              ...section,
+              items: tabMatch || sectionMatch ? section.items : items,
+            };
+          })
+          .filter((section): section is NonNullable<typeof section> =>
+            Boolean(section),
+          );
+        if (!tabMatch && sections.length === 0) return null;
+        return { ...tab, sections: tabMatch ? tab.sections : sections };
+      })
+      .filter((tab): tab is NonNullable<typeof tab> => Boolean(tab));
+  }, [needle, tabs]);
 
   const setTabItems = (tabId: string, itemIds: string[]) => {
     const unique = Array.from(new Set(itemIds));
@@ -120,6 +170,14 @@ export function AdminProductInfoTabsPicker({
     );
   };
 
+  const toggleOpen = (tabId: string) => {
+    setOpenTabs((current) =>
+      current.includes(tabId)
+        ? current.filter((id) => id !== tabId)
+        : [...current, tabId],
+    );
+  };
+
   if (loading) {
     return (
       <p className="text-sm text-muted-foreground">Loading tab library…</p>
@@ -135,78 +193,134 @@ export function AdminProductInfoTabsPicker({
       <p className="text-sm text-muted-foreground">
         No tabs in the library yet.{" "}
         <Link href="/admin/products/content-tabs" className="underline">
-          Create tabs, sections, and items
+          Create a tab, then sections and items
         </Link>{" "}
         first.
       </p>
     );
   }
 
+  const selectedCount = value.reduce(
+    (sum, entry) => sum + entry.itemIds.length,
+    0,
+  );
+
   return (
     <div className="space-y-3">
-      {tabs.map((tab) => {
-        const pick = selected.get(tab.id);
-        const picked = new Set(pick?.itemIds ?? []);
-        const tabIds = allItemIds(tab);
-        const tabChecked = tabIds.length > 0 && tabIds.every((id) => picked.has(id));
-        const activeSections = tab.sections.filter((section) => section.isActive);
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm text-muted-foreground">
+          {selectedCount} item{selectedCount === 1 ? "" : "s"} selected for this
+          product.
+        </p>
+        <Link
+          href="/admin/products/content-tabs"
+          className="text-xs underline underline-offset-2"
+        >
+          Open library
+        </Link>
+      </div>
+      <div className="relative">
+        <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search tabs, sections, or items"
+          className="pl-8"
+        />
+      </div>
+      {visibleTabs.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No matches for “{query}”.</p>
+      ) : (
+        visibleTabs.map((tab) => {
+          const source = tabs.find((entry) => entry.id === tab.id) ?? tab;
+          const pick = selected.get(tab.id);
+          const picked = new Set(pick?.itemIds ?? []);
+          const tabIds = allItemIds(source);
+          const tabChecked =
+            tabIds.length > 0 && tabIds.every((id) => picked.has(id));
+          const pickedCount = tabIds.filter((id) => picked.has(id)).length;
+          const open = openTabs.includes(tab.id) || Boolean(needle);
+          const activeSections = tab.sections.filter((section) => section.isActive);
 
-        return (
-          <div
-            key={tab.id}
-            className="space-y-3 rounded-[3px] border border-border p-3"
-          >
-            <label className="flex items-center gap-2 text-sm font-medium">
-              <Checkbox
-                checked={tabChecked}
-                onCheckedChange={(v) => toggleTab(tab, v === true)}
-              />
-              {tab.name}
-            </label>
-            {activeSections.map((section) => {
-              const ids = sectionItemIds(tab, section.id);
-              const sectionChecked =
-                ids.length > 0 && ids.every((id) => picked.has(id));
-              const items = section.items.filter((item) => item.isActive);
-              return (
-                <div key={section.id} className="ml-5 space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-medium text-foreground/90">
-                    <Checkbox
-                      checked={sectionChecked}
-                      onCheckedChange={(v) =>
-                        toggleSection(tab, section.id, v === true)
-                      }
+          return (
+            <div
+              key={tab.id}
+              className="rounded-[3px] border border-border"
+            >
+              <div className="flex items-center gap-2 p-3">
+                <Checkbox
+                  checked={tabChecked}
+                  onCheckedChange={(v) => toggleTab(source, v === true)}
+                  aria-label={`Select all items in ${tab.name}`}
+                />
+                <button
+                  type="button"
+                  className="flex min-w-0 flex-1 items-center justify-between gap-2 text-left text-sm font-medium"
+                  onClick={() => toggleOpen(tab.id)}
+                >
+                  <span className="truncate">{tab.name}</span>
+                  <span className="flex items-center gap-2">
+                    <Badge variant="secondary">
+                      {pickedCount}/{tabIds.length}
+                    </Badge>
+                    <ChevronDownIcon
+                      className={cn(
+                        "size-4 text-muted-foreground transition-transform",
+                        open ? "rotate-0" : "-rotate-90",
+                      )}
                     />
-                    {section.title}
-                  </label>
-                  {items.length > 0 ? (
-                    <div className="ml-6 grid gap-2 sm:grid-cols-2">
-                      {items.map((item) => (
-                        <label
-                          key={item.id}
-                          className="flex items-center gap-2 text-sm text-muted-foreground"
-                        >
+                  </span>
+                </button>
+              </div>
+              {open ? (
+                <div className="space-y-3 border-t border-border px-3 py-3">
+                  {activeSections.map((section) => {
+                    const ids = sectionItemIds(source, section.id);
+                    const sectionChecked =
+                      ids.length > 0 && ids.every((id) => picked.has(id));
+                    const items = section.items.filter((item) => item.isActive);
+                    return (
+                      <div key={section.id} className="space-y-2">
+                        <label className="flex items-center gap-2 text-sm font-medium">
                           <Checkbox
-                            checked={picked.has(item.id)}
+                            checked={sectionChecked}
                             onCheckedChange={(v) =>
-                              toggleItem(tab, item.id, v === true)
+                              toggleSection(source, section.id, v === true)
                             }
                           />
-                          {item.title}
+                          {section.title}
                         </label>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="ml-6 text-xs text-muted-foreground">
-                      No items in this section.
-                    </p>
-                  )}
+                        {items.length > 0 ? (
+                          <div className="ml-6 grid gap-2 sm:grid-cols-2">
+                            {items.map((item) => (
+                              <label
+                                key={item.id}
+                                className="flex items-center gap-2 rounded-[3px] border border-transparent px-1 py-0.5 text-sm text-muted-foreground hover:border-border hover:bg-muted/40"
+                              >
+                                <Checkbox
+                                  checked={picked.has(item.id)}
+                                  onCheckedChange={(v) =>
+                                    toggleItem(source, item.id, v === true)
+                                  }
+                                />
+                                {item.title}
+                              </label>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="ml-6 text-xs text-muted-foreground">
+                            No items in this section.
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
-        );
-      })}
+              ) : null}
+            </div>
+          );
+        })
+      )}
     </div>
   );
 }
