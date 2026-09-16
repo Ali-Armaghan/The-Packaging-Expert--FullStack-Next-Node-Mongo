@@ -2,6 +2,7 @@
 export function isHome2Route(pathname: string): boolean {
   return (
     pathname === "/" ||
+    pathname === "/quote" ||
     pathname.startsWith("/products/")
   );
 }

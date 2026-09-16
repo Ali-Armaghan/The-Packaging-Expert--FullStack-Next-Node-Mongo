@@ -1053,6 +1053,8 @@ export type Home2QuoteContent = {
   submitLabel: string;
   successTitle: string;
   successDescription: string;
+  successNote: string;
+  successNext: Array<{ title: string; text: string }>;
   materials: Home2QuoteSelectOption[];
   colors: Home2QuoteSelectOption[];
   printing: Home2QuoteSelectOption[];
@@ -1107,9 +1109,25 @@ export const home2Quote: Home2QuoteContent = {
   ],
   formTitle: "Get custom quote",
   submitLabel: "Submit",
-  successTitle: "Quote request received",
+  successTitle: "Thank you",
   successDescription:
-    "Thanks — our team will review your specs and follow up shortly.",
+    "Your quote request is in. Our team will contact you within one business day to go over specs, pricing, and next steps.",
+  successNote:
+    "We typically reply by email or phone — please keep an eye on both.",
+  successNext: [
+    {
+      title: "We review",
+      text: "A specialist checks your sizes, material, and finish.",
+    },
+    {
+      title: "We contact you",
+      text: "You’ll hear from us within one business day.",
+    },
+    {
+      title: "You get a quote",
+      text: "A tailored estimate — no obligation to proceed.",
+    },
+  ],
   materials: [
     { value: "cardstock", label: "Cardstock" },
     { value: "corrugated", label: "Corrugated" },

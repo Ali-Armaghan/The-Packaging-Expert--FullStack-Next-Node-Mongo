@@ -4013,11 +4013,21 @@
   cursor: wait;
 }
 
+.home2-quote--page {
+  padding-top: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .home2-quote--page {
+    padding-top: 1.5rem;
+  }
+}
+
 .home2-quote__success {
   display: grid;
   justify-items: center;
-  gap: 0.65rem;
-  padding: 3rem 1.5rem;
+  gap: 0.55rem;
+  padding: 2.2rem 1.25rem 2.4rem;
   text-align: center;
 }
 
@@ -4025,27 +4035,207 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
-  height: 3rem;
+  width: 3.35rem;
+  height: 3.35rem;
   border-radius: 9999px;
   background: #34ad78;
   color: #06110c;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 700;
+  box-shadow: 0 0 0 8px rgba(52, 173, 120, 0.14);
+}
+
+.home2-quote__success-kicker {
+  margin: 0.55rem 0 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #167a4d;
 }
 
 .home2-quote__success h3 {
-  margin: 0.2rem 0 0;
-  font-size: 1.25rem;
+  margin: 0;
+  font-size: clamp(1.45rem, 3vw, 1.85rem);
   font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 .home2-quote__success p {
   margin: 0;
-  max-width: 28rem;
-  font-size: 0.92rem;
+  max-width: 32rem;
+  font-size: 0.95rem;
   line-height: 1.55;
-  color: rgba(18, 21, 26, 0.55);
+  color: rgba(18, 21, 26, 0.58);
+}
+
+.home2-quote__success-note {
+  font-size: 0.84rem !important;
+  color: rgba(18, 21, 26, 0.48) !important;
+}
+
+.home2-quote__success-next {
+  list-style: none;
+  display: grid;
+  gap: 0.65rem;
+  width: min(100%, 34rem);
+  margin: 0.85rem 0 0.2rem;
+  padding: 0;
+  text-align: left;
+}
+
+.home2-quote__success-next li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.85rem;
+  background: #f6f8f7;
+  border: 1px solid rgba(18, 21, 26, 0.06);
+}
+
+.home2-quote__success-next li span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 9999px;
+  background: #34ad78;
+  color: #06110c;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.home2-quote__success-next strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.home2-quote__success-next p {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.home2-quote__success-contact {
+  margin-top: 0.35rem !important;
+  font-size: 0.84rem !important;
+}
+
+.home2-quote__success-contact a {
+  color: #167a4d;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.home2-quote__success-contact a:hover {
+  text-decoration: underline;
+}
+
+.home2-quote__success-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 0.55rem;
+}
+
+.home2-quote__success-actions .home2-quote__back {
+  text-decoration: none;
+}
+
+.quote-page {
+  background:
+    radial-gradient(ellipse 70% 45% at 50% -8%, rgba(52, 173, 120, 0.14), transparent 55%),
+    linear-gradient(180deg, #f5f7f9 0%, #eef1f4 100%);
+}
+
+.quote-page__hero {
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 6.75rem max(1rem, env(safe-area-inset-left)) 0.5rem max(1rem, env(safe-area-inset-right));
+  box-sizing: border-box;
+  text-align: center;
+}
+
+@media (min-width: 640px) {
+  .quote-page__hero {
+    padding: 7.4rem 1.5rem 0.75rem;
+  }
+}
+
+.quote-page__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 0.65rem;
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(18, 21, 26, 0.45);
+}
+
+.quote-page__eyebrow::before {
+  content: "";
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 9999px;
+  background: #34ad78;
+}
+
+.quote-page__hero h1 {
+  margin: 0 auto;
+  max-width: 18ch;
+  font-size: clamp(1.85rem, 4.4vw, 3rem);
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  color: #12151a;
+}
+
+.quote-page__hero p {
+  margin: 0.85rem auto 0;
+  max-width: 38rem;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: rgba(18, 21, 26, 0.58);
+}
+
+.quote-page__pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quote-page__pills li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(18, 21, 26, 0.07);
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: #12151a;
+}
+
+.quote-page__pills li::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  background: #34ad78;
 }
 
 .home2-quote__queries {

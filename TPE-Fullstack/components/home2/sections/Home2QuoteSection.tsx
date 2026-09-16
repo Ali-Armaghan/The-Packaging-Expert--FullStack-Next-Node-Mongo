@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { siteConfig } from "@/config/site";
 import type { Home2QuoteContent } from "@/lib/home2/content";
 
 type Home2QuoteSectionProps = {
   content: Home2QuoteContent;
+  variant?: "section" | "page";
 };
 
 type FormStatus = "idle" | "saving" | "success" | "error";
@@ -324,7 +326,10 @@ function QuoteCaptcha({
 /**
  * Landscape quote section — process timeline + stepped quote form.
  */
-export function Home2QuoteSection({ content }: Home2QuoteSectionProps) {
+export function Home2QuoteSection({
+  content,
+  variant = "section",
+}: Home2QuoteSectionProps) {
   const [captchaCode, setCaptchaCode] = useState(randomCaptchaCode);
   const [step, setStep] = useState<QuoteStepId>(1);
   const [values, setValues] = useState<FormValues>(INITIAL_VALUES);
@@ -425,15 +430,20 @@ export function Home2QuoteSection({ content }: Home2QuoteSectionProps) {
   };
 
   return (
-    <section className="home2-quote" aria-label="Order process and custom quote">
+    <section
+      className={`home2-quote${variant === "page" ? " home2-quote--page" : ""}`}
+      aria-label="Order process and custom quote"
+    >
       <div className="home2-quote__shell">
-        <header className="home2-quote__intro">
-          <p className="home2-quote__eyebrow">
-            <span className="home2-quote__eyebrow-dot" />
-            How it works
-          </p>
-          <h2 className="home2-quote__process-title">{content.processTitle}</h2>
-        </header>
+        {variant === "section" ? (
+          <header className="home2-quote__intro">
+            <p className="home2-quote__eyebrow">
+              <span className="home2-quote__eyebrow-dot" />
+              How it works
+            </p>
+            <h2 className="home2-quote__process-title">{content.processTitle}</h2>
+          </header>
+        ) : null}
 
         <ol className="home2-quote__timeline">
           {content.steps.map((item, index) => (
@@ -450,30 +460,65 @@ export function Home2QuoteSection({ content }: Home2QuoteSectionProps) {
         </ol>
 
         <div className="home2-quote__panel">
-          <div className="home2-quote__panel-head">
-            <div>
-              <h3>{content.formTitle}</h3>
-              <p>Share your specs — we’ll reply with a tailored quote.</p>
+          {status !== "success" ? (
+            <div className="home2-quote__panel-head">
+              <div>
+                <h3>{content.formTitle}</h3>
+                <p>Share your specs — we’ll reply with a tailored quote.</p>
+              </div>
+              <span className="home2-quote__panel-count">
+                {step}/{FORM_STEPS.length}
+              </span>
             </div>
-            <span className="home2-quote__panel-count">
-              {step}/{FORM_STEPS.length}
-            </span>
-          </div>
+          ) : null}
 
           {status === "success" ? (
             <div className="home2-quote__success">
               <span className="home2-quote__success-icon" aria-hidden="true">
                 ✓
               </span>
+              <p className="home2-quote__success-kicker">Request received</p>
               <h3>{content.successTitle}</h3>
               <p>{content.successDescription}</p>
-              <button
-                type="button"
-                className="home2-quote__submit"
-                onClick={resetForm}
-              >
-                Send another request
-              </button>
+              <p className="home2-quote__success-note">{content.successNote}</p>
+
+              <ol className="home2-quote__success-next">
+                {content.successNext.map((item, index) => (
+                  <li key={item.title}>
+                    <span aria-hidden="true">{index + 1}</span>
+                    <div>
+                      <strong>{item.title}</strong>
+                      <p>{item.text}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+
+              <p className="home2-quote__success-contact">
+                Need us sooner?{" "}
+                <a href={`tel:${siteConfig.contact.phone.replace(/[^+\d]/g, "")}`}>
+                  {siteConfig.contact.phone}
+                </a>
+                {" · "}
+                <a href={`mailto:${siteConfig.contact.email}`}>
+                  {siteConfig.contact.email}
+                </a>
+              </p>
+
+              <div className="home2-quote__success-actions">
+                <button
+                  type="button"
+                  className="home2-quote__submit"
+                  onClick={resetForm}
+                >
+                  Send another request
+                </button>
+                {variant === "page" ? (
+                  <Link href="/" className="home2-quote__back">
+                    Back to home
+                  </Link>
+                ) : null}
+              </div>
             </div>
           ) : (
             <form className="home2-quote__form" onSubmit={handleSubmit} noValidate>
